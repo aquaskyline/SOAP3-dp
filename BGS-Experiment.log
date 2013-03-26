@@ -1,0 +1,116 @@
+>>New Entry<< ------------------------------------------------
+Date   : 17th April 2011
+Author : Edward MK WU
+Title  : 3-Mismatch Occurrence
+
+ACGT.35bp1M.1113.fa/ncbi.chr1.fa         ---   
+ACGT.35bp1M.1113.fa/ncbi.genome.fa       --- 
+ACGT.100bp1M.fa/ncbi.chr1.fa             ---     2,954,989 ( 90,019) [2bwt-bio11: 29.3795s] [bgs-bio11: 10.4253s]
+ACGT.100bp1M.fa/ncbi.genome.fa           ---    41,747,986 (845,847) [2bwt-bio11:147.2918s] [bgs-bio11: 37.0406s]
+
+>>New Entry<< ------------------------------------------------
+Date   : 16th April 2011
+Author : Edward MK WU
+Title  : 2-Mismatch Occurrence
+
+ACGT.35bp1M.1113.fa/ncbi.chr1.fa         ---   103,353,567 (149,115) [2bwt-bio11: 78.7440s] [bgs-bio11: 32.1197s]
+ACGT.35bp1M.1113.fa/ncbi.genome.fa       --- 1,229,392,188 (655,999) [2bwt-bio11:282.9702s] [bgs-bio11:284.1945s]
+ACGT.100bp1M.fa/ncbi.chr1.fa             ---     1,474,653 ( 79,036)
+ACGT.100bp1M.fa/ncbi.genome.fa           ---    20,672,931 (794,513)
+
+>>New Entry<< ------------------------------------------------
+Date   : 26th March 2011
+Author : Edward MK WU
+Title  : 2-Mismatch Occurrence
+
+Short read set = ACGT.100bp1M.fa
+Index          = NCBI Chromosome 1
+
+[Thread:Case1] 330139 occurrences are found.
+[Thread:Case2] 206054 occurrences are found.
+[Thread:Case3] 222059 occurrences are found.
+[Thread:Case0] 716401 occurrences are found.
+
+>>New Entry<< ------------------------------------------------
+Date   : 1st March 2011
+Author : Edward MK WU
+Title  : To note the occ distribution (Device handles at most 8 SA ranges)
+
+Short read set = ACGT.100bp1M.fa
+Index          = NCBI Chromosome 1
+
+Device 1-mismatch matching
++Strand 143,737   (in 40,906 reads)
+BStrand 210,189   (in 72,373 reads)
+
+All 1-mismatch matching
++Strand 735,727   (in 46,228 reads)
+BStrand 1,474,653 (in 79,036 reads)
+
+>>New Entry<< ------------------------------------------------
+Date   : 12th February 2011
+Author : Edward MK WU
+Title  : To note the occ distribution (Device handles at most 8 SA ranges)
+
+Short read set = ACGT.100bp1M.fa
+Index          = NCBI Chromosome 1
+
+Device 1-mismatch matching
++Strand 131,574   (in 34,136 reads)
+BStrand 229,797   (in 61,559 reads)
+
+All 1-mismatch matching
++Strand 281,879   (in 35,777 reads)
+BStrand 565,293   (in 63,734 reads)
+
+>>New Entry<< ------------------------------------------------
+Date   : 24th January 2011
+Author : Edward MK WU
+Title  : To note the occ distribution
+Rev    : 20
+
+Short read set = ACGT.100bp1M.fa
+Index          = NCBI Chromosome 1
+Strand         = Positive
+
+Exact matching
+71,149    (in 20,477 reads)
+
+Exactly 1-mismatch matching
+210,730   (in ? reads)
+
+Device 1-mismatch matching
+115,656   (in 33,644 reads)
+
+Host 1-mismatch matching
+166,223   (in 2,133 reads)
+
+>>New Entry<< ------------------------------------------------
+Date   : 24th January 2011
+Author : Edward MK WU
+Title  : Performance benchmark
+Rev    : 20
+
+Short read set = ACGT.100bp1M.fa
+Index          = NCBI Chromosome 1
+Strand         = Positive
+Environment    = bio11
+
+Exact matching
+------------------------------------
+Device time         = 97.048897 ms
+Index loading time  = 0.3139s
+Short read loading  = 0.3438s
+Alignment time      = 0.1274s
+Text pos and disk   = 0.1682s
+
+1-mismatch matching
+------------------------------------
+Device time         = 597.181641 ms
+Index loading time  = 0.6999s
+Short read loading  = 0.3665s
+Alignment time      = 0.6325s
+Host alignment time = 0.2624s
+Text pos and disk   = 0.6910s
+Summing up above 5  = 2.6523s (+170% comp to exact)
+

@@ -1,0 +1,45 @@
+The testing of BGS software relies on comparison between 2BWT-Flex and BGS.
+The basic flow of the test is:
+1. Make sure latest object program is referenced under the directory ~/experiments/compareResult/.
+2. Generate output file in 2BWT-Flex
+3. Remove the strand indicator, to replace + and - with ?
+4. Sort the output
+5. Generate output file in BGS
+6. Sort the output
+7. Compare the output from step 3 and 5.
+
+|----------------------------------
+| Detail Procedure                |
+|----------------------------------
+
+% cd $LT; make
+% cd $BWT; make
+% cd ~/experiments/compareResult/
+% rm *
+% ln -s /home/mkewu/db/ncbi.genome.fa.index* .
+% ln -s /home/mkewu/db3/ncbi.chr1.fa.index* .
+% ln -s /home/mkewu/control/2bwt-flex/latest/2bwt-combined .
+% ln -s /home/mkewu/control/2bwt-flex/latest/2bwt-combined.ini .
+% ln -s /home/mkewu/control/2bwt-flex/latest/2bwt-viewer .
+% ln -s /home/mkewu/control/gpubwt/latest/BGS-2M .
+% ln -s /home/mkewu/control/gpubwt/latest/BGS-3M .
+% ln -s /home/mkewu/control/gpubwt/latest/BGS-View .
+
+!Pick the appropriate index and query
+% export INDEX=ncbi.genome.fa.index
+% export INDEX=ncbi.chr1.fa.index
+% export QUERY=ACGT.100bp1M.fa
+% export QUERY=ACGT.35bp1M.1113.fa
+
+% ./2bwt-combined short $INDEX $QUERY -m 3 -h 2
+% ./2bwt-viewer $QUERY ${QUERY}.combined.out > 2bwt.out
+% cat 2bwt.out | sed 's/+[ \t]*$/?\t/g' | sed 's/-[ \t]*$/?\t/g' | sort > 2bwt.out2
+
+% ./BGS-3M $INDEX $QUERY 1000000 100
+% ./BGS-View $QUERY ${QUERY}.gout.1 >  bgs.out
+% ./BGS-View $QUERY ${QUERY}.gout.2 >> bgs.out
+% ./BGS-View $QUERY ${QUERY}.gout.3 >> bgs.out
+% ./BGS-View $QUERY ${QUERY}.gout.4 >> bgs.out
+% cat bgs.out | sort > bgs.out2
+% diff2 2bwt.out2 bgs.out2
+

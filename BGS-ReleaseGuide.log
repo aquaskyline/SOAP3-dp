@@ -1,0 +1,12 @@
+While a release is stable enough or a major enhancement is included in the latest code.
+A release should be branched to file:///repo/gpubwt/releases/
+
+For beta release software, the versioning should be RXXX where XXX is the revision number in SubVersion.
+
+E.g. TO release a R39 BGS
+svn copy -m "Releasing BGS R39" file:///repo/gpubwt/latest/ file:///repo/gpubwt/releases/R39
+
+To retrieve software from given revision.
+E.g. TO obtain R49 software
+svn export -r 49 file:///repo/gpubwt/latest/ ../R49/
+
