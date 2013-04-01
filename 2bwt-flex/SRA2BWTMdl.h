@@ -44,7 +44,7 @@
 #ifndef __SRA_2BWT_MODEL_H__
 #define __SRA_2BWT_MODEL_H__
 
-#include "../SRACore.h"
+#include "SRACore.h"
 
 #define MAX_NUM_OF_SRA_STEPS                         16
 #define MAX_NUM_OF_SRA_CASES                         64

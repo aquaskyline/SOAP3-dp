@@ -37,7 +37,7 @@
 #include "samtools-0.1.18/bam.h"
 
 #include "BGS-IO.h"
-#include "SRAArguments.h"
+#include "2bwt-flex/SRAArguments.h"
 #include "PEAlgnmt.h"
 #include "AlgnResult.h"
 #include "OutputDPResult.h"

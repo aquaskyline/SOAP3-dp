@@ -25,7 +25,7 @@
 #define __SRA_ARGUMENTS_H__
 
 #include "SRACore.h"
-#include "2bwt-flex/SRA2BWTMdl.h"
+#include "SRA2BWTMdl.h"
 
 typedef struct SRAQueryResultCount
 {

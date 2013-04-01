@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "PEAlgnmt.h"
-#include "SRAArguments.h"
+#include "2bwt-flex/SRAArguments.h"
 #include "SAM.h"
 #include "SAList.h"
 #include "PE.h"

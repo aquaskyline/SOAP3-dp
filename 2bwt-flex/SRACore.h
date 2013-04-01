@@ -39,14 +39,14 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#include "Release.h"
-#include "2bwt-lib/BWT.h"
-#include "2bwt-lib/HSP.h"
-#include "2bwt-flex/OCC.h"
-#include "2bwt-flex/HOCC.h"
-#include "2bwt-flex/LT.h"
-#include "samtools-0.1.18/sam.h"
-#include "HSPAux.h"
+#include "../Release.h"
+#include "../2bwt-lib/BWT.h"
+#include "../2bwt-lib/HSP.h"
+#include "OCC.h"
+#include "HOCC.h"
+#include "LT.h"
+#include "../samtools-0.1.18/sam.h"
+#include "../HSPAux.h"
 
 static const char soap3DnaComplement[ALPHABET_SIZE]        = { 3, 2, 1, 0 };
 

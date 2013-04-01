@@ -51,8 +51,8 @@
 
 #include "2bwt-lib/BWT.h"
 #include "2bwt-lib/HSP.h"
+#include "2bwt-flex/SRACore.h"
 #include "HSPAux.h"
-#include "SRACore.h"
 
 #define PE_MAX_BUCKET_SIZE 1024
 

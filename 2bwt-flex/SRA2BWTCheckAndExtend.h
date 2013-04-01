@@ -40,7 +40,7 @@
 #ifndef __SRA_2BWT_CHECK_AND_EXTEND__
 #define __SRA_2BWT_CHECK_AND_EXTEND__
 
-#include "../SRACore.h"
+#include "SRACore.h"
 
 //Sensitive to BIT_PER_CHAR
 #define SRA_CE_BIT_MASK        0x5555555555555555ull

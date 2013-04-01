@@ -32,7 +32,7 @@
 #include "2bwt-flex/SRA2BWTCheckAndExtend.h"
 
 #include "BGS-IO.h"
-#include "SRAArguments.h"
+#include "2bwt-flex/SRAArguments.h"
 #include "SAList.h"
 
 

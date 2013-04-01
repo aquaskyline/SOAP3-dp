@@ -30,9 +30,9 @@
 #include "2bwt-lib/HSP.h"
 #include "2bwt-flex/LT.h"
 #include "2bwt-flex/SRA2BWTCheckAndExtend.h"
+#include "2bwt-flex/SRAArguments.h"
 
 #include "BGS-IO.h"
-#include "SRAArguments.h"
 #include "AlgnResult.h"
 
 

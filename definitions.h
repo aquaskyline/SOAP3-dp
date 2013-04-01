@@ -29,7 +29,7 @@
 #include <string.h>
 #include <unistd.h>
 #include "2bwt-flex/OCC.h"
-#include "SRAArguments.h"
+#include "2bwt-flex/SRAArguments.h"
 #include "PEAlgnmt.h"
 #include "AlgnResult.h"
 

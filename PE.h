@@ -31,7 +31,7 @@
 #include <ctype.h>
 #include "2bwt-lib/BWT.h"
 #include "2bwt-lib/HSP.h"
-#include "SRACore.h"
+#include "2bwt-flex/SRACore.h"
 
 #include "definitions.h"
 #include "ssse3_popcount.h"
