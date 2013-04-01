@@ -1013,6 +1013,7 @@ void inputAlgnmtsToArray ( AllHits * allHits, SingleAlgnmtResult * algnResults, 
             allHits->hitArray[allHits->hitNum].score = algnResults[i].score;
             allHits->hitArray[allHits->hitNum].editdist = algnResults[i].editdist;
             allHits->hitArray[allHits->hitNum].num_sameScore = algnResults[i].num_sameScore;
+            allHits->hitArray[allHits->hitNum].isFromDP = 1;
             allHits->hitNum++;
             allHits->readPtrArray[allHits->readNum - 1].numAlgnmt++;
         }
@@ -1186,6 +1187,7 @@ void inputSoap3AnsToArray ( AllHits * allHits, unsigned int readID, HSPAux * hsp
                     allHits->hitArray[allHits->hitNum].score = readLength * hspaux->dpMatchScore - num_mis * hspaux->dpMisMatchScore;
                     allHits->hitArray[allHits->hitNum].editdist = num_mis;
                     allHits->hitArray[allHits->hitNum].num_sameScore = 0;
+                    allHits->hitArray[allHits->hitNum].isFromDP = 0;
                     allHits->hitNum++;
                     allHits->readPtrArray[allHits->readNum - 1].numAlgnmt++;
                 }
@@ -1220,6 +1222,7 @@ void inputSoap3AnsToArray ( AllHits * allHits, unsigned int readID, HSPAux * hsp
             allHits->hitArray[allHits->hitNum].score = readLength * hspaux->dpMatchScore - ans->occ_list[i].mismatchCount * hspaux->dpMisMatchScore;
             allHits->hitArray[allHits->hitNum].editdist = ans->occ_list[i].mismatchCount;
             allHits->hitArray[allHits->hitNum].num_sameScore = 0;
+            allHits->hitArray[allHits->hitNum].isFromDP = 0;
             allHits->hitNum++;
             allHits->readPtrArray[allHits->readNum - 1].numAlgnmt++;
         }

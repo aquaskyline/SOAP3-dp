@@ -472,6 +472,7 @@ typedef struct Algnmt
     int score; // score from DP
     int editdist;
     int num_sameScore;
+    int isFromDP; // 1: from DP; 0: from SOAP3
 } Algnmt;
 
 // read pointer

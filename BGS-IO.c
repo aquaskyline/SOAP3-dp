@@ -2789,11 +2789,23 @@ void unproperlypairDPOutputSAMAPI ( SRAQueryInput * qInput, Algnmt * algn_list1,
     if ( ( bestAlgn1 != NULL ) && ( hspaux->alignmentType != OUTPUT_UNIQUE_BEST || bestScoreNum1 == 1 ) )
     {
         getChrAndPos ( qInput, bestAlgn1->algnmt, &tp_1, &chr_1 );
-        // to convert the the best special_cigar into normal cigar string
-        cigarStrLen1 = convertToCigarStr ( bestAlgn1->cigarString, cigarStr1 );
-        // to collect the mismatch information including MD string and # of mismatches
-        mdStrLen1 = getMisInfoForDP ( hsp, query1, qualities1, readlen1, bestAlgn1->algnmt, bestAlgn1->strand,
-                                      bestAlgn1->cigarString, mdStr1, &bestMismatchNum1, &bestGapOpen1, &bestGapExtend1, &avg_mismatch_qual1 );
+        
+        if (bestAlgn1->isFromDP==1) {
+            
+            // to convert the the best special_cigar into normal cigar string
+            cigarStrLen1 = convertToCigarStr ( bestAlgn1->cigarString, cigarStr1 );
+            // to collect the mismatch information including MD string and # of mismatches
+            mdStrLen1 = getMisInfoForDP ( hsp, query1, qualities1, readlen1, bestAlgn1->algnmt, bestAlgn1->strand,
+                                         bestAlgn1->cigarString, mdStr1, &bestMismatchNum1, &bestGapOpen1, &bestGapExtend1,
+                                         &avg_mismatch_qual1 );
+            
+        } else {
+            
+            strcpy(cigarStr1, bestAlgn1->cigarString);
+            // to get the md str
+            mdStrLen1 = getMdStr ( hsp, query1, qualities1, readlen1, bestAlgn1->algnmt, bestAlgn1->strand, bestAlgn1->editdist, mdStr1, &avg_mismatch_qual1 );
+            
+        }
 
         if ( hspaux->alignmentType == OUTPUT_RANDOM_BEST || hspaux->alignmentType == OUTPUT_UNIQUE_BEST )
         {
@@ -2819,12 +2831,24 @@ void unproperlypairDPOutputSAMAPI ( SRAQueryInput * qInput, Algnmt * algn_list1,
     if ( ( bestAlgn2 != NULL ) && ( hspaux->alignmentType != OUTPUT_UNIQUE_BEST || bestScoreNum2 == 1 ) )
     {
         getChrAndPos ( qInput, bestAlgn2->algnmt, &tp_2, &chr_2 );
-        // to convert the the best special_cigar into normal cigar string
-        cigarStrLen2 = convertToCigarStr ( bestAlgn2->cigarString, cigarStr2 );
-        // to collect the mismatch information including MD string and # of mismatches
-        mdStrLen2 = getMisInfoForDP ( hsp, query2, qualities2, readlen2, bestAlgn2->algnmt, bestAlgn2->strand,
-                                      bestAlgn2->cigarString, mdStr2, &bestMismatchNum2, &bestGapOpen2, &bestGapExtend2, &avg_mismatch_qual2 );
 
+        if (bestAlgn2->isFromDP==1) {
+            
+            // to convert the the best special_cigar into normal cigar string
+            cigarStrLen2 = convertToCigarStr ( bestAlgn2->cigarString, cigarStr2 );
+            // to collect the mismatch information including MD string and # of mismatches
+            mdStrLen2 = getMisInfoForDP ( hsp, query2, qualities2, readlen2, bestAlgn2->algnmt, bestAlgn2->strand,
+                                         bestAlgn2->cigarString, mdStr2, &bestMismatchNum2, &bestGapOpen2, &bestGapExtend2,
+                                         &avg_mismatch_qual2 );
+            
+        } else {
+            
+            strcpy(cigarStr2, bestAlgn2->cigarString);
+            // to get the md str
+            mdStrLen2 = getMdStr ( hsp, query2, qualities2, readlen2, bestAlgn2->algnmt, bestAlgn2->strand, bestAlgn2->editdist, mdStr2, &avg_mismatch_qual2 );
+            
+        }
+        
         if ( hspaux->alignmentType == OUTPUT_RANDOM_BEST || hspaux->alignmentType == OUTPUT_UNIQUE_BEST )
         {
             map_qual_score2 = SAM_MAPQ_UNAVAILABLE;
