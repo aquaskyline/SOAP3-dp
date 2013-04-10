@@ -302,8 +302,11 @@ void PEInputFree ( PEInput * peInput );
 PEOutput * PEOutputConstruct();
 void PEOutputFree ( PEOutput * peOutput );
 
-
-
+/////////////////////////////////////////////////////
+// Utilities
+/////////////////////////////////////////////////////
+unsigned int PECountPEOutput ( PEOutput * peOutput );
+unsigned int PEStatsPEOutput ( PEOutput * peOutput, PEPairs ** optimal, PEPairs ** suboptimal, unsigned int * mismatchStats );
 
 ///////////////////////////////////////////////////////////
 // Structures for semi-global DP                         //

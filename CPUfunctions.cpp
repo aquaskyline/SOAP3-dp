@@ -1242,6 +1242,7 @@ void collect_all_answers ( SAList * sa_list, OCCList * occ_list, unsigned int **
     SRAIndex * aIndex = qInput_Positive->AlgnmtIndex;
     SRAQueryResultCount * rOutput = qInput_Positive->QueryOutput;
     rOutput->TotalOccurrences = 0;
+    memset(rOutput->WithError,0,sizeof(unsigned int)* (MAX_NUM_OF_ERROR + 1));
     BWT * bwt = aIndex->bwt;
     uint * ans;
     unsigned int l, r;
@@ -1291,6 +1292,7 @@ void collect_all_answers ( SAList * sa_list, OCCList * occ_list, unsigned int **
 
                         addSAToSAList ( sa_list, l, r, strand, num_mis );
                         rOutput->TotalOccurrences += r - l + 1;
+                        rOutput->WithError[num_mis] += r - l + 1;
                     }
 
                     if ( rOutput->TotalOccurrences >= qSetting->MaxOutputPerRead )
@@ -1368,6 +1370,7 @@ void collect_all_answers ( SAList * sa_list, OCCList * occ_list, unsigned int **
 
                                         addSAToSAList ( sa_list, l, r, strand, num_mis );
                                         rOutput->TotalOccurrences += r - l + 1;
+                                        rOutput->WithError[num_mis] += r - l + 1;
                                     }
 
                                     if ( rOutput->TotalOccurrences >= qSetting->MaxOutputPerRead )
@@ -1480,6 +1483,11 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
     AlgnResultArrays * algnResultArrays = hspaux->algnResultArrays;
     int outputFormat = qSetting->OutFileFormat;
     DynamicUint8Array * charArray = NULL;
+    
+    unsigned int previousTotalOccurrences;
+    unsigned int previousWithError[ MAX_NUM_OF_ERROR + 1];
+    unsigned int currentTotalOccurrences;
+    unsigned int currentWithError[ MAX_NUM_OF_ERROR + 1];
     
     char dummyQuality[MAX_READ_LENGTH];
     memset(dummyQuality,1,sizeof(char)*MAX_READ_LENGTH);
@@ -1672,6 +1680,10 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
         // special handling for MAPQ for SINGLE READ
         if ( ( readType == SINGLE_READ ) && needOutputMAPQ )
         {
+            //Store mismatch statistics and total number of occurrences for later process
+            currentTotalOccurrences = rOutput->TotalOccurrences;
+            memcpy(currentWithError,rOutput->WithError,sizeof(unsigned int)* (MAX_NUM_OF_ERROR + 1));
+
             int totalNumAns = 0;
             int first_minMisMatch = getMinMatchAndNumAns ( curr_sa_list, curr_occ_list, &totalNumAns );
             // bool need_special_handle = ((first_minMisMatch == currNumMismatch) &&
@@ -1893,6 +1905,10 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                 unAlignedIDs[numOfUnAligned++] = batchFirstReadId + skipFirst + j;
                 continue;
             }
+            
+            //Store mismatch statistics and total number of occurrences for later process
+            previousTotalOccurrences = rOutput->TotalOccurrences;
+            memcpy(previousWithError,rOutput->WithError,sizeof(unsigned int)* (MAX_NUM_OF_ERROR + 1));
 
             if ( needOutputMAPQ && ( !needOutputUnalignedReads ) && ( !needProceedDP ) )
             {
@@ -1912,6 +1928,10 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
         }
         else if ( j % 2 == 1 )
         {
+            //Store mismatch statistics and total number of occurrences for later process
+            currentTotalOccurrences = rOutput->TotalOccurrences;
+            memcpy(currentWithError,rOutput->WithError,sizeof(unsigned int)* (MAX_NUM_OF_ERROR + 1));
+            
             // FOR SECOND READ OF THE PAIR-END READ
             bool first_read_has_hits = ( ( sa_list1->curr_size > 0 ) || ( occ_list1->curr_size > 0 ) );
             bool second_read_has_hits = ( ( sa_list2->curr_size > 0 ) || ( occ_list2->curr_size > 0 ) );

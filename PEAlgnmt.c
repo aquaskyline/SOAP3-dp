@@ -774,6 +774,61 @@ unsigned int PECountPEOutput ( PEOutput * peOutput )
     return PECountPEPairList ( peOutput->root );
 }
 
+unsigned int PEStatsPEPairList ( PEPairList * pairList, PEPairs ** optimal, PEPairs ** suboptimal, unsigned int * mismatchStats )
+{
+    unsigned int count = 0;
+    unsigned int i;
+
+    PEPairs * iOptimal = NULL;
+    PEPairs * iSubOptimal = NULL;
+    uint8_t iOptimal_MismatchCount = 255;
+    uint8_t iOptimal_MismatchDiff = 255;
+    uint8_t iSubOptimal_MismatchCount = 255;
+    uint8_t iSubOptimal_MismatchDiff = 255;
+    
+    while ( pairList != NULL && pairList->pairsCount > 0 )
+    {
+        count += pairList->pairsCount;
+        
+        for ( i = 0; i < pairList->pairsCount; i++ )
+        {
+            PEPairs * pePair = & ( pairList->pairs[i] );
+            int numMismatchOnPE = pePair->totalMismatchCount;
+            mismatchStats[numMismatchOnPE]++;
+            
+            int diffMismatch = pePair->mismatch_1 - pePair->mismatch_2;
+            if ( pePair->mismatch_2 > pePair->mismatch_1 ) {
+                diffMismatch = -diffMismatch;
+            }
+            
+            if ( numMismatchOnPE < iOptimal_MismatchCount ) {
+                iSubOptimal_MismatchCount = iOptimal_MismatchCount;
+                iSubOptimal_MismatchDiff = iOptimal_MismatchDiff;
+                iSubOptimal = iOptimal;
+                iOptimal = pePair;
+                iOptimal_MismatchCount = numMismatchOnPE;
+                iOptimal_MismatchDiff = diffMismatch;
+            } else if ( numMismatchOnPE == iOptimal_MismatchCount &&
+                 diffMismatch < iOptimal_MismatchDiff ) {
+                iOptimal = pePair;
+                iOptimal_MismatchCount = numMismatchOnPE;
+                iOptimal_MismatchDiff = diffMismatch;
+            }
+            
+        }
+        pairList = pairList->next;
+    }
+    
+    (*optimal) = iOptimal;
+    (*suboptimal) = iSubOptimal;
+    
+    return count;
+}
+
+unsigned int PEStatsPEOutput ( PEOutput * peOutput, PEPairs ** optimal, PEPairs ** suboptimal, unsigned int * mismatchStats )
+{
+    return PEStatsPEPairList ( peOutput->root, optimal, suboptimal, mismatchStats );
+}
 
 // Construct the structure ReadInputForDP for each CPU thread
 ReadInputForDP * constructReadInputForDP ( int cpuNum )
