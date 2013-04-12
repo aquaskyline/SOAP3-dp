@@ -1693,9 +1693,7 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                     currentMinNumMismatch=mismatchi;break;
                 }
             }
-            int totalNumAns = 0;
-            // bool need_special_handle = ((first_minMisMatch == currNumMismatch) &&
-            //                            (totalNumAns < qSetting->MaxOutputPerRead));
+            
             bool need_special_handle = ( currentMinNumMismatch == currNumMismatch );
 
             if ( need_special_handle )
@@ -2203,13 +2201,16 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                 PEMappingOccurrences ( pe_in, pe_out,
                                        occ_list1->occ, occ_list1->curr_size,
                                        occ_list2->occ, occ_list2->curr_size );
-                unsigned int num_minMismatch = 0; // the number of best pairs with the same minimum sum of mismatches
+                unsigned int num_minMismatch = 0; // the number of optimal pairs with the same minimum sum of mismatches
+                unsigned int num_soMinMismatch = 0; // the number of sub-optimal pairs with the same minimum sum of mismatches
                 
                 numPEAlgnmt = PECountPEOutput(pe_out);
 
                 if ( numPEAlgnmt > 0 )
                 {
                     // pair-end alignment result exists
+                    PEPairs * optimal;
+                    PEPairs * suboptimal;
                     char min_totalMismatchCount = 127;
                     char secMin_totalMismatchCount = 127;
 
@@ -2219,70 +2220,30 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                         // find the minimum total number of mismatches for the resulting paired-end alignments (the best pair)
                         char first_isBestHit = 0;
                         char second_isBestHit = 0;
-                        PEPairs * pePair_minMismatch;
-                        pairList = pe_out->root;
+                        
+                        PEStatsPEOutput(pe_out,&optimal,&suboptimal,peAlgnmtMismatchStats);
 
-                        while ( pairList != NULL && pairList->pairsCount > 0 )
-                        {
-                            for ( i = 0; i < pairList->pairsCount; i++ )
-                            {
-                                PEPairs * pePair = & ( pairList->pairs[i] );
-
-                                if ( pePair->totalMismatchCount < min_totalMismatchCount )
-                                {
-                                    min_totalMismatchCount = pePair->totalMismatchCount;
-                                    num_minMismatch = 1;
-                                    pePair_minMismatch = pePair;
-                                }
-                                else if ( pePair->totalMismatchCount == min_totalMismatchCount )
-                                {
-                                    num_minMismatch++;
-                                }
-                            }
-
-                            pairList = pairList->next;
+                        if ( optimal != NULL ) {
+                            min_totalMismatchCount = optimal->totalMismatchCount;
+                            num_minMismatch = peAlgnmtMismatchStats[min_totalMismatchCount];
+                        }
+                        
+                        if ( suboptimal != NULL ) {
+                            secMin_totalMismatchCount = suboptimal->totalMismatchCount;
+                            num_soMinMismatch = peAlgnmtMismatchStats[secMin_totalMismatchCount];
                         }
 
-                        if ( needOutputMAPQ )
-                        {
-                            // get the number of valid pairs such that
-                            // the mismatch # of the first/second end <= the mismatch # of best hit of the first/second end + 1
-                            pairList = pe_out->root;
-
-                            while ( pairList != NULL && pairList->pairsCount > 0 )
-                            {
-                                for ( i = 0; i < pairList->pairsCount; i++ )
-                                {
-                                    PEPairs * pePair = & ( pairList->pairs[i] );
-
-                                    if ( pePair == pePair_minMismatch )
-                                    { continue; }
-
-                                    // compute "secMin_totalMismatchCount"
-                                    if ( ( pePair->totalMismatchCount > min_totalMismatchCount ) && ( pePair->totalMismatchCount < secMin_totalMismatchCount ) )
-                                    {
-                                        secMin_totalMismatchCount = pePair->totalMismatchCount;
-                                    }
-                                }
-
-                                pairList = pairList->next;
-                            }
-
-                            // check whether the each end of the best paired-end alignment is
-                            // one of the best hits for each end.
-                            if ( numPEAlgnmt > 0 )
-                            {
-                                first_isBestHit = ( previousMinNumMismatch == pePair_minMismatch->mismatch_1 ) ? 1 : 0;
-                                second_isBestHit = ( currentMinNumMismatch == pePair_minMismatch->mismatch_2 ) ? 1 : 0;
-                            }
-                        }
+                        // check whether the each end of the best paired-end alignment is
+                        // one of the best hits for each end.
+                        first_isBestHit = ( previousMinNumMismatch == optimal->mismatch_1 ) ? 1 : 0;
+                        second_isBestHit = ( currentMinNumMismatch == optimal->mismatch_2 ) ? 1 : 0;
 
                         // OUTPUT THE RESULT
                         if ( outputFormat == SRA_OUTPUT_FORMAT_SAM_API )
                         {
                             if ( reportType == OUTPUT_RANDOM_BEST && num_minMismatch > 0 )
                             {
-                                pairOutputSAMAPI ( &qInput_Positive, pe_out, pePair_minMismatch,
+                                pairOutputSAMAPI ( &qInput_Positive, pe_out, optimal,
                                                    preQuery, thisQuery, preQualities, thisQualities,
                                                    preReadLength, readLength, preQueryName, thisQueryName,
                                                    min_totalMismatchCount, secMin_totalMismatchCount, 0, charArray, peMaxOutputPerPair,
@@ -2294,7 +2255,7 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                             }
                             else if ( reportType == OUTPUT_UNIQUE_BEST && num_minMismatch == 1 )
                             {
-                                pairOutputSAMAPI ( &qInput_Positive, pe_out, pePair_minMismatch,
+                                pairOutputSAMAPI ( &qInput_Positive, pe_out, optimal,
                                                    preQuery, thisQuery, preQualities, thisQualities,
                                                    preReadLength, readLength, preQueryName, thisQueryName,
                                                    min_totalMismatchCount, secMin_totalMismatchCount, 0, charArray, peMaxOutputPerPair,
@@ -2306,7 +2267,7 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                             }
                             else if ( reportType == OUTPUT_ALL_VALID || reportType == OUTPUT_ALL_BEST )
                             {
-                                pairOutputSAMAPI ( &qInput_Positive, pe_out, pePair_minMismatch,
+                                pairOutputSAMAPI ( &qInput_Positive, pe_out, optimal,
                                                    preQuery, thisQuery, preQualities, thisQualities,
                                                    preReadLength, readLength, preQueryName, thisQueryName,
                                                    min_totalMismatchCount, secMin_totalMismatchCount,
@@ -2339,7 +2300,7 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                                   ( reportType == OUTPUT_UNIQUE_BEST && num_minMismatch == 1 ) )
                         {
 #ifdef BGS_FWD_FOR_FIRST_REV_FOR_SECOND
-                            pePair_minMismatch->strand_2 = 2;
+                            optimal->strand_2 = 2;
 #endif
                             OCCReportDelimitor ( &qInput_Positive );
 
@@ -2347,20 +2308,20 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                             // qInfo_Positive.ReadStrand = strand;
                             if ( occ->occPositionCacheCount >= OCC_CACHE_SIZE ) {OCCFlushCache ( &qInput_Positive );}
 
-                            occ->occPositionCache[occ->occPositionCacheCount].tp = pePair_minMismatch->algnmt_1;
-                            occ->occPositionCache[occ->occPositionCacheCount].ReadStrand = pePair_minMismatch->strand_1;
+                            occ->occPositionCache[occ->occPositionCacheCount].tp = optimal->algnmt_1;
+                            occ->occPositionCache[occ->occPositionCacheCount].ReadStrand = optimal->strand_1;
                             occ->occPositionCache[occ->occPositionCacheCount].ChromId = 0;
-                            occ->occPositionCache[occ->occPositionCacheCount].occMismatch = pePair_minMismatch->mismatch_1;
+                            occ->occPositionCache[occ->occPositionCacheCount].occMismatch = optimal->mismatch_1;
                             occ->occPositionCacheCount++;
 
                             // output the alignment of the second read
                             // OCCReportDelimitor(occ,hsp,outputFile,(unsigned long long)readId+accumReadNum);
                             if ( occ->occPositionCacheCount >= OCC_CACHE_SIZE ) {OCCFlushCache ( &qInput_Positive );}
 
-                            occ->occPositionCache[occ->occPositionCacheCount].tp = pePair_minMismatch->algnmt_2;
-                            occ->occPositionCache[occ->occPositionCacheCount].ReadStrand = pePair_minMismatch->strand_2;
+                            occ->occPositionCache[occ->occPositionCacheCount].tp = optimal->algnmt_2;
+                            occ->occPositionCache[occ->occPositionCacheCount].ReadStrand = optimal->strand_2;
                             occ->occPositionCache[occ->occPositionCacheCount].ChromId = 0;
-                            occ->occPositionCache[occ->occPositionCacheCount].occMismatch = pePair_minMismatch->mismatch_2;
+                            occ->occPositionCache[occ->occPositionCacheCount].occMismatch = optimal->mismatch_2;
                             occ->occPositionCacheCount++;
                             numOfAnswer++;
                             numOfAlignedRead += 2;
