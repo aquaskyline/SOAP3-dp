@@ -1923,6 +1923,7 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
             previousTotalOccurrences = rOutput->TotalOccurrences;
             memcpy(previousWithError,rOutput->WithError,sizeof(unsigned int)* (MAX_NUM_OF_ERROR + 1));
 
+            // This block is going to be removed for further performance enhancement.
             if ( needOutputMAPQ && ( !needOutputUnalignedReads ) && ( !needProceedDP ) )
             {
                 //int totalNumAns1 = 0;
@@ -1951,12 +1952,139 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
             memcpy(currentWithError,rOutput->WithError,sizeof(unsigned int)* (MAX_NUM_OF_ERROR + 1));
             
             // FOR SECOND READ OF THE PAIR-END READ
-            //int totalNumAns1 = 0;
-            //int totalNumAns2 = 0;
             int first_X0 = 0;
             int first_X1 = 0;
             int second_X0 = 0;
             int second_X1 = 0;
+
+            // get the statistics
+            // FOR DEBUG (OCC)
+            /*
+            if (needProceedDP && previousTotalOccurrences>0 ) {
+                  printf("%u %u %u %u %u\n", readId-2, sa_list1->curr_size, totalNumOcc(sa_list1), occ_list1->curr_size, totalNumOcc(sa_list1)+occ_list1->curr_size);
+            }
+            if (needProceedDP && currentTotalOccurrences>0) {
+                  printf("%u %u %u %u %u\n", readId-1, sa_list2->curr_size, totalNumOcc(sa_list2), occ_list2->curr_size, totalNumOcc(sa_list2)+occ_list2->curr_size);
+            }
+            */
+            // if need to proceed the semi-global DP, then select those pairs of reads
+            // which one end has alignments but another has not.
+
+            if ( needProceedDP )
+            {
+#ifdef SKIP_DEFAULT_DP
+
+                if ( previousTotalOccurrences==0 || currentTotalOccurrences==0 )
+                {
+                    // either first read or second read do not have any hit
+                    addReadIDToBothUnalignedPairs ( bothUnalignedPairs, batchFirstReadId + batchReadId - 1 );
+                    continue;
+                }
+
+#else
+
+                if ( previousTotalOccurrences>0 && currentTotalOccurrences==0 )
+                {
+                    // first read has hit but second read has not
+                    if ( occ_list1->curr_size <= maxHitNumForDP && ( tooManyNumOcc ( sa_list1, maxHitNumForDP - occ_list1->curr_size ) == 0 ) )
+                    {
+                        // the number of alignments <= threshold
+                        keepSoap3Results ( batchFirstReadId + batchReadId - 1, sa_list1, occ_list1, dpInput, hspaux );
+                        addToReadInputForDP ( dpInput, batchFirstReadId + batchReadId - 1, sa_list1->sa, sa_list1->curr_size,
+                                              occ_list1->occ, occ_list1->curr_size );
+                        continue;
+                    }
+                    else
+                    {
+                        unsigned int hitNum;
+
+                        if ( needOutputMAPQ )
+                        {
+                            // consider the best and the second best hits
+                            hitNum = retainAllBestAndSecBest ( sa_list1, occ_list1 );
+                            /*
+                            if (hitNum > maxHitNumForDP) {
+                                  // consider those best hits
+                                  hitNum = retainAllBest(sa_list1, occ_list1);
+                            }*/
+                        }
+                        else
+                        {
+                            // consider those best hits
+                            hitNum = retainAllBest ( sa_list1, occ_list1 );
+                        }
+
+                        if ( hitNum <= maxHitNumForDP )
+                        {
+                            keepSoap3Results ( batchFirstReadId + batchReadId - 1, sa_list1, occ_list1, dpInput, hspaux );
+                            addToReadInputForDP ( dpInput, batchFirstReadId + batchReadId - 1, sa_list1->sa, sa_list1->curr_size,
+                                                  occ_list1->occ, occ_list1->curr_size );
+                        }
+                        else
+                        {
+                            keepSoap3Results ( batchFirstReadId + batchReadId - 1, sa_list1, occ_list1, dpInputForNewDefault, hspaux );
+                            addToReadInputForDP ( dpInputForNewDefault, batchFirstReadId + batchReadId - 1, sa_list1->sa, sa_list1->curr_size,
+                                                  occ_list1->occ, occ_list1->curr_size );
+                        }
+
+                        continue;
+                    }
+                }
+                else if ( currentTotalOccurrences>0 && previousTotalOccurrences==0 )
+                {
+                    // second read has hit but first read has not
+                    if ( occ_list2->curr_size <= maxHitNumForDP2 && ( tooManyNumOcc ( sa_list2, maxHitNumForDP2 - occ_list2->curr_size ) == 0 ) )
+                    {
+                        keepSoap3Results ( batchFirstReadId + batchReadId, sa_list2, occ_list2, dpInput, hspaux );
+                        addToReadInputForDP ( dpInput, batchFirstReadId + batchReadId, sa_list2->sa, sa_list2->curr_size,
+                                              occ_list2->occ, occ_list2->curr_size );
+                        continue;
+                    }
+                    else
+                    {
+                        unsigned int hitNum;
+
+                        if ( needOutputMAPQ )
+                        {
+                            // consider the best and the second best hits
+                            hitNum = retainAllBestAndSecBest ( sa_list2, occ_list2 );
+                            /*
+                            if (hitNum > maxHitNumForDP2) {
+                                  // consider those best hits
+                                  hitNum = retainAllBest(sa_list2, occ_list2);
+                            }*/
+                        }
+                        else
+                        {
+                            // consider those best hits
+                            hitNum = retainAllBest ( sa_list2, occ_list2 );
+                        }
+
+                        if ( hitNum <= maxHitNumForDP2 )
+                        {
+                            keepSoap3Results ( batchFirstReadId + batchReadId, sa_list2, occ_list2, dpInput, hspaux );
+                            addToReadInputForDP ( dpInput, batchFirstReadId + batchReadId, sa_list2->sa, sa_list2->curr_size,
+                                                  occ_list2->occ, occ_list2->curr_size );
+                        }
+                        else
+                        {
+                            keepSoap3Results ( batchFirstReadId + batchReadId, sa_list2, occ_list2, dpInputForNewDefault, hspaux );
+                            addToReadInputForDP ( dpInputForNewDefault, batchFirstReadId + batchReadId, sa_list2->sa, sa_list2->curr_size,
+                                                  occ_list2->occ, occ_list2->curr_size );
+                        }
+
+                        continue;
+                    }
+                }
+                else if ( previousTotalOccurrences==0 && currentTotalOccurrences==0 )
+                {
+                    // both first read and second read do not have any hit
+                    addReadIDToBothUnalignedPairs ( bothUnalignedPairs, batchFirstReadId + batchReadId - 1 );
+                    continue;
+                }
+
+#endif
+            }
 
             if ( needOutputMAPQ )
             {
@@ -2056,144 +2184,19 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                 }
             }
 
-            // get the statistics
-            // FOR DEBUG (OCC)
-            /*
-            if (needProceedDP && previousTotalOccurrences>0 ) {
-                  printf("%u %u %u %u %u\n", readId-2, sa_list1->curr_size, totalNumOcc(sa_list1), occ_list1->curr_size, totalNumOcc(sa_list1)+occ_list1->curr_size);
-            }
-            if (needProceedDP && currentTotalOccurrences>0) {
-                  printf("%u %u %u %u %u\n", readId-1, sa_list2->curr_size, totalNumOcc(sa_list2), occ_list2->curr_size, totalNumOcc(sa_list2)+occ_list2->curr_size);
-            }
-            */
-            // if need to proceed the semi-global DP, then select those pairs of reads
-            // which one end has alignments but another has not.
-
-            if ( needProceedDP )
-            {
-#ifdef SKIP_DEFAULT_DP
-
-                if ( ( !previousTotalOccurrences>0 ) || ( !currentTotalOccurrences>0 ) )
-                {
-                    // either first read or second read do not have any hit
-                    addReadIDToBothUnalignedPairs ( bothUnalignedPairs, batchFirstReadId + batchReadId - 1 );
-                    continue;
-                }
-
-#else
-
-                if ( previousTotalOccurrences>0 && ( !currentTotalOccurrences>0 ) )
-                {
-                    // first read has hit but second read has not
-                    if ( occ_list1->curr_size <= maxHitNumForDP && ( tooManyNumOcc ( sa_list1, maxHitNumForDP - occ_list1->curr_size ) == 0 ) )
-                    {
-                        // the number of alignments <= threshold
-                        keepSoap3Results ( batchFirstReadId + batchReadId - 1, sa_list1, occ_list1, dpInput, hspaux );
-                        addToReadInputForDP ( dpInput, batchFirstReadId + batchReadId - 1, sa_list1->sa, sa_list1->curr_size,
-                                              occ_list1->occ, occ_list1->curr_size );
-                        continue;
-                    }
-                    else
-                    {
-                        unsigned int hitNum;
-
-                        if ( needOutputMAPQ )
-                        {
-                            // consider the best and the second best hits
-                            hitNum = retainAllBestAndSecBest ( sa_list1, occ_list1 );
-                            /*
-                            if (hitNum > maxHitNumForDP) {
-                                  // consider those best hits
-                                  hitNum = retainAllBest(sa_list1, occ_list1);
-                            }*/
-                        }
-                        else
-                        {
-                            // consider those best hits
-                            hitNum = retainAllBest ( sa_list1, occ_list1 );
-                        }
-
-                        if ( hitNum <= maxHitNumForDP )
-                        {
-                            keepSoap3Results ( batchFirstReadId + batchReadId - 1, sa_list1, occ_list1, dpInput, hspaux );
-                            addToReadInputForDP ( dpInput, batchFirstReadId + batchReadId - 1, sa_list1->sa, sa_list1->curr_size,
-                                                  occ_list1->occ, occ_list1->curr_size );
-                        }
-                        else
-                        {
-                            keepSoap3Results ( batchFirstReadId + batchReadId - 1, sa_list1, occ_list1, dpInputForNewDefault, hspaux );
-                            addToReadInputForDP ( dpInputForNewDefault, batchFirstReadId + batchReadId - 1, sa_list1->sa, sa_list1->curr_size,
-                                                  occ_list1->occ, occ_list1->curr_size );
-                        }
-
-                        continue;
-                    }
-                }
-                else if ( currentTotalOccurrences>0 && ( !previousTotalOccurrences>0 ) )
-                {
-                    // second read has hit but first read has not
-                    if ( occ_list2->curr_size <= maxHitNumForDP2 && ( tooManyNumOcc ( sa_list2, maxHitNumForDP2 - occ_list2->curr_size ) == 0 ) )
-                    {
-                        keepSoap3Results ( batchFirstReadId + batchReadId, sa_list2, occ_list2, dpInput, hspaux );
-                        addToReadInputForDP ( dpInput, batchFirstReadId + batchReadId, sa_list2->sa, sa_list2->curr_size,
-                                              occ_list2->occ, occ_list2->curr_size );
-                        continue;
-                    }
-                    else
-                    {
-                        unsigned int hitNum;
-
-                        if ( needOutputMAPQ )
-                        {
-                            // consider the best and the second best hits
-                            hitNum = retainAllBestAndSecBest ( sa_list2, occ_list2 );
-                            /*
-                            if (hitNum > maxHitNumForDP2) {
-                                  // consider those best hits
-                                  hitNum = retainAllBest(sa_list2, occ_list2);
-                            }*/
-                        }
-                        else
-                        {
-                            // consider those best hits
-                            hitNum = retainAllBest ( sa_list2, occ_list2 );
-                        }
-
-                        if ( hitNum <= maxHitNumForDP2 )
-                        {
-                            keepSoap3Results ( batchFirstReadId + batchReadId, sa_list2, occ_list2, dpInput, hspaux );
-                            addToReadInputForDP ( dpInput, batchFirstReadId + batchReadId, sa_list2->sa, sa_list2->curr_size,
-                                                  occ_list2->occ, occ_list2->curr_size );
-                        }
-                        else
-                        {
-                            keepSoap3Results ( batchFirstReadId + batchReadId, sa_list2, occ_list2, dpInputForNewDefault, hspaux );
-                            addToReadInputForDP ( dpInputForNewDefault, batchFirstReadId + batchReadId, sa_list2->sa, sa_list2->curr_size,
-                                                  occ_list2->occ, occ_list2->curr_size );
-                        }
-
-                        continue;
-                    }
-                }
-                else if ( ( !previousTotalOccurrences>0 ) && ( !currentTotalOccurrences>0 ) )
-                {
-                    // both first read and second read do not have any hit
-                    addReadIDToBothUnalignedPairs ( bothUnalignedPairs, batchFirstReadId + batchReadId - 1 );
-                    continue;
-                }
-
-#endif
-            }
-
             // transfer all the SA ranges in sa_list to occ_list
             transferAllSAToOcc ( sa_list1, occ_list1, bwt );
             transferAllSAToOcc ( sa_list2, occ_list2, bwt );
             char pair_alignment_exist = 0;
             PEPairList * pairList;
+            unsigned int numPEAlgnmt = 0;
+            // pair-end alignment result exists
+            unsigned int peAlgnmtMismatchStats[MAX_NUM_MISMATCH*2];
+            memset(peAlgnmtMismatchStats,0,sizeof(unsigned int)*MAX_NUM_MISMATCH*2);
 
             // fprintf(stderr, "size of occ_list1: %i size of occ_list2: %i\n", occ_list1->curr_size, occ_list2->curr_size);
 
-            if ( ( occ_list1->curr_size > 0 ) && ( occ_list2->curr_size > 0 ) )
+            if ( previousTotalOccurrences>0 && currentTotalOccurrences>0 )
             {
                 // FIND THE VALID ALIGNMENT PAIRS
                 pe_in->patternLength = readLength;
@@ -2201,11 +2204,12 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                                        occ_list1->occ, occ_list1->curr_size,
                                        occ_list2->occ, occ_list2->curr_size );
                 unsigned int num_minMismatch = 0; // the number of best pairs with the same minimum sum of mismatches
+                
+                numPEAlgnmt = PECountPEOutput(pe_out);
 
-                if ( pe_out->root != NULL && pe_out->root->pairsCount > 0 )
+                if ( numPEAlgnmt > 0 )
                 {
                     // pair-end alignment result exists
-                    unsigned int totalNumValidPairs = 1;
                     char min_totalMismatchCount = 127;
                     char secMin_totalMismatchCount = 127;
 
@@ -2213,7 +2217,6 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                             || reportType == OUTPUT_UNIQUE_BEST || outputFormat == SRA_OUTPUT_FORMAT_SAM_API )
                     {
                         // find the minimum total number of mismatches for the resulting paired-end alignments (the best pair)
-                        unsigned int num_results = 0;
                         char first_isBestHit = 0;
                         char second_isBestHit = 0;
                         PEPairs * pePair_minMismatch;
@@ -2224,7 +2227,6 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                             for ( i = 0; i < pairList->pairsCount; i++ )
                             {
                                 PEPairs * pePair = & ( pairList->pairs[i] );
-                                num_results++;
 
                                 if ( pePair->totalMismatchCount < min_totalMismatchCount )
                                 {
@@ -2241,143 +2243,138 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                             pairList = pairList->next;
                         }
 
-                        if ( num_minMismatch > 0 )
+                        if ( needOutputMAPQ )
                         {
-                            if ( needOutputMAPQ )
-                            {
-                                // get the number of valid pairs such that
-                                // the mismatch # of the first/second end <= the mismatch # of best hit of the first/second end + 1
-                                pairList = pe_out->root;
+                            // get the number of valid pairs such that
+                            // the mismatch # of the first/second end <= the mismatch # of best hit of the first/second end + 1
+                            pairList = pe_out->root;
 
-                                while ( pairList != NULL && pairList->pairsCount > 0 )
+                            while ( pairList != NULL && pairList->pairsCount > 0 )
+                            {
+                                for ( i = 0; i < pairList->pairsCount; i++ )
                                 {
-                                    for ( i = 0; i < pairList->pairsCount; i++ )
+                                    PEPairs * pePair = & ( pairList->pairs[i] );
+
+                                    if ( pePair == pePair_minMismatch )
+                                    { continue; }
+
+                                    // compute "secMin_totalMismatchCount"
+                                    if ( ( pePair->totalMismatchCount > min_totalMismatchCount ) && ( pePair->totalMismatchCount < secMin_totalMismatchCount ) )
                                     {
-                                        PEPairs * pePair = & ( pairList->pairs[i] );
-
-                                        if ( pePair == pePair_minMismatch )
-                                        { continue; }
-
-                                        totalNumValidPairs++;
-
-                                        // compute "secMin_totalMismatchCount"
-                                        if ( ( pePair->totalMismatchCount > min_totalMismatchCount ) && ( pePair->totalMismatchCount < secMin_totalMismatchCount ) )
-                                        {
-                                            secMin_totalMismatchCount = pePair->totalMismatchCount;
-                                        }
+                                        secMin_totalMismatchCount = pePair->totalMismatchCount;
                                     }
-
-                                    pairList = pairList->next;
                                 }
 
-                                // check whether the each end of the best paired-end alignment is
-                                // one of the best hits for each end.
-                                if ( totalNumValidPairs > 0 )
-                                {
-                                    first_isBestHit = ( previousMinNumMismatch == pePair_minMismatch->mismatch_1 ) ? 1 : 0;
-                                    second_isBestHit = ( currentMinNumMismatch == pePair_minMismatch->mismatch_2 ) ? 1 : 0;
-                                }
+                                pairList = pairList->next;
                             }
 
-                            // OUTPUT THE RESULT
-                            if ( outputFormat == SRA_OUTPUT_FORMAT_SAM_API )
+                            // check whether the each end of the best paired-end alignment is
+                            // one of the best hits for each end.
+                            if ( numPEAlgnmt > 0 )
                             {
-                                if ( reportType == OUTPUT_RANDOM_BEST && num_minMismatch > 0 )
-                                {
-                                    pairOutputSAMAPI ( &qInput_Positive, pe_out, pePair_minMismatch,
-                                                       preQuery, thisQuery, preQualities, thisQualities,
-                                                       preReadLength, readLength, preQueryName, thisQueryName,
-                                                       min_totalMismatchCount, secMin_totalMismatchCount, 0, charArray, peMaxOutputPerPair,
-                                                       -1, -1, -1, -1, num_minMismatch,
-                                                       first_isBestHit, second_isBestHit, totalNumValidPairs );
-                                    numOfAnswer++;
-                                    numOfAlignedRead += 2;
-                                    pair_alignment_exist = 1;
-                                }
-                                else if ( reportType == OUTPUT_UNIQUE_BEST && num_minMismatch == 1 )
-                                {
-                                    pairOutputSAMAPI ( &qInput_Positive, pe_out, pePair_minMismatch,
-                                                       preQuery, thisQuery, preQualities, thisQualities,
-                                                       preReadLength, readLength, preQueryName, thisQueryName,
-                                                       min_totalMismatchCount, secMin_totalMismatchCount, 0, charArray, peMaxOutputPerPair,
-                                                       1, 1, -1, -1, num_minMismatch,
-                                                       first_isBestHit, second_isBestHit, totalNumValidPairs );
-                                    numOfAnswer++;
-                                    numOfAlignedRead += 2;
-                                    pair_alignment_exist = 1;
-                                }
-                                else if ( reportType == OUTPUT_ALL_VALID || reportType == OUTPUT_ALL_BEST )
-                                {
-                                    pairOutputSAMAPI ( &qInput_Positive, pe_out, pePair_minMismatch,
-                                                       preQuery, thisQuery, preQualities, thisQualities,
-                                                       preReadLength, readLength, preQueryName, thisQueryName,
-                                                       min_totalMismatchCount, secMin_totalMismatchCount,
-                                                       1, charArray, peMaxOutputPerPair,
-                                                       first_X0, second_X0, first_X1, second_X1, num_minMismatch,
-                                                       first_isBestHit, second_isBestHit, totalNumValidPairs );
-
-                                    if ( num_results <= peMaxOutputPerPair )
-                                    { numOfAnswer += num_results; }
-                                    else
-                                    { numOfAnswer += peMaxOutputPerPair; }
-
-                                    numOfAlignedRead += 2;
-                                    pair_alignment_exist = 1;
-                                }
-                                else
-                                {
-                                    // reportType == OUTPUT_UNIQUE_BEST but num_minMismatch > 1
-                                    // here do not report any alignment
-                                    pairOutputSAMAPI ( &qInput_Positive, pe_out, NULL,
-                                                       preQuery, thisQuery, preQualities, thisQualities,
-                                                       preReadLength, readLength, preQueryName, thisQueryName,
-                                                       min_totalMismatchCount, secMin_totalMismatchCount, 0, charArray, peMaxOutputPerPair,
-                                                       -1, -1, -1, -1, num_minMismatch,
-                                                       first_isBestHit, second_isBestHit, totalNumValidPairs );
-                                    pair_alignment_exist = 1;
-                                }
+                                first_isBestHit = ( previousMinNumMismatch == pePair_minMismatch->mismatch_1 ) ? 1 : 0;
+                                second_isBestHit = ( currentMinNumMismatch == pePair_minMismatch->mismatch_2 ) ? 1 : 0;
                             }
-                            else if ( ( reportType == OUTPUT_RANDOM_BEST && num_minMismatch > 0 ) ||
-                                      ( reportType == OUTPUT_UNIQUE_BEST && num_minMismatch == 1 ) )
+                        }
+
+                        // OUTPUT THE RESULT
+                        if ( outputFormat == SRA_OUTPUT_FORMAT_SAM_API )
+                        {
+                            if ( reportType == OUTPUT_RANDOM_BEST && num_minMismatch > 0 )
                             {
-#ifdef BGS_FWD_FOR_FIRST_REV_FOR_SECOND
-                                pePair_minMismatch->strand_2 = 2;
-#endif
-                                OCCReportDelimitor ( &qInput_Positive );
-
-                                // output the alignment of the first read
-                                // qInfo_Positive.ReadStrand = strand;
-                                if ( occ->occPositionCacheCount >= OCC_CACHE_SIZE ) {OCCFlushCache ( &qInput_Positive );}
-
-                                occ->occPositionCache[occ->occPositionCacheCount].tp = pePair_minMismatch->algnmt_1;
-                                occ->occPositionCache[occ->occPositionCacheCount].ReadStrand = pePair_minMismatch->strand_1;
-                                occ->occPositionCache[occ->occPositionCacheCount].ChromId = 0;
-                                occ->occPositionCache[occ->occPositionCacheCount].occMismatch = pePair_minMismatch->mismatch_1;
-                                occ->occPositionCacheCount++;
-
-                                // output the alignment of the second read
-                                // OCCReportDelimitor(occ,hsp,outputFile,(unsigned long long)readId+accumReadNum);
-                                if ( occ->occPositionCacheCount >= OCC_CACHE_SIZE ) {OCCFlushCache ( &qInput_Positive );}
-
-                                occ->occPositionCache[occ->occPositionCacheCount].tp = pePair_minMismatch->algnmt_2;
-                                occ->occPositionCache[occ->occPositionCacheCount].ReadStrand = pePair_minMismatch->strand_2;
-                                occ->occPositionCache[occ->occPositionCacheCount].ChromId = 0;
-                                occ->occPositionCache[occ->occPositionCacheCount].occMismatch = pePair_minMismatch->mismatch_2;
-                                occ->occPositionCacheCount++;
+                                pairOutputSAMAPI ( &qInput_Positive, pe_out, pePair_minMismatch,
+                                                   preQuery, thisQuery, preQualities, thisQualities,
+                                                   preReadLength, readLength, preQueryName, thisQueryName,
+                                                   min_totalMismatchCount, secMin_totalMismatchCount, 0, charArray, peMaxOutputPerPair,
+                                                   -1, -1, -1, -1, num_minMismatch,
+                                                   first_isBestHit, second_isBestHit, numPEAlgnmt );
                                 numOfAnswer++;
+                                numOfAlignedRead += 2;
+                                pair_alignment_exist = 1;
+                            }
+                            else if ( reportType == OUTPUT_UNIQUE_BEST && num_minMismatch == 1 )
+                            {
+                                pairOutputSAMAPI ( &qInput_Positive, pe_out, pePair_minMismatch,
+                                                   preQuery, thisQuery, preQualities, thisQualities,
+                                                   preReadLength, readLength, preQueryName, thisQueryName,
+                                                   min_totalMismatchCount, secMin_totalMismatchCount, 0, charArray, peMaxOutputPerPair,
+                                                   1, 1, -1, -1, num_minMismatch,
+                                                   first_isBestHit, second_isBestHit, numPEAlgnmt );
+                                numOfAnswer++;
+                                numOfAlignedRead += 2;
+                                pair_alignment_exist = 1;
+                            }
+                            else if ( reportType == OUTPUT_ALL_VALID || reportType == OUTPUT_ALL_BEST )
+                            {
+                                pairOutputSAMAPI ( &qInput_Positive, pe_out, pePair_minMismatch,
+                                                   preQuery, thisQuery, preQualities, thisQualities,
+                                                   preReadLength, readLength, preQueryName, thisQueryName,
+                                                   min_totalMismatchCount, secMin_totalMismatchCount,
+                                                   1, charArray, peMaxOutputPerPair,
+                                                   first_X0, second_X0, first_X1, second_X1, num_minMismatch,
+                                                   first_isBestHit, second_isBestHit, numPEAlgnmt );
+
+                                if ( numPEAlgnmt <= peMaxOutputPerPair )
+                                { numOfAnswer += numPEAlgnmt; }
+                                else
+                                { numOfAnswer += peMaxOutputPerPair; }
+
                                 numOfAlignedRead += 2;
                                 pair_alignment_exist = 1;
                             }
                             else
                             {
                                 // reportType == OUTPUT_UNIQUE_BEST but num_minMismatch > 1
-                                // not proceeding to next step
+                                // here do not report any alignment
+                                pairOutputSAMAPI ( &qInput_Positive, pe_out, NULL,
+                                                   preQuery, thisQuery, preQualities, thisQualities,
+                                                   preReadLength, readLength, preQueryName, thisQueryName,
+                                                   min_totalMismatchCount, secMin_totalMismatchCount, 0, charArray, peMaxOutputPerPair,
+                                                   -1, -1, -1, -1, num_minMismatch,
+                                                   first_isBestHit, second_isBestHit, numPEAlgnmt );
                                 pair_alignment_exist = 1;
                             }
                         }
+                        else if ( ( reportType == OUTPUT_RANDOM_BEST && num_minMismatch > 0 ) ||
+                                  ( reportType == OUTPUT_UNIQUE_BEST && num_minMismatch == 1 ) )
+                        {
+#ifdef BGS_FWD_FOR_FIRST_REV_FOR_SECOND
+                            pePair_minMismatch->strand_2 = 2;
+#endif
+                            OCCReportDelimitor ( &qInput_Positive );
+
+                            // output the alignment of the first read
+                            // qInfo_Positive.ReadStrand = strand;
+                            if ( occ->occPositionCacheCount >= OCC_CACHE_SIZE ) {OCCFlushCache ( &qInput_Positive );}
+
+                            occ->occPositionCache[occ->occPositionCacheCount].tp = pePair_minMismatch->algnmt_1;
+                            occ->occPositionCache[occ->occPositionCacheCount].ReadStrand = pePair_minMismatch->strand_1;
+                            occ->occPositionCache[occ->occPositionCacheCount].ChromId = 0;
+                            occ->occPositionCache[occ->occPositionCacheCount].occMismatch = pePair_minMismatch->mismatch_1;
+                            occ->occPositionCacheCount++;
+
+                            // output the alignment of the second read
+                            // OCCReportDelimitor(occ,hsp,outputFile,(unsigned long long)readId+accumReadNum);
+                            if ( occ->occPositionCacheCount >= OCC_CACHE_SIZE ) {OCCFlushCache ( &qInput_Positive );}
+
+                            occ->occPositionCache[occ->occPositionCacheCount].tp = pePair_minMismatch->algnmt_2;
+                            occ->occPositionCache[occ->occPositionCacheCount].ReadStrand = pePair_minMismatch->strand_2;
+                            occ->occPositionCache[occ->occPositionCacheCount].ChromId = 0;
+                            occ->occPositionCache[occ->occPositionCacheCount].occMismatch = pePair_minMismatch->mismatch_2;
+                            occ->occPositionCacheCount++;
+                            numOfAnswer++;
+                            numOfAlignedRead += 2;
+                            pair_alignment_exist = 1;
+                        }
+                        else
+                        {
+                            // reportType == OUTPUT_UNIQUE_BEST but num_minMismatch > 1
+                            // not proceeding to next step
+                            pair_alignment_exist = 1;
+                        }
                     }
 
-                    if ( ( pe_out->root != NULL && pe_out->root->pairsCount > 0 ) && ( reportType == OUTPUT_ALL_BEST || reportType == OUTPUT_ALL_VALID ) &&
+                    if ( ( reportType == OUTPUT_ALL_BEST || reportType == OUTPUT_ALL_VALID ) &&
                             ( outputFormat != SRA_OUTPUT_FORMAT_SAM_API ) )
                     {
                         // OUTPUT ALL VALID THE RESULT / ALL BEST BEST
@@ -2444,7 +2441,7 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                 }
             }
 
-            if ( pair_alignment_exist == 0 )
+            if ( numPEAlgnmt == 0 )
             {
                 if ( !needProceedDP )
                 {
@@ -2458,48 +2455,45 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                     if ( previousTotalOccurrences>0 && currentTotalOccurrences>0 )
                     {
                         // first read has hits AND second read has hits
-                        int firstNumHits = totalNumOcc ( sa_list1 ) + occ_list1->curr_size;
-                        int secondNumHits = totalNumOcc ( sa_list2 ) + occ_list2->curr_size;
-
-                        if ( firstNumHits > maxHitNumForDP )
+                        if ( previousTotalOccurrences > maxHitNumForDP )
                         {
                             if ( needOutputMAPQ )
                             {
                                 // consider the best and the second best hits
-                                firstNumHits = ( int ) retainAllBestAndSecBest ( sa_list1, occ_list1 );
+                                previousTotalOccurrences = ( int ) retainAllBestAndSecBest ( sa_list1, occ_list1 );
                                 /*
-                                if (firstNumHits > maxHitNumForDP) {
+                                if (previousTotalOccurrences > maxHitNumForDP) {
                                       // consider those best hits
-                                      firstNumHits = (int) retainAllBest(sa_list1, occ_list1);
+                                      previousTotalOccurrences = (int) retainAllBest(sa_list1, occ_list1);
                                 }*/
                             }
                             else
                             {
                                 // consider those best hits
-                                firstNumHits = ( int ) retainAllBest ( sa_list1, occ_list1 );
+                                previousTotalOccurrences = ( int ) retainAllBest ( sa_list1, occ_list1 );
                             }
                         }
 
-                        if ( secondNumHits > maxHitNumForDP2 )
+                        if ( currentTotalOccurrences > maxHitNumForDP2 )
                         {
                             if ( needOutputMAPQ )
                             {
                                 // consider the best and the second best hits
-                                secondNumHits = ( int ) retainAllBestAndSecBest ( sa_list2, occ_list2 );
+                                currentTotalOccurrences = ( int ) retainAllBestAndSecBest ( sa_list2, occ_list2 );
                                 /*
-                                if (secondNumHits > maxHitNumForDP2) {
+                                if (currentTotalOccurrences > maxHitNumForDP2) {
                                       // consider those best hits
-                                      secondNumHits = (int) retainAllBest(sa_list2, occ_list2);
+                                      currentTotalOccurrences = (int) retainAllBest(sa_list2, occ_list2);
                                 }*/
                             }
                             else
                             {
                                 // consider those best hits
-                                secondNumHits = ( int ) retainAllBest ( sa_list2, occ_list2 );
+                                currentTotalOccurrences = ( int ) retainAllBest ( sa_list2, occ_list2 );
                             }
                         }
 
-                        if ( firstNumHits <= maxHitNumForDP && secondNumHits <= maxHitNumForDP2 )
+                        if ( previousTotalOccurrences <= maxHitNumForDP && currentTotalOccurrences <= maxHitNumForDP2 )
                         {
                             keepSoap3Results ( batchFirstReadId + batchReadId - 1, sa_list1, occ_list1, dpInput, hspaux );
                             addToReadInputForDP ( dpInput, batchFirstReadId + batchReadId - 1, sa_list1->sa, sa_list1->curr_size,
@@ -2508,9 +2502,9 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                             addToReadInputForDP ( dpInput, batchFirstReadId + batchReadId, sa_list2->sa, sa_list2->curr_size,
                                                   occ_list2->occ, occ_list2->curr_size );
                         }
-                        else if ( firstNumHits < secondNumHits )
+                        else if ( previousTotalOccurrences < currentTotalOccurrences )
                         {
-                            if ( firstNumHits <= maxHitNumForDP )
+                            if ( previousTotalOccurrences <= maxHitNumForDP )
                             {
                                 keepSoap3Results ( batchFirstReadId + batchReadId - 1, sa_list1, occ_list1, dpInput, hspaux );
                                 addToReadInputForDP ( dpInput, batchFirstReadId + batchReadId - 1, sa_list1->sa, sa_list1->curr_size,
@@ -2530,7 +2524,7 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                         }
                         else
                         {
-                            if ( secondNumHits <= maxHitNumForDP2 )
+                            if ( currentTotalOccurrences <= maxHitNumForDP2 )
                             {
                                 keepSoap3Results ( batchFirstReadId + batchReadId, sa_list2, occ_list2, dpInput, hspaux );
                                 addToReadInputForDP ( dpInput, batchFirstReadId + batchReadId, sa_list2->sa, sa_list2->curr_size,
