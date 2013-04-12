@@ -1487,10 +1487,10 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
     
     unsigned int previousTotalOccurrences;
     unsigned int previousWithError[ MAX_NUM_OF_ERROR + 1];
-    uint8_t previousMinNumMismatch;
+    int previousMinNumMismatch;
     unsigned int currentTotalOccurrences;
     unsigned int currentWithError[ MAX_NUM_OF_ERROR + 1];
-    uint8_t currentMinNumMismatch;
+    int currentMinNumMismatch;
     
     char dummyQuality[MAX_READ_LENGTH];
     memset(dummyQuality,1,sizeof(char)*MAX_READ_LENGTH);
@@ -1681,20 +1681,21 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
         bool nohit = ( curr_sa_list->curr_size == 0 && curr_occ_list->curr_size == 0 && ( !isMoreThanSA1 ) ); // whether there is no hit
 
         // special handling for MAPQ for SINGLE READ
-        if ( ( readType == SINGLE_READ ) && needOutputMAPQ )
+        if ( rOutput->TotalOccurrences > 0 && readType == SINGLE_READ && needOutputMAPQ )
         {
             //Store mismatch statistics and total number of occurrences for later process
             currentTotalOccurrences = rOutput->TotalOccurrences;
             memcpy(currentWithError,rOutput->WithError,sizeof(unsigned int)* (MAX_NUM_OF_ERROR + 1));
 
-            currentMinNumMismatch = -1;
-            for (int mismatchi=0;mismatchi<=MAX_NUM_OF_ERROR;mismatchi++) {
-                if (rOutput->WithError[mismatchi] > 0) {
-                    currentMinNumMismatch = mismatchi;
-                    break;
+            currentMinNumMismatch = 999;
+            for (int mismatchi=0;mismatchi<=currNumMismatch;mismatchi++) {
+                if (currentWithError[mismatchi]>0) {
+                    currentMinNumMismatch=mismatchi;break;
                 }
             }
-            
+            int totalNumAns = 0;
+            // bool need_special_handle = ((first_minMisMatch == currNumMismatch) &&
+            //                            (totalNumAns < qSetting->MaxOutputPerRead));
             bool need_special_handle = ( currentMinNumMismatch == currNumMismatch );
 
             if ( need_special_handle )
@@ -1714,12 +1715,12 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                     SAListReset ( curr_sa_list );
                     OCCListReset ( curr_occ_list );
                     ProcessOneMoreMismatchAllCases ( charMap, &qInput_Positive, &qInput_Negative, SRAMismatchModel2[readLength], SRAMismatchModel2_neg[readLength], curr_sa_list, curr_occ_list, numCases2 );
-                    // fprintf(stderr, "size of curr_sa_list = %u; size of curr_occ_list = %u\n", curr_sa_list->curr_size, curr_occ_list->curr_size);
-
+                    
                     //Store mismatch statistics and total number of occurrences for later process
                     currentTotalOccurrences = rOutput->TotalOccurrences;
                     memcpy(currentWithError,rOutput->WithError,sizeof(unsigned int)* (MAX_NUM_OF_ERROR + 1));
                     
+                    // fprintf(stderr, "size of curr_sa_list = %u; size of curr_occ_list = %u\n", curr_sa_list->curr_size, curr_occ_list->curr_size);
                     isUnique = ( rOutput->TotalOccurrences == 1 ); // whether the hit is unique
                     moreThanOne = ( rOutput->TotalOccurrences > 1 ); // whether there is more than one hit
                     nohit = ( curr_sa_list->curr_size == 0 && curr_occ_list->curr_size == 0 ); //
@@ -1905,8 +1906,8 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
         else if ( j % 2 == 0 )
         {
             // FOR FIRST READ OF THE PAIR-END READ
-            if ( ( sa_list1->curr_size == 0 ) && ( occ_list1->curr_size == 0 ) &&
-                    ( !needOutputUnalignedReads ) && ( !needProceedDP ) )
+            if ( rOutput->TotalOccurrences == 0 &&
+                ( !needOutputUnalignedReads ) && ( !needProceedDP ) )
             {
                 // no hits for the first read
                 // and no need to output unaligned reads
@@ -1921,6 +1922,27 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
             //Store mismatch statistics and total number of occurrences for later process
             previousTotalOccurrences = rOutput->TotalOccurrences;
             memcpy(previousWithError,rOutput->WithError,sizeof(unsigned int)* (MAX_NUM_OF_ERROR + 1));
+
+            if ( needOutputMAPQ && ( !needOutputUnalignedReads ) && ( !needProceedDP ) )
+            {
+                //int totalNumAns1 = 0;
+                currentMinNumMismatch = 999;
+                for (int mismatchi=0;mismatchi<=currNumMismatch;mismatchi++) { 
+                    if (previousWithError[mismatchi]>0) {
+                        currentMinNumMismatch=mismatchi;break;
+                    }
+                }
+                bool need_handle_first = ( ( currentMinNumMismatch == currNumMismatch ) &&
+                                           ( previousTotalOccurrences < qSetting->MaxOutputPerRead ) );
+
+                if ( need_handle_first )
+                {
+                    j++;
+                    unAlignedIDs[numOfUnAligned++] = batchFirstReadId + skipFirst + j - 1;
+                    unAlignedIDs[numOfUnAligned++] = batchFirstReadId + skipFirst + j;
+                    continue;
+                }
+            }
         }
         else if ( j % 2 == 1 )
         {
@@ -1929,8 +1951,8 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
             memcpy(currentWithError,rOutput->WithError,sizeof(unsigned int)* (MAX_NUM_OF_ERROR + 1));
             
             // FOR SECOND READ OF THE PAIR-END READ
-            bool first_read_has_hits = ( ( sa_list1->curr_size > 0 ) || ( occ_list1->curr_size > 0 ) );
-            bool second_read_has_hits = ( ( sa_list2->curr_size > 0 ) || ( occ_list2->curr_size > 0 ) );
+            //int totalNumAns1 = 0;
+            //int totalNumAns2 = 0;
             int first_X0 = 0;
             int first_X1 = 0;
             int second_X0 = 0;
@@ -1945,29 +1967,29 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                 {
                     if ( previousTotalOccurrences>0 )
                     {
-                        previousMinNumMismatch = -1;
-                        for (int mismatchi=0;mismatchi<=MAX_NUM_OF_ERROR;mismatchi++) {
-                            if (rOutput->WithError[mismatchi] > 0) {
-                                previousMinNumMismatch = mismatchi;
+                        previousMinNumMismatch = 999;
+                        for (int mismatchi=0;mismatchi<=currNumMismatch;mismatchi++) { 
+                            if (previousWithError[mismatchi]>0) {
+                                previousMinNumMismatch=mismatchi;
                                 break;
                             }
                         }
-                        need_handle_first = ( first_read_has_hits && 
-                                            ( previousMinNumMismatch == currNumMismatch ) &&
-                                            ( previousTotalOccurrences < qSetting->MaxOutputPerRead ) );
+                        need_handle_first = previousTotalOccurrences > 0 && 
+                                            previousMinNumMismatch == currNumMismatch &&
+                                            previousTotalOccurrences < qSetting->MaxOutputPerRead;
                     }
 
                     if ( currentTotalOccurrences>0 )
                     {
-                        currentMinNumMismatch = -1;
-                        for (int mismatchi=0;mismatchi<=MAX_NUM_OF_ERROR;mismatchi++) {
-                            if (rOutput->WithError[mismatchi] > 0) {
-                                currentMinNumMismatch = mismatchi;
+                        currentMinNumMismatch = 999;
+                        for (int mismatchi=0;mismatchi<=currNumMismatch;mismatchi++) { 
+                            if (currentWithError[mismatchi]>0) {
+                                currentMinNumMismatch=mismatchi;
                                 break;
                             }
                         }
-                        need_handle_second = ( ( currentMinNumMismatch == currNumMismatch ) && 
-                                                ( currentTotalOccurrences < qSetting->MaxOutputPerRead ) );
+                        need_handle_second = currentMinNumMismatch == currNumMismatch &&
+                                            currentTotalOccurrences < qSetting->MaxOutputPerRead;
                     }
                 }
 
@@ -1982,7 +2004,6 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                     // back to the normal values
                     qInfo_Positive.ReadCode = thisQuery;
                     qInfo_Positive.ReadLength = readLength;
-                    first_read_has_hits = ( ( sa_list1->curr_size > 0 ) || ( occ_list1->curr_size > 0 ) );
                     
                     //Store mismatch statistics and total number of occurrences for later process
                     previousTotalOccurrences = rOutput->TotalOccurrences;
@@ -1997,19 +2018,18 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                     qInfo_Positive.ReadCode = thisQuery;
                     qInfo_Positive.ReadLength = readLength;
                     ProcessOneMoreMismatchAllCases ( charMap, &qInput_Positive, &qInput_Negative, SRAMismatchModel2[readLength], SRAMismatchModel2_neg[preReadLength], sa_list2, occ_list2, numCases2 );
-                    second_read_has_hits = ( ( sa_list2->curr_size > 0 ) || ( occ_list2->curr_size > 0 ) );
                     
                     //Store mismatch statistics and total number of occurrences for later process
                     currentTotalOccurrences = rOutput->TotalOccurrences;
                     memcpy(currentWithError,rOutput->WithError,sizeof(unsigned int)* (MAX_NUM_OF_ERROR + 1));
                 }
 
-                if ( first_read_has_hits )
+                if ( previousTotalOccurrences>0 )
                 {
                     getBestHitNum2 ( sa_list1, occ_list1, &first_X0, &first_X1 );
                 }
 
-                if ( second_read_has_hits )
+                if ( currentTotalOccurrences>0 )
                 {
                     getBestHitNum2 ( sa_list2, occ_list2, &second_X0, &second_X1 );
                 }
@@ -2020,14 +2040,14 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                     // X0: the number of best hits
                     // X1: the number of second best hits
                     // and record down the x0, x1 and minmismatch
-                    if ( first_read_has_hits )
+                    if ( previousTotalOccurrences>0 )
                     {
                         hspaux->x0_array[batchFirstReadId + batchReadId - 1] = first_X0;
                         hspaux->x1_array[batchFirstReadId + batchReadId - 1] = first_X1;
                         hspaux->mismatch_array[batchFirstReadId + batchReadId - 1] = previousMinNumMismatch;
                     }
 
-                    if ( second_read_has_hits )
+                    if ( currentTotalOccurrences>0 )
                     {
                         hspaux->x0_array[batchFirstReadId + batchReadId] = second_X0;
                         hspaux->x1_array[batchFirstReadId + batchReadId] = second_X1;
@@ -2039,10 +2059,10 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
             // get the statistics
             // FOR DEBUG (OCC)
             /*
-            if (needProceedDP && first_read_has_hits ) {
+            if (needProceedDP && previousTotalOccurrences>0 ) {
                   printf("%u %u %u %u %u\n", readId-2, sa_list1->curr_size, totalNumOcc(sa_list1), occ_list1->curr_size, totalNumOcc(sa_list1)+occ_list1->curr_size);
             }
-            if (needProceedDP && second_read_has_hits) {
+            if (needProceedDP && currentTotalOccurrences>0) {
                   printf("%u %u %u %u %u\n", readId-1, sa_list2->curr_size, totalNumOcc(sa_list2), occ_list2->curr_size, totalNumOcc(sa_list2)+occ_list2->curr_size);
             }
             */
@@ -2053,7 +2073,7 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
             {
 #ifdef SKIP_DEFAULT_DP
 
-                if ( ( !first_read_has_hits ) || ( !second_read_has_hits ) )
+                if ( ( !previousTotalOccurrences>0 ) || ( !currentTotalOccurrences>0 ) )
                 {
                     // either first read or second read do not have any hit
                     addReadIDToBothUnalignedPairs ( bothUnalignedPairs, batchFirstReadId + batchReadId - 1 );
@@ -2062,7 +2082,7 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
 
 #else
 
-                if ( first_read_has_hits && ( !second_read_has_hits ) )
+                if ( previousTotalOccurrences>0 && ( !currentTotalOccurrences>0 ) )
                 {
                     // first read has hit but second read has not
                     if ( occ_list1->curr_size <= maxHitNumForDP && ( tooManyNumOcc ( sa_list1, maxHitNumForDP - occ_list1->curr_size ) == 0 ) )
@@ -2109,7 +2129,7 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                         continue;
                     }
                 }
-                else if ( second_read_has_hits && ( !first_read_has_hits ) )
+                else if ( currentTotalOccurrences>0 && ( !previousTotalOccurrences>0 ) )
                 {
                     // second read has hit but first read has not
                     if ( occ_list2->curr_size <= maxHitNumForDP2 && ( tooManyNumOcc ( sa_list2, maxHitNumForDP2 - occ_list2->curr_size ) == 0 ) )
@@ -2155,7 +2175,7 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                         continue;
                     }
                 }
-                else if ( ( !first_read_has_hits ) && ( !second_read_has_hits ) )
+                else if ( ( !previousTotalOccurrences>0 ) && ( !currentTotalOccurrences>0 ) )
                 {
                     // both first read and second read do not have any hit
                     addReadIDToBothUnalignedPairs ( bothUnalignedPairs, batchFirstReadId + batchReadId - 1 );
@@ -2435,7 +2455,7 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                 {
                     // only case remain: both reads can be aligned
                     // but the insert size is out of range.
-                    if ( first_read_has_hits && second_read_has_hits )
+                    if ( previousTotalOccurrences>0 && currentTotalOccurrences>0 )
                     {
                         // first read has hits AND second read has hits
                         int firstNumHits = totalNumOcc ( sa_list1 ) + occ_list1->curr_size;

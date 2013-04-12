@@ -120,7 +120,7 @@ int getMinMatchAndNumAns ( SAList * sa_list, OCCList * occ_list, int * totNumAns
             minMatch = sa_list->sa[i].mismatchCount;
         }
 
-        ( *totNumAns ) = sa_list->sa[i].saIndexRight - sa_list->sa[i].saIndexLeft + 1;
+        ( *totNumAns ) += sa_list->sa[i].saIndexRight - sa_list->sa[i].saIndexLeft + 1;
     }
 
     // scan occ List
