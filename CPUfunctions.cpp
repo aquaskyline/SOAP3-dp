@@ -1416,6 +1416,73 @@ void collect_all_answers ( SAList * sa_list, OCCList * occ_list, unsigned int **
 }
 
 
+inline unsigned long long PEDumpAllOccurrence ( PEOutput * pe_out, SRAQueryInput * qInput, char reportType, int minMismatchCount, unsigned int maxOutputCount )
+{
+    unsigned long long numOfPairEndAlignment = 0;
+    unsigned long long numOfAnswer = 0;
+    PEPairList * pairList = pe_out->root;
+    unsigned int i;
+    SRASetting * qSetting = qInput->QuerySetting;
+    OCC * occ = qSetting->occ;
+
+    if ( pairList != NULL && pairList->pairsCount > 0 )
+    {
+        OCCReportDelimitor ( qInput );
+
+        while ( pairList != NULL && pairList->pairsCount > 0 )
+        {
+            unsigned int pairsCount = pairList->pairsCount;
+
+            for ( i = 0; i < pairsCount; i++ )
+            {
+                PEPairs * pePair = & ( pairList->pairs[i] );
+
+                if ( reportType == OUTPUT_ALL_BEST && pePair->totalMismatchCount > minMismatchCount )
+                { continue; }
+
+#ifdef BGS_FWD_FOR_FIRST_REV_FOR_SECOND
+                pePair->strand_2 = 2;
+#endif
+                numOfAnswer++;
+                numOfPairEndAlignment++;
+
+                // output the alignment of the first read
+                if ( occ->occPositionCacheCount >= OCC_CACHE_SIZE ) {OCCFlushCache ( qInput );}
+
+                occ->occPositionCache[occ->occPositionCacheCount].tp = pePair->algnmt_1;
+                occ->occPositionCache[occ->occPositionCacheCount].ReadStrand = pePair->strand_1;
+                occ->occPositionCache[occ->occPositionCacheCount].ChromId = 0;
+                occ->occPositionCache[occ->occPositionCacheCount].occMismatch = pePair->mismatch_1;
+                occ->occPositionCacheCount++;
+
+                // output the alignment of the second read
+                // OCCReportDelimitor(occ,hsp,outputFile,(unsigned long long)readId+accumReadNum);
+                if ( occ->occPositionCacheCount >= OCC_CACHE_SIZE ) {OCCFlushCache ( qInput );}
+
+                occ->occPositionCache[occ->occPositionCacheCount].tp = pePair->algnmt_2;
+                occ->occPositionCache[occ->occPositionCacheCount].ReadStrand = pePair->strand_2;
+                occ->occPositionCache[occ->occPositionCacheCount].ChromId = 0;
+                occ->occPositionCache[occ->occPositionCacheCount].occMismatch = pePair->mismatch_2;
+                occ->occPositionCacheCount++;
+
+                if ( numOfPairEndAlignment >= maxOutputCount )
+                {
+                    break;
+                }
+            }
+
+            if ( numOfPairEndAlignment >= maxOutputCount )
+            {
+                break;
+            }
+
+            pairList = pairList->next;
+        }
+    }
+    
+    return numOfAnswer;
+}
+
 //Function hostKernel : core function of output report and host alignment.
 //
 //batchFirstReadId: is the readId of the first read in the batch
@@ -2339,63 +2406,10 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                     if ( ( reportType == OUTPUT_ALL_BEST || reportType == OUTPUT_ALL_VALID ) &&
                             ( outputFormat != SRA_OUTPUT_FORMAT_SAM_API ) )
                     {
-                        // OUTPUT ALL VALID THE RESULT / ALL BEST BEST
-                        pairList = pe_out->root;
-
-                        if ( pairList != NULL && pairList->pairsCount > 0 )
-                        {
-                            OCCReportDelimitor ( &qInput_Positive );
-
-                            while ( pairList != NULL && pairList->pairsCount > 0 )
-                            {
-                                unsigned int pairsCount = pairList->pairsCount;
-
-                                for ( i = 0; i < pairsCount; i++ )
-                                {
-                                    PEPairs * pePair = & ( pairList->pairs[i] );
-
-                                    if ( reportType == OUTPUT_ALL_BEST && pePair->totalMismatchCount > min_totalMismatchCount )
-                                    { continue; }
-
-#ifdef BGS_FWD_FOR_FIRST_REV_FOR_SECOND
-                                    pePair->strand_2 = 2;
-#endif
-                                    numOfAnswer++;
-                                    numOfPairEndAlignment++;
-
-                                    // output the alignment of the first read
-                                    if ( occ->occPositionCacheCount >= OCC_CACHE_SIZE ) {OCCFlushCache ( &qInput_Positive );}
-
-                                    occ->occPositionCache[occ->occPositionCacheCount].tp = pePair->algnmt_1;
-                                    occ->occPositionCache[occ->occPositionCacheCount].ReadStrand = pePair->strand_1;
-                                    occ->occPositionCache[occ->occPositionCacheCount].ChromId = 0;
-                                    occ->occPositionCache[occ->occPositionCacheCount].occMismatch = pePair->mismatch_1;
-                                    occ->occPositionCacheCount++;
-
-                                    // output the alignment of the second read
-                                    // OCCReportDelimitor(occ,hsp,outputFile,(unsigned long long)readId+accumReadNum);
-                                    if ( occ->occPositionCacheCount >= OCC_CACHE_SIZE ) {OCCFlushCache ( &qInput_Positive );}
-
-                                    occ->occPositionCache[occ->occPositionCacheCount].tp = pePair->algnmt_2;
-                                    occ->occPositionCache[occ->occPositionCacheCount].ReadStrand = pePair->strand_2;
-                                    occ->occPositionCache[occ->occPositionCacheCount].ChromId = 0;
-                                    occ->occPositionCache[occ->occPositionCacheCount].occMismatch = pePair->mismatch_2;
-                                    occ->occPositionCacheCount++;
-
-                                    if ( numOfPairEndAlignment >= peMaxOutputPerPair )
-                                    {
-                                        break;
-                                    }
-                                }
-
-                                if ( numOfPairEndAlignment >= peMaxOutputPerPair )
-                                {
-                                    break;
-                                }
-
-                                pairList = pairList->next;
-                            }
-
+                        unsigned long long dumpOcc = PEDumpAllOccurrence(pe_out,&qInput_Positive,reportType,min_totalMismatchCount,peMaxOutputPerPair);
+                        if (dumpOcc>0) {
+                            numOfAnswer+=dumpOcc;
+                            numOfPairEndAlignment+=dumpOcc;
                             numOfAlignedRead += 2;
                             pair_alignment_exist = 1;
                         }
