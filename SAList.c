@@ -392,7 +392,7 @@ void getBestHitNum2 ( SAList * sa_list, OCCList * occ_list, int * bestHitNum, in
     {
         if ( sa_list->sa[i].mismatchCount < minMatch )
         {
-            if ( sa_list->sa[i].mismatchCount == minMatch + 1 )
+            if ( sa_list->sa[i].mismatchCount == minMatch - 1 )
             {
                 ( *secBestHitNum ) = ( *bestHitNum );
             }
@@ -418,7 +418,7 @@ void getBestHitNum2 ( SAList * sa_list, OCCList * occ_list, int * bestHitNum, in
     {
         if ( occ_list->occ[i].mismatchCount < minMatch )
         {
-            if ( occ_list->occ[i].mismatchCount == minMatch + 1 )
+            if ( occ_list->occ[i].mismatchCount == minMatch - 1 )
             {
                 ( *secBestHitNum ) = ( *bestHitNum );
             }
