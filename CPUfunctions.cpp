@@ -1968,6 +1968,107 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
             // if need to proceed the semi-global DP, then select those pairs of reads
             // which one end has alignments but another has not.
 
+            if ( needOutputMAPQ )
+            {
+                bool need_handle_first = false;
+                bool need_handle_second = false;
+
+                if ( currNumMismatch < 4 )
+                {
+                    if ( previousTotalOccurrences>0 )
+                    {
+                        previousMinNumMismatch = 999;
+                        for (int mismatchi=0;mismatchi<=currNumMismatch;mismatchi++) { 
+                            if (previousWithError[mismatchi]>0) {
+                                previousMinNumMismatch=mismatchi;
+                                break;
+                            }
+                        }
+                        need_handle_first = previousTotalOccurrences > 0 && 
+                                            previousMinNumMismatch == currNumMismatch &&
+                                            previousTotalOccurrences < qSetting->MaxOutputPerRead;
+                    }
+
+                    if ( currentTotalOccurrences>0 )
+                    {
+                        currentMinNumMismatch = 999;
+                        for (int mismatchi=0;mismatchi<=currNumMismatch;mismatchi++) { 
+                            if (currentWithError[mismatchi]>0) {
+                                currentMinNumMismatch=mismatchi;
+                                break;
+                            }
+                        }
+                        need_handle_second = currentMinNumMismatch == currNumMismatch &&
+                                            currentTotalOccurrences < qSetting->MaxOutputPerRead;
+                    }
+                }
+
+                if ( need_handle_first )
+                {
+                    // need to perform (mismatch+1) alignment on the first read
+                    SAListReset ( sa_list1 );
+                    OCCListReset ( occ_list1 );
+                    qInfo_Positive.ReadCode = preQuery;
+                    qInfo_Positive.ReadLength = preReadLength;
+                    ProcessOneMoreMismatchAllCases ( charMap, &qInput_Positive, &qInput_Negative, SRAMismatchModel2[preReadLength], SRAMismatchModel2_neg[preReadLength], sa_list1, occ_list1, numCases2 );
+                    // back to the normal values
+                    qInfo_Positive.ReadCode = thisQuery;
+                    qInfo_Positive.ReadLength = readLength;
+                    
+                    //Store mismatch statistics and total number of occurrences for later process
+                    previousTotalOccurrences = rOutput->TotalOccurrences;
+                    memcpy(previousWithError,rOutput->WithError,sizeof(unsigned int)* (MAX_NUM_OF_ERROR + 1));
+                }
+
+                if ( need_handle_second )
+                {
+                    // need to perform (mismatch+1) alignment on the second read
+                    SAListReset ( sa_list2 );
+                    OCCListReset ( occ_list2 );
+                    qInfo_Positive.ReadCode = thisQuery;
+                    qInfo_Positive.ReadLength = readLength;
+                    ProcessOneMoreMismatchAllCases ( charMap, &qInput_Positive, &qInput_Negative, SRAMismatchModel2[readLength], SRAMismatchModel2_neg[preReadLength], sa_list2, occ_list2, numCases2 );
+                    
+                    //Store mismatch statistics and total number of occurrences for later process
+                    currentTotalOccurrences = rOutput->TotalOccurrences;
+                    memcpy(currentWithError,rOutput->WithError,sizeof(unsigned int)* (MAX_NUM_OF_ERROR + 1));
+                }
+
+                if ( previousTotalOccurrences>0 )
+                {
+                    first_X0 = previousWithError[previousMinNumMismatch];
+                    first_X1 = previousWithError[previousMinNumMismatch+1];
+                }
+
+                if ( currentTotalOccurrences>0 )
+                {
+                    second_X0 = currentWithError[currentMinNumMismatch];
+                    second_X1 = currentWithError[currentMinNumMismatch+1];
+                }
+
+                if ( needProceedDP )
+                {
+                    // obtain the value of X0 and X1 for both ends
+                    // X0: the number of best hits
+                    // X1: the number of second best hits
+                    // and record down the x0, x1 and minmismatch
+                    if ( previousTotalOccurrences>0 )
+                    {
+                        hspaux->x0_array[batchFirstReadId + batchReadId - 1] = first_X0;
+                        hspaux->x1_array[batchFirstReadId + batchReadId - 1] = first_X1;
+                        hspaux->mismatch_array[batchFirstReadId + batchReadId - 1] = previousMinNumMismatch;
+                    }
+
+                    if ( currentTotalOccurrences>0 )
+                    {
+                        hspaux->x0_array[batchFirstReadId + batchReadId] = second_X0;
+                        hspaux->x1_array[batchFirstReadId + batchReadId] = second_X1;
+                        hspaux->mismatch_array[batchFirstReadId + batchReadId] = currentMinNumMismatch;
+                    }
+                }
+            }
+
+
             if ( needProceedDP )
             {
 #ifdef SKIP_DEFAULT_DP
@@ -2083,105 +2184,7 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
 
 #endif
             }
-
-            if ( needOutputMAPQ )
-            {
-                bool need_handle_first = false;
-                bool need_handle_second = false;
-
-                if ( currNumMismatch < 4 )
-                {
-                    if ( previousTotalOccurrences>0 )
-                    {
-                        previousMinNumMismatch = 999;
-                        for (int mismatchi=0;mismatchi<=currNumMismatch;mismatchi++) { 
-                            if (previousWithError[mismatchi]>0) {
-                                previousMinNumMismatch=mismatchi;
-                                break;
-                            }
-                        }
-                        need_handle_first = previousTotalOccurrences > 0 && 
-                                            previousMinNumMismatch == currNumMismatch &&
-                                            previousTotalOccurrences < qSetting->MaxOutputPerRead;
-                    }
-
-                    if ( currentTotalOccurrences>0 )
-                    {
-                        currentMinNumMismatch = 999;
-                        for (int mismatchi=0;mismatchi<=currNumMismatch;mismatchi++) { 
-                            if (currentWithError[mismatchi]>0) {
-                                currentMinNumMismatch=mismatchi;
-                                break;
-                            }
-                        }
-                        need_handle_second = currentMinNumMismatch == currNumMismatch &&
-                                            currentTotalOccurrences < qSetting->MaxOutputPerRead;
-                    }
-                }
-
-                if ( need_handle_first )
-                {
-                    // need to perform (mismatch+1) alignment on the first read
-                    SAListReset ( sa_list1 );
-                    OCCListReset ( occ_list1 );
-                    qInfo_Positive.ReadCode = preQuery;
-                    qInfo_Positive.ReadLength = preReadLength;
-                    ProcessOneMoreMismatchAllCases ( charMap, &qInput_Positive, &qInput_Negative, SRAMismatchModel2[preReadLength], SRAMismatchModel2_neg[preReadLength], sa_list1, occ_list1, numCases2 );
-                    // back to the normal values
-                    qInfo_Positive.ReadCode = thisQuery;
-                    qInfo_Positive.ReadLength = readLength;
-                    
-                    //Store mismatch statistics and total number of occurrences for later process
-                    previousTotalOccurrences = rOutput->TotalOccurrences;
-                    memcpy(previousWithError,rOutput->WithError,sizeof(unsigned int)* (MAX_NUM_OF_ERROR + 1));
-                }
-
-                if ( need_handle_second )
-                {
-                    // need to perform (mismatch+1) alignment on the second read
-                    SAListReset ( sa_list2 );
-                    OCCListReset ( occ_list2 );
-                    qInfo_Positive.ReadCode = thisQuery;
-                    qInfo_Positive.ReadLength = readLength;
-                    ProcessOneMoreMismatchAllCases ( charMap, &qInput_Positive, &qInput_Negative, SRAMismatchModel2[readLength], SRAMismatchModel2_neg[preReadLength], sa_list2, occ_list2, numCases2 );
-                    
-                    //Store mismatch statistics and total number of occurrences for later process
-                    currentTotalOccurrences = rOutput->TotalOccurrences;
-                    memcpy(currentWithError,rOutput->WithError,sizeof(unsigned int)* (MAX_NUM_OF_ERROR + 1));
-                }
-
-                if ( previousTotalOccurrences>0 )
-                {
-                    getBestHitNum2 ( sa_list1, occ_list1, &first_X0, &first_X1 );
-                }
-
-                if ( currentTotalOccurrences>0 )
-                {
-                    getBestHitNum2 ( sa_list2, occ_list2, &second_X0, &second_X1 );
-                }
-
-                if ( needProceedDP )
-                {
-                    // obtain the value of X0 and X1 for both ends
-                    // X0: the number of best hits
-                    // X1: the number of second best hits
-                    // and record down the x0, x1 and minmismatch
-                    if ( previousTotalOccurrences>0 )
-                    {
-                        hspaux->x0_array[batchFirstReadId + batchReadId - 1] = first_X0;
-                        hspaux->x1_array[batchFirstReadId + batchReadId - 1] = first_X1;
-                        hspaux->mismatch_array[batchFirstReadId + batchReadId - 1] = previousMinNumMismatch;
-                    }
-
-                    if ( currentTotalOccurrences>0 )
-                    {
-                        hspaux->x0_array[batchFirstReadId + batchReadId] = second_X0;
-                        hspaux->x1_array[batchFirstReadId + batchReadId] = second_X1;
-                        hspaux->mismatch_array[batchFirstReadId + batchReadId] = currentMinNumMismatch;
-                    }
-                }
-            }
-
+            
             // transfer all the SA ranges in sa_list to occ_list
             transferAllSAToOcc ( sa_list1, occ_list1, bwt );
             transferAllSAToOcc ( sa_list2, occ_list2, bwt );
@@ -2204,9 +2207,7 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                 unsigned int num_minMismatch = 0; // the number of optimal pairs with the same minimum sum of mismatches
                 unsigned int num_soMinMismatch = 0; // the number of sub-optimal pairs with the same minimum sum of mismatches
                 
-                numPEAlgnmt = PECountPEOutput(pe_out);
-
-                if ( numPEAlgnmt > 0 )
+                if ( pe_out->root->pairsCount > 0 )
                 {
                     // pair-end alignment result exists
                     PEPairs * optimal;
@@ -2221,7 +2222,7 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                         char first_isBestHit = 0;
                         char second_isBestHit = 0;
                         
-                        PEStatsPEOutput(pe_out,&optimal,&suboptimal,peAlgnmtMismatchStats);
+                        numPEAlgnmt = PEStatsPEOutput(pe_out,&optimal,&suboptimal,peAlgnmtMismatchStats);
 
                         if ( optimal != NULL ) {
                             min_totalMismatchCount = optimal->totalMismatchCount;
