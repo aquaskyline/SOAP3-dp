@@ -2049,6 +2049,9 @@ int HalfEndAlignmentEngine::HalfEndAlgnBatch::pack (
         //aligned read: at left, unaligned read: at right
         uint rightEnd = alignedPos + insert_high;
         uint rightStart = alignedPos + insert_low - unalignedReadLength;
+        // rightStart has to be >= alignedPos
+        if (rightStart < alignedPos)
+            rightStart = alignedPos;
 
         if ( rightStart < fullDNALength && rightEnd <= fullDNALength )
         {
@@ -2071,6 +2074,9 @@ int HalfEndAlignmentEngine::HalfEndAlgnBatch::pack (
         //aligned read: at right, unaligned read: at left
         uint leftStart = alignedPos + alignedReadLength - insert_high;
         uint leftEnd = alignedPos + alignedReadLength - insert_low + unalignedReadLength;
+        // leftEnd has to be < alignedPos + alignedReadLength
+        if (leftEnd >= alignedPos + alignedReadLength)
+            leftEnd = alignedPos + alignedReadLength - 1;
 
         if ( leftStart < fullDNALength && leftEnd <= fullDNALength )
         {
@@ -2822,6 +2828,8 @@ void PairEndSeedingEngine::PairEndSeedingBatch::pairEndMerge (
         int readLength = readLengths[readID];
         int margin = DP2_MARGIN ( readLength );
         int length_low = insert_low - readLength - margin;
+        if (length_low < 0)
+            length_low = 0;
         int length_high = insert_high - readLength + margin;
         SeedPos * readP = readStart;
         SeedPos * mateP = mateStart;
