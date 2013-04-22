@@ -413,8 +413,13 @@ int convertToCigarStr ( char * special_cigar, char * cigar )
                     currInt = 0;
                     break;
 
-                case 'I':
                 case 'D':
+                    if ((cigar_len == 0) || (i == strlen ( special_cigar ) - 1))
+                    {
+                        // the deletion in front or at the end is ignored
+                        break;
+                    }
+                case 'I':
                 case 'S':
                     if ( currM > 0 )
                     {

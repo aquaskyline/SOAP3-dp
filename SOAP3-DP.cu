@@ -624,6 +624,9 @@ int main ( int argc, char ** argv )
             {
                 detected_read_length = GetReadLength ( readLengths, numQueries, 2 );
                 detected_read_length2 = GetReadLength ( readLengths+1, numQueries, 2 );
+                // the minimum insert size cannot be smaller than detected_read_length2
+                if (input_options.insert_low < detected_read_length2)
+                    input_options.insert_low = detected_read_length2;
             }
             else
             {
