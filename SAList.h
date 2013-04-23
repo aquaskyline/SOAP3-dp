@@ -62,11 +62,6 @@ unsigned int retainAllBestWithCap ( SAList * sa_list, OCCList * occ_list, int ma
 // retain all best answers
 unsigned int retainAllBestAndSecBest ( SAList * sa_list, OCCList * occ_list );
 
-void getBestHitNum ( OCCList * occ_list, int * bestHitNum, int * secBestHitNum );
-void getBestHitNum2 ( SAList * sa_list, OCCList * occ_list, int * bestHitNum, int * secBestHitNum );
-// get the number of best hits and the number of second best hits
-
-
 OCCList * OCCListConstruct();
 void OCCListReset ( OCCList * occ_list );
 void addToOCCList ( OCCList * occ_list, unsigned int pos, char strand, char mismatchCount );
