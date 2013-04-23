@@ -165,6 +165,7 @@ unsigned long long BWTMismatchModelAnyDirection_CE2 ( SRAQueryInput * qInput, in
     for ( j = 0; j < posCount; j++ )
     {
         addToOCCList ( occ_list, saPositions[j], qInfo->ReadStrand, occMismatches[j] );
+        rOutput->WithError[occMismatches[j]]++;
     }
 
     rOutput->TotalOccurrences += posCount;
@@ -1579,6 +1580,7 @@ unsigned long long BWTModelSwitchAnyDirection2 ( SRAQueryInput * qInput, int i, 
 
             addSAToSAList ( sa_list, l, r, qInfo->ReadStrand, errorInserted + occError );
             rOutput->TotalOccurrences += ( r - l + 1 );
+            rOutput->WithError[occError+errorInserted]+=r-l+1;
             return r - l + 1;
         }
         else
@@ -1653,6 +1655,7 @@ unsigned long long BWTModelSwitchBackward2 ( SRAQueryInput * qInput,  int i, int
 
             addSAToSAList ( sa_list, l, r, qInfo->ReadStrand, errorInserted + occError );
             rOutput->TotalOccurrences += r - l + 1;
+            rOutput->WithError[occError+errorInserted]+=r-l+1;
             return r - l + 1;
         }
         else

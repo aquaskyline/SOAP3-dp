@@ -120,7 +120,7 @@ int getMinMatchAndNumAns ( SAList * sa_list, OCCList * occ_list, int * totNumAns
             minMatch = sa_list->sa[i].mismatchCount;
         }
 
-        ( *totNumAns ) = sa_list->sa[i].saIndexRight - sa_list->sa[i].saIndexLeft + 1;
+        ( *totNumAns ) += sa_list->sa[i].saIndexRight - sa_list->sa[i].saIndexLeft + 1;
     }
 
     // scan occ List
@@ -346,101 +346,6 @@ unsigned int retainAllBestAndSecBest ( SAList * sa_list, OCCList * occ_list )
     occ_list->curr_size = newOccListSize;
     return num;
 }
-
-void getBestHitNum ( OCCList * occ_list, int * bestHitNum, int * secBestHitNum )
-{
-    // get the number of best hits and the number of second best hits
-    ( *bestHitNum ) = 0;
-    ( *secBestHitNum ) = 0;
-    int minMatch = 999;
-
-    for ( int i = 0; i < occ_list->curr_size; i++ )
-    {
-        if ( occ_list->occ[i].mismatchCount < minMatch )
-        {
-            if ( occ_list->occ[i].mismatchCount == minMatch - 1 )
-            {
-                ( *secBestHitNum ) = ( *bestHitNum );
-            }
-            else
-            {
-                ( *secBestHitNum ) = 0;
-            }
-
-            minMatch = occ_list->occ[i].mismatchCount;
-            ( *bestHitNum ) = 1;
-        }
-        else if ( occ_list->occ[i].mismatchCount == minMatch )
-        {
-            ( *bestHitNum ) ++;
-        }
-        else if ( occ_list->occ[i].mismatchCount == minMatch + 1 )
-        {
-            ( *secBestHitNum ) ++;
-        }
-    }
-}
-
-void getBestHitNum2 ( SAList * sa_list, OCCList * occ_list, int * bestHitNum, int * secBestHitNum )
-{
-    // get the number of best hits and the number of second best hits
-    ( *bestHitNum ) = 0;
-    ( *secBestHitNum ) = 0;
-    int minMatch = 999;
-
-    for ( int i = 0; i < sa_list->curr_size; i++ )
-    {
-        if ( sa_list->sa[i].mismatchCount < minMatch )
-        {
-            if ( sa_list->sa[i].mismatchCount == minMatch + 1 )
-            {
-                ( *secBestHitNum ) = ( *bestHitNum );
-            }
-            else
-            {
-                ( *secBestHitNum ) = 0;
-            }
-
-            minMatch = sa_list->sa[i].mismatchCount;
-            ( *bestHitNum ) = sa_list->sa[i].saIndexRight - sa_list->sa[i].saIndexLeft + 1;
-        }
-        else if ( sa_list->sa[i].mismatchCount == minMatch )
-        {
-            ( *bestHitNum ) += sa_list->sa[i].saIndexRight - sa_list->sa[i].saIndexLeft + 1;
-        }
-        else if ( sa_list->sa[i].mismatchCount == minMatch + 1 )
-        {
-            ( *secBestHitNum ) += sa_list->sa[i].saIndexRight - sa_list->sa[i].saIndexLeft + 1;
-        }
-    }
-
-    for ( int i = 0; i < occ_list->curr_size; i++ )
-    {
-        if ( occ_list->occ[i].mismatchCount < minMatch )
-        {
-            if ( occ_list->occ[i].mismatchCount == minMatch + 1 )
-            {
-                ( *secBestHitNum ) = ( *bestHitNum );
-            }
-            else
-            {
-                ( *secBestHitNum ) = 0;
-            }
-
-            minMatch = occ_list->occ[i].mismatchCount;
-            ( *bestHitNum ) = 1;
-        }
-        else if ( occ_list->occ[i].mismatchCount == minMatch )
-        {
-            ( *bestHitNum ) ++;
-        }
-        else if ( occ_list->occ[i].mismatchCount == minMatch + 1 )
-        {
-            ( *secBestHitNum ) ++;
-        }
-    }
-}
-
 
 OCCList * OCCListConstruct()
 {
