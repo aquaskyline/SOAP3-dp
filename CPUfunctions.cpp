@@ -1703,6 +1703,7 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
         qInfo_Positive.ReadLength = readLength;
         qInfo_Positive.ReadQuality = thisQualities;
         qInfo_Negative.ReadLength = readLength;
+        qInfo_Negative.ReadQuality = thisQualities;
 
         if ( readType == SINGLE_READ )
         {
@@ -2051,7 +2052,8 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                     }
                     need_handle_first = previousTotalOccurrences > 0 && 
                                         previousMinNumMismatch == currNumMismatch &&
-                                        previousTotalOccurrences < qSetting->MaxOutputPerRead;
+                                        previousTotalOccurrences < qSetting->MaxOutputPerRead &&
+                                        currNumMismatch < 4;
                                         
 
                     if ( need_handle_first )
@@ -2091,7 +2093,8 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                         }
                     }
                     need_handle_second = currentMinNumMismatch == currNumMismatch &&
-                                        currentTotalOccurrences < qSetting->MaxOutputPerRead;
+                                        currentTotalOccurrences < qSetting->MaxOutputPerRead &&
+                                        currNumMismatch < 4;
 
                     if ( need_handle_second )
                     {
@@ -2247,8 +2250,8 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
             PEPairList * pairList;
             unsigned int numPEAlgnmt = 0;
             // pair-end alignment result exists
-            unsigned int peAlgnmtMismatchStats[MAX_NUM_MISMATCH*2];
-            memset(peAlgnmtMismatchStats,0,sizeof(unsigned int)*MAX_NUM_MISMATCH*2);
+            unsigned int peAlgnmtMismatchStats[MAX_NUM_OF_ERROR*2];
+            memset(peAlgnmtMismatchStats,0,sizeof(unsigned int)*MAX_NUM_OF_ERROR*2);
 
             // fprintf(stderr, "size of occ_list1: %i size of occ_list2: %i\n", occ_list1->curr_size, occ_list2->curr_size);
 
