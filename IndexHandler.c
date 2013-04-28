@@ -59,7 +59,7 @@ Soap3Index * INDEXLoad ( IniParams * ini_params, char * indexName, char isShareI
     IndexFileNames indexFilenames;
     INDEXProcessFilenames ( &indexFilenames, indexName, ini_params );
     INDEXLoad ( index->mmPool, indexFilenames, & ( sraIndex->bwt ), & ( sraIndex->rev_bwt ), & ( sraIndex->hsp ), & ( sraIndex->lookupTable ), & ( sraIndex->rev_lookupTable ),
-                & ( index->gpu_revOccValue ), & ( index->gpu_occValue ), index->gpu_numOfOccValue, 0 );
+                & ( index->gpu_revOccValue ), & ( index->gpu_occValue ), index->gpu_numOfOccValue, isShareIndex );
 
     
     /////////////////////////////////
@@ -82,9 +82,10 @@ Soap3Index * INDEXLoad ( IniParams * ini_params, char * indexName, char isShareI
 void INDEXFree ( Soap3Index * index, char isShareIndex )
 {
     SRAIndex * sraIndex = index->sraIndex;
-    BWTFree ( index->mmPool, sraIndex->bwt, 0 );
-    BWTFree ( index->mmPool, sraIndex->rev_bwt, 0 );
-    HSPFree ( index->mmPool, sraIndex->hsp, 1, 0 );
+    uint numOfOccValue = ( sraIndex->bwt->textLength + GPU_OCC_INTERVAL - 1 ) / GPU_OCC_INTERVAL + 1;
+    BWTFree ( index->mmPool, sraIndex->bwt, isShareIndex );
+    BWTFree ( index->mmPool, sraIndex->rev_bwt, isShareIndex );
+    HSPFree ( index->mmPool, sraIndex->hsp, 1, isShareIndex );
 
     if ( isShareIndex )
     {
@@ -101,8 +102,16 @@ void INDEXFree ( Soap3Index * index, char isShareIndex )
 
     MMPoolFree ( index->mmPool );
     free ( index->sraIndex->hspaux );
-    free ( index->gpu_revOccValue );
-    free ( index->gpu_occValue );
+    if ( isShareIndex )
+    {
+        munmap ( index->gpu_revOccValue, sizeof ( unsigned int ) * ( numOfOccValue * ALPHABET_SIZE + GPU_OCC_PAYLOAD_OFFSET ) );
+        munmap ( index->gpu_occValue, sizeof ( unsigned int ) * ( numOfOccValue * ALPHABET_SIZE + GPU_OCC_PAYLOAD_OFFSET ) );
+    }
+    else
+    {
+        free ( index->gpu_revOccValue );
+        free ( index->gpu_occValue );
+    }
     free ( index->charMap );
     free ( sraIndex );
     free ( index );

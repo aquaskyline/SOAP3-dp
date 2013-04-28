@@ -1749,7 +1749,7 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
         bool nohit = ( curr_sa_list->curr_size == 0 && curr_occ_list->curr_size == 0 && ( !isMoreThanSA1 ) ); // whether there is no hit
 
         // special handling for MAPQ for SINGLE READ
-        if ( rOutput->TotalOccurrences > 0 && readType == SINGLE_READ && needOutputMAPQ )
+        if ( rOutput->TotalOccurrences > 0 && readType == SINGLE_READ && needOutputMAPQ && currNumMismatch < 4 )
         {
             //Store mismatch statistics and total number of occurrences for later process
             currentTotalOccurrences = rOutput->TotalOccurrences;
