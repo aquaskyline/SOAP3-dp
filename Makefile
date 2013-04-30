@@ -125,44 +125,44 @@ DV-DPForSingleReads.o:	.DV-DPForSingleReads.cpp Makefile
 
 # Other non-CUDA source files
 #
-BGS-IO.o:	BGS-IO.c Makefile
-	$(CC) $(CFLAGS) -c BGS-IO.c -o BGS-IO.o
+BGS-IO.o:	BGS-IO.cpp Makefile
+	$(CC) $(CFLAGS) -c BGS-IO.cpp -o BGS-IO.o
 
-BGS-HostAlgnmtMdl.o:	BGS-HostAlgnmtMdl.c Makefile
-	$(CC) $(CFLAGS) -c BGS-HostAlgnmtMdl.c -o BGS-HostAlgnmtMdl.o
+BGS-HostAlgnmtMdl.o:	BGS-HostAlgnmtMdl.cpp Makefile
+	$(CC) $(CFLAGS) -c BGS-HostAlgnmtMdl.cpp -o BGS-HostAlgnmtMdl.o
 
-BGS-HostAlgnmtAlgo2.o:	BGS-HostAlgnmtAlgo2.c Makefile
-	$(CC) $(CFLAGS) -c BGS-HostAlgnmtAlgo2.c -o BGS-HostAlgnmtAlgo2.o
+BGS-HostAlgnmtAlgo2.o:	BGS-HostAlgnmtAlgo2.cpp Makefile
+	$(CC) $(CFLAGS) -c BGS-HostAlgnmtAlgo2.cpp -o BGS-HostAlgnmtAlgo2.o
 
-BGS-HostAlgnmtAlgoSingle.o:	BGS-HostAlgnmtAlgoSingle.c Makefile
-	$(CC) $(CFLAGS) -c BGS-HostAlgnmtAlgoSingle.c -o BGS-HostAlgnmtAlgoSingle.o
+BGS-HostAlgnmtAlgoSingle.o:	BGS-HostAlgnmtAlgoSingle.cpp Makefile
+	$(CC) $(CFLAGS) -c BGS-HostAlgnmtAlgoSingle.cpp -o BGS-HostAlgnmtAlgoSingle.o
 
-PE.o:	PE.c Makefile
-	$(CC) $(CFLAGS) -c PE.c -o PE.o
+PE.o:	PE.cpp Makefile
+	$(CC) $(CFLAGS) -c PE.cpp -o PE.o
 
-SAList.o:	SAList.c Makefile
-	$(CC) $(CFLAGS) -c SAList.c -o SAList.o
+SAList.o:	SAList.cpp Makefile
+	$(CC) $(CFLAGS) -c SAList.cpp -o SAList.o
 
-UsageInterface.o:	UsageInterface.c Makefile
-	$(CC) $(CFLAGS) -c UsageInterface.c -o UsageInterface.o
+UsageInterface.o:	UsageInterface.cpp Makefile
+	$(CC) $(CFLAGS) -c UsageInterface.cpp -o UsageInterface.o
 
-IndexHandler.o:	IndexHandler.c Makefile
-	$(CC) $(CFLAGS) -c IndexHandler.c -o IndexHandler.o
+IndexHandler.o:	IndexHandler.cpp Makefile
+	$(CC) $(CFLAGS) -c IndexHandler.cpp -o IndexHandler.o
 
-IniParam.o:	IniParam.c Makefile
-	$(CC) $(CFLAGS) -c IniParam.c -o IniParam.o
+IniParam.o:	IniParam.cpp Makefile
+	$(CC) $(CFLAGS) -c IniParam.cpp -o IniParam.o
 
-FileUtilities.o:	FileUtilities.c Makefile
-	$(CC) $(CFLAGS) -c FileUtilities.c -o FileUtilities.o
+FileUtilities.o:	FileUtilities.cpp Makefile
+	$(CC) $(CFLAGS) -c FileUtilities.cpp -o FileUtilities.o
 	
 CPUfunctions.o:	CPUfunctions.cpp Makefile
 	$(CC) $(CFLAGS) -c CPUfunctions.cpp -o CPUfunctions.o
 
-PEAlgnmt.o:	PEAlgnmt.c Makefile
-	$(CC) $(CFLAGS) -c PEAlgnmt.c -o PEAlgnmt.o
+PEAlgnmt.o:	PEAlgnmt.cpp Makefile
+	$(CC) $(CFLAGS) -c PEAlgnmt.cpp -o PEAlgnmt.o
 
-SAM.o:	SAM.c Makefile
-	$(CC) $(CFLAGS) -c SAM.c -o SAM.o
+SAM.o:	SAM.cpp Makefile
+	$(CC) $(CFLAGS) -c SAM.cpp -o SAM.o
 
 OutputDPResult.o:	OutputDPResult.cpp Makefile
 	$(CC) $(CFLAGS) -c OutputDPResult.cpp -o OutputDPResult.o
@@ -176,11 +176,11 @@ global_arrays.o:	global_arrays.cpp Makefile
 aio_thread.o:	aio_thread.cpp Makefile
 	$(CC) $(CFLAGS) -c aio_thread.cpp -o aio_thread.o
 
-ssse3_popcount.o:	ssse3_popcount.c Makefile
-	$(CC) $(CFLAGS) -c ssse3_popcount.c -o ssse3_popcount.o
+ssse3_popcount.o:	ssse3_popcount.cpp Makefile
+	$(CC) $(CFLAGS) -c ssse3_popcount.cpp -o ssse3_popcount.o
 
-QueryParser.o:	QueryParser.c Makefile
-	$(CC) $(CFLAGS) -c QueryParser.c -o QueryParser.o
+QueryParser.o:	QueryParser.cpp Makefile
+	$(CC) $(CFLAGS) -c QueryParser.cpp -o QueryParser.o
 	
 # Application
 #
@@ -190,11 +190,11 @@ SOAP3-DP:	SOAP3-DP.o BGS-IO.o BGS-HostAlgnmtAlgo2.o BGS-HostAlgnmtAlgoSingle.o D
 Sample: sample.o BGS-IO.o BGS-HostAlgnmtAlgo2.o BGS-HostAlgnmtAlgoSingle.o DV-Kernel.o PE.o SAList.o CPUfunctions.o alignment.o PEAlgnmt.o SAM.o DV-SemiDP.o OutputDPResult.o AlgnResult.o DV-DPfunctions.o DV-DPForBothUnalign.o DV-DPForSingleReads.o soap3-dp-module.o global_arrays.o ssse3_popcount.o IniParam.o UsageInterface.o FileUtilities.o IndexHandler.o QueryParser.o $(SAMOBJLIBS) $(BWTOBJLIBS) $(CPUOBJLIB)
 	$(CC) $(CFLAGS) $(LIBFLAG) sample.o BGS-IO.o BGS-HostAlgnmtAlgo2.o BGS-HostAlgnmtAlgoSingle.o DV-Kernel.o PE.o SAList.o CPUfunctions.o alignment.o PEAlgnmt.o SAM.o DV-SemiDP.o OutputDPResult.o AlgnResult.o DV-DPfunctions.o DV-DPForBothUnalign.o DV-DPForSingleReads.o soap3-dp-module.o global_arrays.o ssse3_popcount.o IniParam.o UsageInterface.o FileUtilities.o IndexHandler.o QueryParser.o $(SAMOBJLIBS) $(BWTOBJLIBS) $(CPUOBJLIB) -o sample
 
-BGS-View: BGS-View.c $(BWTOBJLIBS) Makefile
-	$(CC) $(CFLAGS) BGS-View.c $(BWTOBJLIBS) -o BGS-View
+BGS-View: BGS-View.cpp $(BWTOBJLIBS) Makefile
+	$(CC) $(CFLAGS) BGS-View.cpp $(BWTOBJLIBS) -o BGS-View
 
-BGS-View-PE: BGS-View-PE.c $(BWTOBJLIBS) Makefile
-	$(CC) $(CFLAGS) BGS-View-PE.c $(BWTOBJLIBS) -o BGS-View-PE
+BGS-View-PE: BGS-View-PE.cpp $(BWTOBJLIBS) Makefile
+	$(CC) $(CFLAGS) BGS-View-PE.cpp $(BWTOBJLIBS) -o BGS-View-PE
 
 SOAP3-Builder: $(CPULIB)/2BWT-Builder.c $(BWTLIB)/BWTConstruct.o $(BWTOBJLIBS) $(CPUOBJLIB) Makefile
 	$(CC) $(CFLAGS) $(CPULIB)/2BWT-Builder.c $(BWTLIB)/BWTConstruct.o $(BWTOBJLIBS) $(CPUOBJLIB) -o soap3-dp-builder
