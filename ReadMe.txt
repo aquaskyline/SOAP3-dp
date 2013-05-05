@@ -1,5 +1,5 @@
 
-SOAP3-DP version 2.3.167 (Oct 28 2011)
+SOAP3-DP version 2.3.169 (Oct 28 2011)
 ===============================
 
 Old versions of SOAP3: SOAP3 version 91 (April 2011), maintained by BGI http://soap.genomics.org.cn/soap3.html;  

@@ -477,18 +477,9 @@ void AIOInputBufferFill (
     }
 };
 
-InputReadsBuffer * LoadReadsFromAIOBuffer ( AIOInputBuffer * aiob )
-{
-    /*
-       if(AIOInputBufferWaitForStatus(aiob,AIO_BUF_FILLED)){//should be changed to wait AIO_BUF_FILLED or AIO_BUF_FINISHED
-       return aiob->bufferFilled;
-       }*/
-#ifdef DEBUG_AIO_THREAD
-    static  size_t times;
-    times++;
-    fprintf ( stderr, "Enter LoadReadsFromAIOBuffer %llu times\n", times );
-#endif
 
+void ResetBufferStatusToUnfilled ( AIOInputBuffer * aiob )
+{
     if ( !aiob )
     {
         fprintf ( stderr, "NULL pointer exception in LoadReadsFromAIOBuffer().\n" );
@@ -509,6 +500,25 @@ InputReadsBuffer * LoadReadsFromAIOBuffer ( AIOInputBuffer * aiob )
         {
             aiob->status = AIO_BUF_UNFILLED;
         }
+    }
+}
+
+InputReadsBuffer * LoadReadsFromAIOBuffer ( AIOInputBuffer * aiob )
+{
+    /*
+       if(AIOInputBufferWaitForStatus(aiob,AIO_BUF_FILLED)){//should be changed to wait AIO_BUF_FILLED or AIO_BUF_FINISHED
+       return aiob->bufferFilled;
+       }*/
+#ifdef DEBUG_AIO_THREAD
+    static  size_t times;
+    times++;
+    fprintf ( stderr, "Enter LoadReadsFromAIOBuffer %llu times\n", times );
+#endif
+
+    if ( !aiob )
+    {
+        fprintf ( stderr, "NULL pointer exception in LoadReadsFromAIOBuffer().\n" );
+        exit ( -1 );
     }
 
     while ( 1 ) //wait AIO_BUF_FILLED or AIO_BUF_FINISHED

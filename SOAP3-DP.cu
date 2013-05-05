@@ -786,6 +786,7 @@ int main ( int argc, char ** argv )
         totalReadsAlignedForInputReads += numOfAlignedRead;
         totalAnsForInputReads += numOfAnswer;
         accumReadNum += origNumQueries;
+        ResetBufferStatusToUnfilled ( aiob );
         readyReadsBuffer = LoadReadsFromAIOBuffer ( aiob );
         queries = readyReadsBuffer->queries;
         readLengths = readyReadsBuffer->readLengths;

@@ -140,6 +140,11 @@ void AIOInputThreadCreate (
     char * queryFileBuffer2
 );
 
+
+// This function resets the status of buffer with processed reads.
+// It should be called before calling LoadReadsFromAIOBuffer (except first calling).
+void ResetBufferStatusToUnfilled ( AIOInputBuffer * aiob );
+
 InputReadsBuffer * LoadReadsFromAIOBuffer (
     AIOInputBuffer * aiob //required
 );

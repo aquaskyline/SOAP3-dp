@@ -414,7 +414,7 @@ int convertToCigarStr ( char * special_cigar, char * cigar )
                     break;
 
                 case 'D':
-                    if ((cigar_len == 0) || (i == strlen ( special_cigar ) - 1))
+                    if ((cigar_len == 0 && currM == 0) || (i == strlen ( special_cigar ) - 1))
                     {
                         // the deletion in front or at the end is ignored
                         break;
