@@ -2403,6 +2403,7 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                             numOfPairEndAlignment+=dumpOcc;
                             numOfAlignedRead += 2;
                             pair_alignment_exist = 1;
+                            numPEAlgnmt = numOfPairEndAlignment;
                         }
                     }
                 }
