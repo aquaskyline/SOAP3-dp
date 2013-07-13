@@ -408,7 +408,7 @@ void transferAllSAToOcc ( SAList * sa_list, OCCList * occ_list, BWT * bwt )
 
             for ( k = l; k <= r; k++ )
             {
-                addToOCCList ( occ_list, BWTSaValue ( bwt, k ), strand, num_mis );
+                addToOCCList ( occ_list, (*bwt->_bwtSaValue) ( bwt, k ), strand, num_mis );
             }
         }
     }

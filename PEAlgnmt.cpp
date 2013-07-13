@@ -77,7 +77,7 @@ unsigned int SRAEnrichSARanges(BWT * bwt, HSP * hsp,
 /////////////////////////////////////////////////////
 inline unsigned int PERetrievePositionFromSAIndex ( BWT * bwt, unsigned int saIndex )
 {
-    unsigned int ambPosition = BWTSaValue ( bwt, saIndex );
+    unsigned int ambPosition = (*bwt->_bwtSaValue) ( bwt, saIndex );
     return ambPosition;
 }
 
@@ -1237,7 +1237,7 @@ void inputSoap3AnsToArray ( AllHits * allHits, unsigned int readID, HSPAux * hsp
                 {
                     allHits->hitArray[allHits->hitNum].cigarString = ( char * ) malloc ( strlen ( cigar ) + 1 );
                     strcpy ( allHits->hitArray[allHits->hitNum].cigarString, cigar );
-                    allHits->hitArray[allHits->hitNum].algnmt = BWTSaValue ( bwt, k );
+                    allHits->hitArray[allHits->hitNum].algnmt = (*bwt->_bwtSaValue) ( bwt, k );
                     allHits->hitArray[allHits->hitNum].strand = strand;
                     allHits->hitArray[allHits->hitNum].score = readLength * hspaux->dpMatchScore - num_mis * hspaux->dpMisMatchScore;
                     allHits->hitArray[allHits->hitNum].editdist = num_mis;

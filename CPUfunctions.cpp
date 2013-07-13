@@ -2882,7 +2882,7 @@ inline unsigned long long hostKernelSingle ( char * upkdQueryNames, unsigned int
 
                             for ( k = l; k <= r; k++ )
                             {
-                                addOccToAlgnResult ( alignResult, BWTSaValue ( bwt, k ), strand );
+                                addOccToAlgnResult ( alignResult, (*bwt->_bwtSaValue) ( bwt, k ), strand );
                             }
 
                             currNumOcc += ( r - l + 1 );
@@ -2942,7 +2942,7 @@ inline unsigned long long hostKernelSingle ( char * upkdQueryNames, unsigned int
                           strand = alignResult->sa_list[i].strand;
 
                           for (k=l; k<=r; k++) {
-                              addOccToAlgnResult(alignResult, BWTSaValue(bwt,k), strand);
+                              addOccToAlgnResult(alignResult, (*bwt->_bwtSaValue)(bwt,k), strand);
                           }
                           currNumOcc+=(r-l+1);
                       }

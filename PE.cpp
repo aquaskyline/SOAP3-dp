@@ -307,7 +307,7 @@ void createTargetPackedDNA ( unsigned int * target, unsigned int pos, unsigned i
     }
 
     // get the position from l  (hsp->packedDNA)
-    // unsigned int s = BWTSaValue(bwt,l);
+    // unsigned int s = (*bwt->_bwtSaValue)(bwt,l);
     for ( i = 0; i < numOfWord; i++ )
     {
         outPackedDNA[i] |= ( target[ ( pos + i * CHAR_PER_WORD ) / CHAR_PER_WORD] << ( ( pos + i * CHAR_PER_WORD ) % CHAR_PER_WORD * BIT_PER_CHAR ) );
@@ -330,7 +330,7 @@ void SRAEnrichSARanges ( HSP * hsp, BWT * bwt, unsigned int * query, unsigned in
     // SRAEnrichSARanges takes a SA range as input and return the mismatch count and the strand of the SA range.
     // create the packedDNA for the target sequence;
     unsigned int targetPackedDNA[ ( MAX_READ_LENGTH + CHAR_PER_WORD - 1 ) / CHAR_PER_WORD];
-    createTargetPackedDNA ( hsp->packedDNA, BWTSaValue ( bwt, l ), query_length, targetPackedDNA );
+    createTargetPackedDNA ( hsp->packedDNA, (*bwt->_bwtSaValue) ( bwt, l ), query_length, targetPackedDNA );
     ( *num_mis ) = numMismatch ( query, targetPackedDNA, query_length, max_mismatch );
     ( *strand ) = QUERY_POS_STRAND;
 
@@ -349,7 +349,7 @@ char SRAEnrichSARangeswithStrand(HSP* hsp, BWT* bwt, unsigned int* query, unsign
 
       // create the packedDNA for the target sequence;
       unsigned int targetPackedDNA[(MAX_READ_LENGTH+15)/16];
-      createTargetPackedDNA(hsp->packedDNA, BWTSaValue(bwt,l), query_length, targetPackedDNA);
+      createTargetPackedDNA(hsp->packedDNA, (*bwt->_bwtSaValue)(bwt,l), query_length, targetPackedDNA);
       if (strand==1)
             return numMismatchAll(query, targetPackedDNA, query_length);
       else

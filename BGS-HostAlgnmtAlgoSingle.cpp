@@ -82,7 +82,7 @@ unsigned long long BWTMismatchModelAnyDirection_CE3 ( SRAQueryInput * qInput, in
         occMismatches[k] = occMismatch;
         occNBMismatch[k]=nbMismatch;
         occQualities[k] = occQuality;
-        saPositions[k] = BWTSaValue ( ceBwt, j ) - leftAlign;
+        saPositions[k] = (*ceBwt->_bwtSaValue) ( ceBwt, j ) - leftAlign;
         k++;
     }
 
@@ -204,7 +204,7 @@ unsigned long long BWTMismatchModelAnyDirection_CE3 ( SRAQueryInput * qInput, in
     for (j=l;j<=r;j++) {
         occMismatches[0]=occMismatch;
         occQualities[0]=occQuality;
-        saPositions[0]=BWTSaValue(ceBwt,j)-leftAlign;
+        saPositions[0]=(*ceBwt->_bwtSaValue)(ceBwt,j)-leftAlign;
 
         i = param_i;
         stepInCase = param_stepInCase;
@@ -1193,7 +1193,7 @@ unsigned long long BWTEditModelAnyDirection3 ( SRAQueryInput * qInput, int i, in
             for (j=saRanges[0];j<=saRanges[1];j++) {
                 occEdits[k]=occEdit;
                 occQualities[k]=occQuality;
-                saPositions[k++]=BWTSaValue(ceBwt,j)-leftMostAligned[pos];
+                saPositions[k++]=(*ceBwt->_bwtSaValue)(ceBwt,j)-leftMostAligned[pos];
 
             }
             saCount+=BWTMismatchModelAnyDirection_CE(qInput,rOutput,i,editInserted,
@@ -1399,7 +1399,7 @@ unsigned long long BWTEditModelBackward3 ( SRAQueryInput * qInput, int i, int ed
             for (err_l=l;err_l<=r;err_l++) {
                 occEdits[k]=occEdit;
                 occQualities[k]=occQuality;
-                saPositions[k++]=BWTSaValue(ceBwt,err_l)-leftMostAligned[pos];
+                saPositions[k++]=(*ceBwt->_bwtSaValue)(ceBwt,err_l)-leftMostAligned[pos];
             }
             saCount += BWTMismatchModelAnyDirection_CE(qInput,rOutput,i,editInserted,
                                     hsp,
@@ -1553,7 +1553,7 @@ unsigned long long BWTModelSwitchAnyDirection3 ( SRAQueryInput * qInput, int i, 
     if ( alignmentCase->steps[stepInCase].type == SRA_STEP_TYPE_COMPLETE )
     {
         //for (j=l;j<=r;j++) {
-        //  printf("ReadId=%u Occ=%llu Error=%d\n",qInfo->ReadId,BWTSaValue(ceBwt,j),errorInserted+occError);
+        //  printf("ReadId=%u Occ=%llu Error=%d\n",qInfo->ReadId,(*ceBwt->_bwtSaValue)(ceBwt,j),errorInserted+occError);
         //}
         //rOutput->WithError[occError+errorInserted]+=r-l+1;
         //return OCCReportSARange(qInput,l,r,occError+errorInserted,occQuality);
@@ -1619,7 +1619,7 @@ unsigned long long BWTModelSwitchBackward3 ( SRAQueryInput * qInput,  int i, int
     if ( alignmentCase->steps[stepInCase].type == SRA_STEP_TYPE_COMPLETE )
     {
         //for (j=l;j<=r;j++) {
-        //  printf("ReadId=%u Occ=%llu Error=%d\n",qInfo->ReadId,BWTSaValue(ceBwt,j),errorInserted+occError);
+        //  printf("ReadId=%u Occ=%llu Error=%d\n",qInfo->ReadId,(*ceBwt->_bwtSaValue)(ceBwt,j),errorInserted+occError);
         //}
         //rOutput->WithError[occError+errorInserted]+=r-l+1;
         //return OCCReportSARange(qInput,l,r,occError+errorInserted,occQuality);

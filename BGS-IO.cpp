@@ -3083,7 +3083,7 @@ OCCList * makeOccList ( unsigned int readID, HSPAux * hspaux, BWT * bwt )
 
             for ( k = l; k <= r; k++ )
             {
-                addToOCCList ( occ_list, BWTSaValue ( bwt, k ), strand, num_mis );
+                addToOCCList ( occ_list, (*bwt->_bwtSaValue) ( bwt, k ), strand, num_mis );
             }
         }
     }
@@ -5811,7 +5811,7 @@ unsigned long long OCCReportSARange ( SRAQueryInput * qInput,
                 }
                 else
                 {
-                    tp = BWTSaValue ( bwt, j );
+                    tp = (*bwt->_bwtSaValue) ( bwt, j );
                     occ->occPositionCache[occ->occPositionCacheCount].tp = tp;
                     occ->occPositionCache[occ->occPositionCacheCount].ReadStrand = qInfo->ReadStrand;
                     occ->occPositionCache[occ->occPositionCacheCount].ChromId = 0;
@@ -5832,7 +5832,7 @@ unsigned long long OCCReportSARange ( SRAQueryInput * qInput,
             {
                 if ( occ->occPositionCacheCount >= OCC_CACHE_SIZE ) {OCCFlushCache ( qInput );}
 
-                occ->occPositionCache[occ->occPositionCacheCount].tp = BWTSaValue ( bwt, j );
+                occ->occPositionCache[occ->occPositionCacheCount].tp = (*bwt->_bwtSaValue) ( bwt, j );
                 occ->occPositionCache[occ->occPositionCacheCount].ReadStrand = qInfo->ReadStrand;
                 occ->occPositionCache[occ->occPositionCacheCount].ChromId = 0;
                 occ->occPositionCache[occ->occPositionCacheCount].occMismatch = occMismatch;
@@ -5850,7 +5850,7 @@ unsigned long long OCCReportSARange ( SRAQueryInput * qInput,
         {
             if ( occ->occPositionCacheCount >= OCC_CACHE_SIZE ) {OCCFlushCache ( qInput );}
 
-            occ->occPositionCache[occ->occPositionCacheCount].tp = BWTSaValue ( bwt, j );
+            occ->occPositionCache[occ->occPositionCacheCount].tp = (*bwt->_bwtSaValue) ( bwt, j );
             occ->occPositionCache[occ->occPositionCacheCount].ReadStrand = qInfo->ReadStrand;
             occ->occPositionCache[occ->occPositionCacheCount].ChromId = 0;
             occ->occPositionCache[occ->occPositionCacheCount].occMismatch = occMismatch;

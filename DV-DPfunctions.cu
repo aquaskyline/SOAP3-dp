@@ -1175,7 +1175,7 @@ SeedPos * SingleEndSeedingEngine::SingleEndSeedingBatch::decodePositions (
 
                     for ( uint k = iter_sa->saLeft; k <= iter_sa->saRight; k++ )
                     {
-                        uint estimatedPos = MC_EstimatedPos ( BWTSaValue ( bwt, k ) );
+                        uint estimatedPos = MC_EstimatedPos ( (*bwt->_bwtSaValue) ( bwt, k ) );
                         MC_AppendPos ( iter_pos, readID, strand,
                                        estimatedPos, offset );
                     }
@@ -1897,7 +1897,7 @@ int HalfEndOccStream::fetchNextOcc ( SRAOccurrence & occ )
         occ.readID = iter_sa->readID; \
         occ.mismatchCount = iter_sa->mismatchCount; \
         occ.strand = iter_sa->strand; \
-        occ.ambPosition = BWTSaValue(bwt, nextSAIndex++); \
+        occ.ambPosition = (*bwt->_bwtSaValue)(bwt, nextSAIndex++); \
         if (nextSAIndex > iter_sa->saIndexRight) { \
             nextSAIndex = -1; \
             ++iter_sa; \
@@ -2914,7 +2914,7 @@ int PairEndSeedingEngine::PairEndSeedingBatch::decodePositions (
 
                     for ( uint k = iter_sa->saLeft; k <= iter_sa->saRight; k++ )
                     {
-                        uint estimatedPos = MC_SingleDP_EstimatedPos ( BWTSaValue ( bwt, k ) );
+                        uint estimatedPos = MC_SingleDP_EstimatedPos ( (*bwt->_bwtSaValue) ( bwt, k ) );
                         MC_SingleDP_AppendPos ( iter_pos, readID, strandIndex,
                                                 estimatedPos, offset );
                     }
