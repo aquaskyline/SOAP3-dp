@@ -37,7 +37,7 @@ SingleAlgnResultArray * constructSingleAlgnResultArray ( unsigned int numCPUThre
 
     for ( unsigned int i = 0; i < numCPUThreads; i++ )
     {
-        newArray->array[i] = constructSingleAlgnResult();
+        newArray->array[i] = constructSingleAlgnResult ();
     }
 
     return newArray;
@@ -56,7 +56,7 @@ void freeSingleAlgnResultArray ( SingleAlgnResultArray * algnResultArray )
 
 
 // Construct the structure SingleAlgnResult for each CPU thread
-SingleAlgnResult * constructSingleAlgnResult()
+SingleAlgnResult * constructSingleAlgnResult ()
 {
     SingleAlgnResult * algnResult;
     algnResult = ( SingleAlgnResult * ) malloc ( sizeof ( SingleAlgnResult ) );
@@ -198,7 +198,7 @@ void printAllSA ( SingleAlgnResultArray * algnResultArray )
 
 
 // Construct the structure BothUnalignedPairs
-BothUnalignedPairs * constructBothUnalignedPairs()
+BothUnalignedPairs * constructBothUnalignedPairs ()
 {
     BothUnalignedPairs * bothUnalignedPairs = ( BothUnalignedPairs * ) malloc ( sizeof ( BothUnalignedPairs ) );
     bothUnalignedPairs->readIDs = ( unsigned int * ) malloc ( sizeof ( unsigned int ) * INITIAL_SIZE_READ_ID_FOR_BOTH_UNALIGN );
@@ -275,7 +275,7 @@ BothUnalignedPairsArrays * constructBothUnalignedPairsArrays ( unsigned int numC
 
     for ( unsigned int i = 0; i < numCPUThreads; i++ )
     {
-        newArray->array[i] = constructBothUnalignedPairs();
+        newArray->array[i] = constructBothUnalignedPairs ();
     }
 
     return newArray;

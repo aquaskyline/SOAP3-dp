@@ -55,34 +55,40 @@
 //Define below parameter to skip outputing the header for plain output
 #define SKIP_PLAIN_HEADER
 
-OCC * OCCConstruct();
+OCC * OCCConstruct ();
 void OCCFree ( OCC * occ );
+
+
 
 unsigned int OCCWriteOutputHeader ( HSP * hsp, FILE * outFilePtr,
                                     unsigned int maxReadLength,
                                     unsigned int numOfReads,
                                     int outputFormat );
 
+
+// succinct format
 void OCCFlushCache ( SRAQueryInput * qInput );
 void OCCFlushCacheDP ( SRAQueryInput * qInput ); // for outputting the DP result
 
+// binary
 void OCCFlushCacheDefault ( OCC * occ, HSP * hsp, FILE * outFilePtr );
 
-// obseleted
+// obseleted (NO, DONT BELIEVE)
 // -- start --
 void OCCFlushCacheSAM ( SRAQueryInput * qInput );
+/*
 void OCCDirectWritePairOccSAM ( SRAQueryInput * qInput, PEPairs * pePair );
 void OCCDirectWritePairUnmapSAM ( SRAQueryInput * qInput, SRAOccurrence * sraOcc, int isFirst );
+*/
 void OCCDirectWritePairOccSAMAPI ( SRAQueryInput * qInput, PEPairs * pePair, int isFirstUnaligned, int isSecondUnaligned, int mateLength, int properlyPaired );
 void OCCDirectWritePairOccSAMAPI2 ( SRAQueryInput * qInput, PEPairs * pePair, int isFirstUnaligned, int isSecondUnaligned, int mateLength, int properlyPaired );
 void OCCDirectWritePairUnmapSAMAPI ( SRAQueryInput * qInput, SRAOccurrence * sraOcc, int isFirst );
 void OCCDirectWritePairOccSAMAPIwCIGAR ( SRAQueryInput * qInput, PEPairs * pePair, int isFirstUnaligned, int isSecondUnaligned, int mateLength, char * cigar_str );
 void OCCDirectWritePairOccSAMAPI2wCIGAR ( SRAQueryInput * qInput, PEPairs * pePair, int isFirstUnaligned, int isSecondUnaligned, int mateLength, char * cigar_str );
 // -- end --
-
 void OCCReportDelimitor ( SRAQueryInput * qInput );
 void OCCReportDelimitorDP ( SRAQueryInput * qInput ); // for outputting the DP result
-
+/*
 //////////////////////////
 //    FOR SAM FORMAT    //
 //////////////////////////
@@ -90,17 +96,21 @@ void OCCReportDelimitorDP ( SRAQueryInput * qInput ); // for outputting the DP r
 
 // single-end alignment
 // -- start --
+*/
 void OCCOutputSAMAPI ( SRAQueryInput * qInput, OCCList * occ_list,
                        DynamicUint8Array * xazArray, int readlen, int reportType );
+/*
 // For outputting single-read alignment in SAM format
 // Output the best record, and for the rest, append the results in the tag XA:Z
-
+*/
 void SingleAnsOutputSAMAPI ( SRAQueryInput * qInput,
                              char strand, unsigned int ambPosition, int bestHitNumOfMismatch, int bestHitNum );
+/*
 // For outputting one answer of single-read alignment in SAM format
 // for unique-best and random-best single-read alignment
-
+*/
 void noAnsOutputSAMAPI ( SRAQueryInput * qInput );
+
 // For outputting no answer of single-read alignment in SAM format
 
 void SingleDPOutputSAMAPI ( SRAQueryInput * qInput, SingleAlgnmtResult * algnResult,
@@ -121,10 +131,11 @@ void pairOutputSAMAPI ( SRAQueryInput * qInput, PEOutput * pe_out, PEPairs * bes
                         unsigned int peMaxOutputPerPair,
                         int X0_first, int X0_second, int X1_first, int X1_second, int num_minMismatchPair,
                         char isBestHit1, char isBestHit2, unsigned int totalNumValidPairs );
-
+/*
 // For outputting pair-end alignment in SAM format
 // Output the best record, and for the rest, append the results in the tag XA:Z
 
+*/
 void pairDPOutputSAMAPI ( SRAQueryInput * qInput, AlgnmtDPResult * algnResult,
                           AlgnmtDPResult * bestResult,
                           unsigned int start, unsigned int num,
@@ -166,7 +177,7 @@ void unproperlypairDPOutputSAMAPI ( SRAQueryInput * qInput, Algnmt * algn_list1,
 
 
 void OCCReportNoAlignment ( SRAQueryInput * qInput );
-
+/*
 //OCCReportSARange : asumming l<=r
 
 unsigned long long OCCReportSARange ( SRAQueryInput * qInput,
@@ -174,5 +185,5 @@ unsigned long long OCCReportSARange ( SRAQueryInput * qInput,
                                       int occMismatch );
 
 unsigned long long OCCReportTextPositions ( SRAQueryInput * qInput, int posCount );
-
+*/
 #endif

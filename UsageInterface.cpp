@@ -81,6 +81,7 @@ void UIPrintAlignmentOptions ( int casenum )
     fprintf ( stderr, "                                   (by default, this option is not enabled\n" );
     fprintf ( stderr, "                                   and presumes Phred+33 format).\n" );
     fprintf ( stderr, "               -c <GPU device ID> \n" );
+    fprintf ( stderr, "               -p                  Output MD string and NM tag.\n" );
 
     if ( casenum == 1 || casenum == 3 )
     {

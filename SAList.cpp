@@ -23,7 +23,7 @@
 
 #include "SAList.h"
 
-SAList * SAListConstruct()
+SAList * SAListConstruct ()
 {
     SAList * sa_list;
     sa_list = ( SAList * ) malloc ( sizeof ( SAList ) );
@@ -347,7 +347,7 @@ unsigned int retainAllBestAndSecBest ( SAList * sa_list, OCCList * occ_list )
     return num;
 }
 
-OCCList * OCCListConstruct()
+OCCList * OCCListConstruct ()
 {
     OCCList * occ_list;
     occ_list = ( OCCList * ) malloc ( sizeof ( OCCList ) );
@@ -408,7 +408,7 @@ void transferAllSAToOcc ( SAList * sa_list, OCCList * occ_list, BWT * bwt )
 
             for ( k = l; k <= r; k++ )
             {
-                addToOCCList ( occ_list, (*bwt->_bwtSaValue) ( bwt, k ), strand, num_mis );
+                addToOCCList ( occ_list, ( *bwt->_bwtSaValue ) ( bwt, k ), strand, num_mis );
             }
         }
     }

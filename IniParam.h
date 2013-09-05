@@ -92,6 +92,8 @@ typedef struct InputOptions
 
     char * readGrpOption; // read group option
 
+    bool isPrintMDNM; // print MD string and NM tag
+
 } InputOptions;
 
 

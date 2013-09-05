@@ -34,7 +34,7 @@
 
 // An updated function is to load the pair-end reads for at most "maxNumQueries/2" # of pairs of reads
 // faster than the previous version
-int loadPairReadsGz2 ( gzFile queryFile, char * queryFileBuffer, gzFile queryFile2, char * queryFileBuffer2, unsigned char * charMap, 
+int loadPairReadsGz2 ( gzFile queryFile, char * queryFileBuffer, gzFile queryFile2, char * queryFileBuffer2, unsigned char * charMap,
                        uint * queries, uint * readLengths, uint * readIDs, char * upkdQualities,  char * upkdQueryNames,
                        uint maxReadLength, uint maxNumQueries,
                        size_t & bufferSize, char & queryChar, uint & bufferIndex, size_t & bufferSize2, char & queryChar2, uint & bufferIndex2,
@@ -49,7 +49,7 @@ int loadSingleReadsGz ( gzFile queryFile, char * queryFileBuffer, unsigned char 
                         int qualityConstant, char & isFastq, int maxLenReadName );
 
 // This function is to load reads for BAM format
-int loadBAMReads ( bamFile bamQueryFile, bam_header_t * bamHeader, bam1_t * b, unsigned char * charMap, 
+int loadBAMReads ( bamFile bamQueryFile, bam_header_t * bamHeader, bam1_t * b, unsigned char * charMap,
                    uint * queries, uint * readLengths, uint * readIDs, char * upkdQualities, char * upkdQueryNames, uint maxReadLength, uint maxNumQueries,
                    uint wordPerQuery, int qualityConstant, int maxLenReadName );
 

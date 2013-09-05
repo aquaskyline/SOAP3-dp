@@ -32,7 +32,7 @@ typedef struct InputFilePointers
     enum ReadsFileType fileType;
 } InputFilePointers;
 
-InputFilePointers * InputFilePointersCreate();
+InputFilePointers * InputFilePointersCreate ();
 void InputFilePointersSetSingle ( InputFilePointers * ifp, gzFile queryFile );
 void InputFilePointersSetPair ( InputFilePointers * ifp, gzFile queryFile, gzFile queryFile2 );
 void InputFilePointersSetBam ( InputFilePointers * ifp, bamFile bamQueryFile, bam_header_t * bamHeader, bam1_t * bam );
@@ -62,7 +62,7 @@ typedef struct InputReadsBuffer
     int maxLenReadName;
 } InputReadsBuffer;
 
-InputReadsBuffer * InputReadsBufferCreate();
+InputReadsBuffer * InputReadsBufferCreate ();
 InputReadsBuffer * InputReadsBufferFullCreate ( uint maxReadLength, uint maxNumQueries, uint wordPerQuery, uint qualityConstant,
         uint * queries, uint * readLengths, uint * readIDs, char * upkdQualities, char * upkdQueryNames,
         char isFastq, int maxReadNameLen );

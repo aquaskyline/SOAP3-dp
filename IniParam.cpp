@@ -492,6 +492,7 @@ bool parseInputArgs ( int argc, char ** argv, InputOptions & input_options )
     input_options.readGrpOption = ( char * ) ""; // read group option
     // set default alignment type = all-best alignment
     input_options.alignmentType = OUTPUT_ALL_BEST;
+    input_options.isPrintMDNM = false;
 
     // get the options
     for ( int i = min_num_args; i < argc; i++ )
@@ -702,6 +703,11 @@ bool parseInputArgs ( int argc, char ** argv, InputOptions & input_options )
                 fprintf ( stderr, "The GPU device ID should not be less than 0\n" );
                 return false;
             }
+        }
+        else if ( strcmp ( argv[i], "-p" ) == 0 )
+        {
+            // print MD string and NM tag
+            input_options.isPrintMDNM = true;
         }
     }
 

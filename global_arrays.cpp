@@ -25,7 +25,7 @@
 #include "global_arrays.h"
 
 // construct the array
-AlgnResult * arrayConstruct()
+AlgnResult * arrayConstruct ()
 {
     AlgnResult * newArray;
     newArray = ( AlgnResult * ) malloc ( sizeof ( AlgnResult ) );
@@ -57,7 +57,7 @@ AlgnResultArrays * resultArraysConstruct ( int num )
 
     for ( int i = 0; i < num; i++ )
     {
-        newArray->algnArrays[i] = arrayConstruct();
+        newArray->algnArrays[i] = arrayConstruct ();
     }
 
     newArray->numArrays = num;

@@ -1356,10 +1356,11 @@ int loadSingleReadsGz ( gzFile queryFile, char * queryFileBuffer, unsigned char 
 
 uint GetReadLength ( uint * readLengths, uint numQueries, int sample )
 {
-    if ( sample <= 0 ) {
+    if ( sample <= 0 )
+    {
         sample = 1;
     }
-        
+
     // scan the first ten reads
     // and get the max read length among them
     if ( numQueries <= 0 )
@@ -1368,13 +1369,14 @@ uint GetReadLength ( uint * readLengths, uint numQueries, int sample )
     int i = 0;
     int j = 1;
     uint maxReadLength = readLengths[i];
-    while (i<numQueries && j<10)
+
+    while ( i < numQueries && j < 10 )
     {
         if ( maxReadLength < readLengths[i] )
         { maxReadLength = readLengths[i]; }
-        
+
         j++;
-        i+=sample;
+        i += sample;
     }
 
     return maxReadLength;

@@ -96,9 +96,9 @@ void GPUINDEXUpload ( Soap3Index * index, uint ** _bwt, uint ** _occ,
         printf ( "CUDA MEMCPY FAILED .. %s(%d)\n", cudaGetErrorString ( gpuErr ), gpuErr );
         exit ( 1 );
     }
-    
-    gpuErr = cudaMemcpyToSymbol(gpuCharMap, index->charMap, sizeof(unsigned char)*256);
-    
+
+    gpuErr = cudaMemcpyToSymbol ( gpuCharMap, index->charMap, sizeof ( unsigned char ) * 256 );
+
     if ( gpuErr != cudaSuccess )
     {
         printf ( "CUDA MEMCPY FAILED .. %s(%d)\n", cudaGetErrorString ( gpuErr ), gpuErr );
@@ -197,7 +197,9 @@ void perform_round1_alignment ( uint * nextQuery, uint * nextReadLength, uint * 
               _bwt, _occ, bwt->inverseSa0,
               _revBwt, _revOcc, revBwt->inverseSa0, bwt->textLength,
               _answers, _isBad, 0 , sa_range_allowed, word_per_ans, isExactNumMismatch );
+
         gpuErr = cudaMemcpy ( answers[doubleBufferIdx][caseno], _answers, roundUp * word_per_ans * sizeof ( uint ), cudaMemcpyDeviceToHost );
+
         if ( gpuErr != cudaSuccess )
         {
             printf ( "CUDA MEMCOPY FAILED .. %s(%d)\n", cudaGetErrorString ( gpuErr ), gpuErr );
@@ -312,6 +314,7 @@ void perform_round2_alignment ( uint * queries, uint * readLengths, uint * answe
               _bwt, _occ, bwt->inverseSa0,
               _revBwt, _revOcc, revBwt->inverseSa0,
               bwt->textLength, _answers, _isBad, 1, sa_range_allowed_2, word_per_ans_2, isExactNumMismatch );
+
         cudaMemcpy ( badAnswers[doubleBufferIdx][whichCase], _answers,
                      roundUp * word_per_ans_2 * sizeof ( uint ), cudaMemcpyDeviceToHost );
         // free the memory in the device
@@ -401,7 +404,9 @@ void perform_round1_alignment_no_pipeline ( uint * nextQuery, uint * nextReadLen
               _bwt, _occ, bwt->inverseSa0,
               _revBwt, _revOcc, revBwt->inverseSa0, bwt->textLength,
               _answers, _isBad, 0 , sa_range_allowed, word_per_ans, isExactNumMismatch );
+
         gpuErr = cudaMemcpy ( answers[caseno], _answers, roundUp * word_per_ans * sizeof ( uint ), cudaMemcpyDeviceToHost );
+
         if ( gpuErr != cudaSuccess )
         {
             printf ( "CUDA MEMCOPY FAILED .. %s(%d)\n", cudaGetErrorString ( gpuErr ), gpuErr );
@@ -514,6 +519,7 @@ void perform_round2_alignment_no_pipeline ( uint * queries, uint * readLengths, 
               _bwt, _occ, bwt->inverseSa0,
               _revBwt, _revOcc, revBwt->inverseSa0,
               bwt->textLength, _answers, _isBad, 1, sa_range_allowed_2, word_per_ans_2, isExactNumMismatch );
+
         cudaMemcpy ( badAnswers[whichCase], _answers,
                      roundUp * word_per_ans_2 * sizeof ( uint ), cudaMemcpyDeviceToHost );
         // free the memory in the device
@@ -541,7 +547,7 @@ void all_valid_alignment ( uint * queries, uint * readLengths, uint * seedLength
                            BothUnalignedPairs ** bothUnalignedPairs )
 {
 #ifdef BGS_GPU_CASE_BREAKDOWN_TIME
-    double startTime2 = setStartTime();
+    double startTime2 = setStartTime ();
     double lastEventTime2 = 0;
     double currEventTime2;
 #endif
@@ -577,7 +583,7 @@ void all_valid_alignment ( uint * queries, uint * readLengths, uint * seedLength
     uint word_per_ans;
     uint word_per_ans_2;
     int i;
-    
+
     SRASetting _mapqTempSRASetting;
 
     SRAIndex * sraIndex = index->sraIndex;
@@ -722,9 +728,10 @@ void all_valid_alignment ( uint * queries, uint * readLengths, uint * seedLength
         { hostKernelArguments[threadId].sraQuerySettings.SAMOutFilePtr = NULL; }
     }
 
-    for ( i = 0; i <= MAX_READ_LENGTH; i++ ) { 
+    for ( i = 0; i <= MAX_READ_LENGTH; i++ )
+    {
         SRAMismatchModel[i] = NULL;
-        SRAMismatchModel2[i] = NULL; 
+        SRAMismatchModel2[i] = NULL;
         SRAMismatchModel_neg[i] = NULL;
         SRAMismatchModel2_neg[i] = NULL;
     }
@@ -736,12 +743,13 @@ void all_valid_alignment ( uint * queries, uint * readLengths, uint * seedLength
             if ( SRAMismatchModel[readLengths[readId]] == NULL )
             {
                 SRAMismatchModel[readLengths[readId]] = SRAModelConstruct ( readLengths[readId], QUERY_POS_STRAND, & ( hostKernelArguments[0].sraQuerySettings ), sraIndex,  ini_params.Ini_HostAlignmentModel );
-                
+
             }
+
             if ( SRAMismatchModel_neg[readLengths[readId]] == NULL )
             {
                 SRAMismatchModel_neg[readLengths[readId]] = SRAModelConstruct ( readLengths[readId], QUERY_NEG_STRAND, & ( hostKernelArguments[0].sraQuerySettings ), sraIndex,  ini_params.Ini_HostAlignmentModel );
-                
+
             }
         }
     }
@@ -753,6 +761,7 @@ void all_valid_alignment ( uint * queries, uint * readLengths, uint * seedLength
             {
                 SRAMismatchModel[seedLengths[readId]] = SRAModelConstruct ( seedLengths[readId], QUERY_POS_STRAND, & ( hostKernelArguments[0].sraQuerySettings ), sraIndex, ini_params.Ini_HostAlignmentModel );
             }
+
             if ( SRAMismatchModel_neg[seedLengths[readId]] == NULL )
             {
                 SRAMismatchModel_neg[seedLengths[readId]] = SRAModelConstruct ( seedLengths[readId], QUERY_NEG_STRAND, & ( hostKernelArguments[0].sraQuerySettings ), sraIndex, ini_params.Ini_HostAlignmentModel );
@@ -763,7 +772,7 @@ void all_valid_alignment ( uint * queries, uint * readLengths, uint * seedLength
     // if (ALL-VALID or ALL-BEST) and SAM format, then need to update the model for mismatch+1
     if ( needOutputMAPQ && numMismatch < 4 )
     {
-        memcpy(&_mapqTempSRASetting,&(hostKernelArguments[0].sraQuerySettings),sizeof(SRASetting));
+        memcpy ( &_mapqTempSRASetting, & ( hostKernelArguments[0].sraQuerySettings ), sizeof ( SRASetting ) );
         _mapqTempSRASetting.MaxError = numMismatch + 1;
 
         if ( seedLengths == NULL )
@@ -774,6 +783,7 @@ void all_valid_alignment ( uint * queries, uint * readLengths, uint * seedLength
                 {
                     SRAMismatchModel2[readLengths[readId]] = SRAModelConstruct ( readLengths[readId], QUERY_POS_STRAND, &_mapqTempSRASetting, sraIndex, ini_params.Ini_HostAlignmentModel );
                 }
+
                 if ( SRAMismatchModel2_neg[readLengths[readId]] == NULL )
                 {
                     SRAMismatchModel2_neg[readLengths[readId]] = SRAModelConstruct ( readLengths[readId], QUERY_NEG_STRAND, &_mapqTempSRASetting, sraIndex, ini_params.Ini_HostAlignmentModel );
@@ -788,6 +798,7 @@ void all_valid_alignment ( uint * queries, uint * readLengths, uint * seedLength
                 {
                     SRAMismatchModel2[seedLengths[readId]] = SRAModelConstruct ( seedLengths[readId], QUERY_POS_STRAND, &_mapqTempSRASetting, sraIndex, ini_params.Ini_HostAlignmentModel );
                 }
+
                 if ( SRAMismatchModel2_neg[seedLengths[readId]] == NULL )
                 {
                     SRAMismatchModel2_neg[seedLengths[readId]] = SRAModelConstruct ( seedLengths[readId], QUERY_NEG_STRAND, &_mapqTempSRASetting, sraIndex, ini_params.Ini_HostAlignmentModel );
@@ -1068,16 +1079,19 @@ void all_valid_alignment ( uint * queries, uint * readLengths, uint * seedLength
             SRAModelFree ( SRAMismatchModel[i] );
             SRAMismatchModel[i] = NULL;
         }
+
         if ( SRAMismatchModel2[i] != NULL )
         {
             SRAModelFree ( SRAMismatchModel2[i] );
             SRAMismatchModel2[i] = NULL;
         }
+
         if ( SRAMismatchModel_neg[i] != NULL )
         {
             SRAModelFree ( SRAMismatchModel_neg[i] );
             SRAMismatchModel_neg[i] = NULL;
         }
+
         if ( SRAMismatchModel2_neg[i] != NULL )
         {
             SRAModelFree ( SRAMismatchModel2_neg[i] );
@@ -1467,7 +1481,7 @@ void single_all_valid_seed_alignment (
     unsigned int * readIDs )
 {
 #ifdef BGS_GPU_CASE_BREAKDOWN_TIME
-    double startTime2 = setStartTime();
+    double startTime2 = setStartTime ();
     double lastEventTime2 = 0;
     double currEventTime2;
 #endif
@@ -1555,7 +1569,8 @@ void single_all_valid_seed_alignment (
         hostKernelArguments[threadId].alignResult = alignResultArray->array[threadId];
     }
 
-    for ( i = 0; i <= MAX_READ_LENGTH; i++ ) { 
+    for ( i = 0; i <= MAX_READ_LENGTH; i++ )
+    {
         SRAMismatchModel[i] = NULL;
         SRAMismatchModel_neg[i] = NULL;
     }
@@ -1566,6 +1581,7 @@ void single_all_valid_seed_alignment (
         {
             SRAMismatchModel[readLengths[readId]] = SRAModelConstruct ( readLengths[readId], QUERY_POS_STRAND, & ( hostKernelArguments[0].sraQuerySettings ), sraIndex, SRA_MODEL_16G );
         }
+
         if ( SRAMismatchModel_neg[readLengths[readId]] == NULL )
         {
             SRAMismatchModel_neg[readLengths[readId]] = SRAModelConstruct ( readLengths[readId], QUERY_NEG_STRAND, & ( hostKernelArguments[0].sraQuerySettings ), sraIndex, SRA_MODEL_16G );
@@ -1799,6 +1815,7 @@ void single_all_valid_seed_alignment (
             SRAModelFree ( SRAMismatchModel[i] );
             SRAMismatchModel[i] = NULL;
         }
+
         if ( SRAMismatchModel_neg[i] != NULL )
         {
             SRAModelFree ( SRAMismatchModel_neg[i] );

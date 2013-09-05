@@ -81,14 +81,14 @@ void outputRead ( AlgnmtDPResult * algnResult, unsigned int algnNum, unsigned ch
     { return; }
 
     HSPAux * hspaux = index->sraIndex->hspaux;
-    
+
     SRAIndex aIndex;
     // Copy SRAIndex
-    memcpy(&(aIndex),index->sraIndex,sizeof(SRAIndex));
-    
+    memcpy ( & ( aIndex ), index->sraIndex, sizeof ( SRAIndex ) );
+
     SRASetting qSetting;
     qSetting.OutFilePtr = outputDPFile;
-    qSetting.occ = OCCConstruct();
+    qSetting.occ = OCCConstruct ();
     qSetting.OutFileFormat = outputFormat;
     qSetting.SAMOutFilePtr = samOutputDPFilePtr;
     SRAQueryInput qInput;
@@ -225,17 +225,17 @@ void outputRead2 ( AlgnmtDPResult * algnResult, unsigned int algnNum,
     }
 
     HSPAux * hspaux = index->sraIndex->hspaux;
-    
+
     SRAIndex aIndex;
     // Copy SRAIndex
-    memcpy(&(aIndex),index->sraIndex,sizeof(SRAIndex));
-    
+    memcpy ( & ( aIndex ), index->sraIndex, sizeof ( SRAIndex ) );
+
     SRASetting qSetting;
     qSetting.OutFilePtr = outputDPFile;
-    qSetting.occ = OCCConstruct();
+    qSetting.occ = OCCConstruct ();
     qSetting.OutFileFormat = outputFormat;
     qSetting.SAMOutFilePtr = samOutputDPFilePtr;
-    
+
     SRAQueryInput qInput;
     SRAQueryInfo qInfo;
     qInput.QuerySetting = &qSetting;
@@ -259,7 +259,7 @@ void outputRead2 ( AlgnmtDPResult * algnResult, unsigned int algnNum,
     DynamicUint8Array * charArray = NULL;
 
     if ( outputFormat == SRA_OUTPUT_FORMAT_SAM_API )
-    { charArray = DynamicUint8ArrayConstruct(); }
+    { charArray = DynamicUint8ArrayConstruct (); }
 
     for ( unsigned int i = 0; i < algnNum; i++ )
     {
@@ -455,14 +455,14 @@ void outputDeepDPResult ( DeepDPAlignResult * algnResult, unsigned int algnNum, 
     { return; }
 
     HSPAux * hspaux = index->sraIndex->hspaux;
-    
+
     SRAIndex aIndex;
     // Copy SRAIndex
-    memcpy(&(aIndex),index->sraIndex,sizeof(SRAIndex));
-    
+    memcpy ( & ( aIndex ), index->sraIndex, sizeof ( SRAIndex ) );
+
     SRASetting qSetting;
     qSetting.OutFilePtr = outputDPFile;
-    qSetting.occ = OCCConstruct();
+    qSetting.occ = OCCConstruct ();
     qSetting.OutFileFormat = outputFormat;
     qSetting.SAMOutFilePtr = samOutputDPFilePtr;
     SRAQueryInput qInput;
@@ -573,14 +573,14 @@ void outputDeepDPResult2 ( DeepDPAlignResult * algnResult, unsigned int algnNum,
 
     BWT * bwt = index->sraIndex->bwt;
     HSPAux * hspaux = index->sraIndex->hspaux;
-    
+
     SRAIndex aIndex;
     // Copy SRAIndex
-    memcpy(&(aIndex),index->sraIndex,sizeof(SRAIndex));
-    
+    memcpy ( & ( aIndex ), index->sraIndex, sizeof ( SRAIndex ) );
+
     SRASetting qSetting;
     qSetting.OutFilePtr = outputDPFile;
-    qSetting.occ = OCCConstruct();
+    qSetting.occ = OCCConstruct ();
     qSetting.OutFileFormat = outputFormat;
     qSetting.SAMOutFilePtr = samOutputDPFilePtr;
     SRAQueryInput qInput;
@@ -604,7 +604,7 @@ void outputDeepDPResult2 ( DeepDPAlignResult * algnResult, unsigned int algnNum,
     DynamicUint8Array * charArray = NULL;
 
     if ( outputFormat == SRA_OUTPUT_FORMAT_SAM_API )
-    { charArray = DynamicUint8ArrayConstruct(); }
+    { charArray = DynamicUint8ArrayConstruct (); }
 
     for ( unsigned int i = 0; i < algnNum; i++ )
     {
@@ -638,7 +638,7 @@ void outputDeepDPResult2 ( DeepDPAlignResult * algnResult, unsigned int algnNum,
                             inputSoap3AnsToArray ( ( AllHits * ) hspaux->allHits, readID, hspaux, bwt, readLen1 );
                         }
 
-                        if ( second_read_no_hit || (!first_read_no_hit))
+                        if ( second_read_no_hit || ( !first_read_no_hit ) )
                         {
                             addReadIDToBothUnalignedPairs ( ( ( UnalignedSinglesArrays * ) ( hspaux->readsIDForSingleDP ) )->array[0], readID + 1 );
                         }
@@ -807,7 +807,7 @@ void outputDeepDPResult2 ( DeepDPAlignResult * algnResult, unsigned int algnNum,
                 inputSoap3AnsToArray ( ( AllHits * ) hspaux->allHits, readID, hspaux, bwt, readLen1 );
             }
 
-            if ( second_read_no_hit || (!first_read_no_hit))
+            if ( second_read_no_hit || ( !first_read_no_hit ) )
             {
                 addReadIDToBothUnalignedPairs ( ( ( UnalignedSinglesArrays * ) ( hspaux->readsIDForSingleDP ) )->array[0], readID + 1 );
             }
@@ -857,15 +857,15 @@ void outputDPSingleResult ( SingleAlgnmtResult * algnResult, unsigned int algnNu
     { return; }
 
     HSP * hsp = index->sraIndex->hsp;
-    HSPAux * hspaux = index->sraIndex->hspaux;	
-	
+    HSPAux * hspaux = index->sraIndex->hspaux;
+
     SRAIndex aIndex;
     // Copy SRAIndex
-    memcpy(&(aIndex),index->sraIndex,sizeof(SRAIndex));
-    
+    memcpy ( & ( aIndex ), index->sraIndex, sizeof ( SRAIndex ) );
+
     SRASetting qSetting;
     qSetting.OutFilePtr = outputDPFile;
-    qSetting.occ = OCCConstruct();
+    qSetting.occ = OCCConstruct ();
     qSetting.OutFileFormat = outputFormat;
     qSetting.SAMOutFilePtr = samOutputDPFilePtr;
     SRAQueryInput qInput;
@@ -941,7 +941,7 @@ void outputDPSingleResult2 ( SingleAlgnmtResult * algnResult, unsigned int algnN
 {
     if ( algnNum == 0 )
     { return; }
-    
+
     HSPAux * hspaux = index->sraIndex->hspaux;
 
 #ifdef PERFORM_DEEP_DP_FOR_UNALIGN_READS
@@ -957,11 +957,11 @@ void outputDPSingleResult2 ( SingleAlgnmtResult * algnResult, unsigned int algnN
 #endif
     SRAIndex aIndex;
     // Copy SRAIndex
-    memcpy(&(aIndex),index->sraIndex,sizeof(SRAIndex));
-    
+    memcpy ( & ( aIndex ), index->sraIndex, sizeof ( SRAIndex ) );
+
     SRASetting qSetting;
     qSetting.OutFilePtr = outputDPFile;
-    qSetting.occ = OCCConstruct();
+    qSetting.occ = OCCConstruct ();
     qSetting.OutFileFormat = outputFormat;
     qSetting.SAMOutFilePtr = samOutputDPFilePtr;
     SRAQueryInput qInput;
@@ -982,7 +982,7 @@ void outputDPSingleResult2 ( SingleAlgnmtResult * algnResult, unsigned int algnN
     DynamicUint8Array * charArray = NULL;
 
     if ( outputFormat == SRA_OUTPUT_FORMAT_SAM_API && isAnsToFile )
-    { charArray = DynamicUint8ArrayConstruct(); }
+    { charArray = DynamicUint8ArrayConstruct (); }
 
     for ( unsigned int i = 0; i < algnNum; i++ )
     {
@@ -1070,13 +1070,13 @@ void outputSingleResultForPairEnds ( AllHits * allHits,
     }
 
     HSPAux * hspaux = index->sraIndex->hspaux;
-    
+
     SRAIndex aIndex;
     // Copy SRAIndex
-    memcpy(&(aIndex),index->sraIndex,sizeof(SRAIndex));
-    
+    memcpy ( & ( aIndex ), index->sraIndex, sizeof ( SRAIndex ) );
+
     SRASetting qSetting;
-    qSetting.occ = OCCConstruct();
+    qSetting.occ = OCCConstruct ();
     qSetting.SAMOutFilePtr = samOutputUnpairFilePtr;
     SRAQueryInput qInput;
     SRAQueryInfo qInfo;
@@ -1094,7 +1094,7 @@ void outputSingleResultForPairEnds ( AllHits * allHits,
     unsigned int readLen1, readLen2;
     char * queryName1, *queryName2;
     unsigned int word_per_query = getWordPerQuery ( maxReadLength );
-    DynamicUint8Array * charArray = DynamicUint8ArrayConstruct();
+    DynamicUint8Array * charArray = DynamicUint8ArrayConstruct ();
     Algnmt * algn_list1;
     Algnmt * algn_list2;
     unsigned int i, j;

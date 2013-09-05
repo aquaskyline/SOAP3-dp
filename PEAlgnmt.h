@@ -299,7 +299,7 @@ void PEMappingOccurrences ( PEInput * peInput, PEOutput * peOutput,
 /////////////////////////////////////////////////////
 PEInput * PEInputConstruct ( BWT * bwt, HSP * hsp );
 void PEInputFree ( PEInput * peInput );
-PEOutput * PEOutputConstruct();
+PEOutput * PEOutputConstruct ();
 void PEOutputFree ( PEOutput * peOutput );
 
 /////////////////////////////////////////////////////
@@ -454,7 +454,7 @@ typedef struct DynamicUint8Array
     unsigned long long size; // available size of the char array
 } DynamicUint8Array;
 
-DynamicUint8Array * DynamicUint8ArrayConstruct();
+DynamicUint8Array * DynamicUint8ArrayConstruct ();
 void DynamicUint8ArrayFree ( DynamicUint8Array * uint8Array );
 void DynamicUint8ArrayReset ( DynamicUint8Array * uint8Array );
 void appendStringToUint8Array ( DynamicUint8Array * uint8Array, char * charString, int len );
@@ -497,7 +497,7 @@ typedef struct AllHits
     int readArrayAvailSize;
 } AllHits;
 
-AllHits * constructAllHits();
+AllHits * constructAllHits ();
 void inputAlgnmtsToArray ( AllHits * allHits, SingleAlgnmtResult * algnResults, int algnNum );
 void sortReadPtrs ( AllHits * allHits );
 void resetAllHits ( AllHits * allHits );

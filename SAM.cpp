@@ -90,10 +90,10 @@ void SAMOutputHeaderConstruct ( bam_header_t * sheader, HSP * hsp, HSPAux * hspa
     sheader->target_name = ( char ** ) malloc ( sizeof ( char * ) * hsp->numOfSeq );
     sheader->target_len = ( uint32_t * ) malloc ( sizeof ( uint32_t ) * hsp->numOfSeq );
 
-    char * snTags = (char *) malloc(MAX_CHROMOSOME_NUM*MAX_SEQ_NAME_LENGTH*2); // maximum chromosomes * (number of chars max each*2)
-    memset(snTags, '\0', MAX_CHROMOSOME_NUM*MAX_SEQ_NAME_LENGTH*2);
-    char * snTagsTmp = (char *) malloc(MAX_SEQ_NAME_LENGTH*2);
-    memset(snTagsTmp, '\0', MAX_SEQ_NAME_LENGTH*2);
+    char * snTags = ( char * ) malloc ( MAX_CHROMOSOME_NUM * MAX_SEQ_NAME_LENGTH * 2 ); // maximum chromosomes * (number of chars max each*2)
+    memset ( snTags, '\0', MAX_CHROMOSOME_NUM * MAX_SEQ_NAME_LENGTH * 2 );
+    char * snTagsTmp = ( char * ) malloc ( MAX_SEQ_NAME_LENGTH * 2 );
+    memset ( snTagsTmp, '\0', MAX_SEQ_NAME_LENGTH * 2 );
 
     for ( i = 0; i < hsp->numOfSeq; i++ )
     {
@@ -113,20 +113,20 @@ void SAMOutputHeaderConstruct ( bam_header_t * sheader, HSP * hsp, HSPAux * hspa
         //Fill in the Ref.Seq names and lengths.
         sheader->target_name[i] = hsp->annotation[i].text;
         sheader->target_len[i] = hsp->seqActualOffset[i].endPos - hsp->seqActualOffset[i].startPos;
-        sprintf(snTagsTmp, "@SQ\tSN:%s\tLN:%u\n", hsp->annotation[i].text, hsp->seqActualOffset[i].endPos-hsp->seqActualOffset[i].startPos);
-        strcat(snTags, snTagsTmp);
+        sprintf ( snTagsTmp, "@SQ\tSN:%s\tLN:%u\n", hsp->annotation[i].text, hsp->seqActualOffset[i].endPos - hsp->seqActualOffset[i].startPos );
+        strcat ( snTags, snTagsTmp );
     }
 
     char programInfo[1024];
     sprintf ( programInfo, "@PG\tID:%s\tPN:%s\tVN:v%d.%d.%d (%s)\n", PROJECT_NAME, PROJECT_NAME, PROJECT_MAJOR, PROJECT_MINOR, PROJECT_REV, PROJECT_SPECIAL );
-    int textLen = strlen(hspaux->readGroup) + strlen(hspaux->sampleName) +strlen(hspaux->readGrpOption) + strlen(programInfo) + strlen(snTags) + 15 + 23;
+    int textLen = strlen ( hspaux->readGroup ) + strlen ( hspaux->sampleName ) + strlen ( hspaux->readGrpOption ) + strlen ( programInfo ) + strlen ( snTags ) + 15 + 23;
     sheader->text = ( char * ) malloc ( textLen * sizeof ( char ) );
-    sprintf(sheader->text, "@HD\tVN:1.3\tSO:unsorted\n@RG\tID:%s\tSM:%s\t%s\n%s%s", hspaux->readGroup, hspaux->sampleName, hspaux->readGrpOption, snTags, programInfo);
+    sprintf ( sheader->text, "@HD\tVN:1.3\tSO:unsorted\n@RG\tID:%s\tSM:%s\t%s\n%s%s", hspaux->readGroup, hspaux->sampleName, hspaux->readGrpOption, snTags, programInfo );
     sheader->l_text = strlen ( sheader->text );
     //Given up unknown parameters.
     //If someone ever found out what the hell is this pls update.
-    free(snTags);
-    free(snTagsTmp);
+    free ( snTags );
+    free ( snTagsTmp );
     sheader->hash = NULL;
     sheader->rg2lib = NULL;
 }

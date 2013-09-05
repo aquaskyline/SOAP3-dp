@@ -48,7 +48,7 @@ typedef struct OCCList
 } OCCList;
 
 
-SAList * SAListConstruct();
+SAList * SAListConstruct ();
 void SAListReset ( SAList * sa_list );
 void addSAToSAList ( SAList * sa_list, unsigned int l_value, unsigned int r_value, unsigned char strand, unsigned char mismatchCount );
 void SAListFree ( SAList * sa_list );
@@ -62,7 +62,7 @@ unsigned int retainAllBestWithCap ( SAList * sa_list, OCCList * occ_list, int ma
 // retain all best answers
 unsigned int retainAllBestAndSecBest ( SAList * sa_list, OCCList * occ_list );
 
-OCCList * OCCListConstruct();
+OCCList * OCCListConstruct ();
 void OCCListReset ( OCCList * occ_list );
 void addToOCCList ( OCCList * occ_list, unsigned int pos, char strand, char mismatchCount );
 void OCCListFree ( OCCList * occ_list );

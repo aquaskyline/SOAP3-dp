@@ -119,7 +119,7 @@ __device__ void DPScoreNHitPos ( uint * packedDNASequence, uint DNALength, uint 
 
         for ( i = 1; i <= readLength; i++ )
         {
-            Mc_innerDPSO_UpdateScoreTable();
+            Mc_innerDPSO_UpdateScoreTable ();
 
             if ( i <= clipLtCheckLoc )
             {
@@ -208,7 +208,7 @@ __device__ void GenerateDPTable ( uint * packedDNASequence, uint DNALength, uint
 
         for ( i = 1; i <= readLength; i++ )
         {
-            Mc_UpdateScoreTable();
+            Mc_UpdateScoreTable ();
 
             if ( i <= clipLtCheckLoc )
             {
@@ -301,6 +301,7 @@ __global__ void SemiGlobalAligntment ( uint * packedDNASequence, uint * DNALengt
                           DPTable, threadId );
         startOffsets[threadId] = refOffset;
         hitLocs[threadId] = hitPos;
+        hitLocs[threadId] = hitLocs[threadId];
 
         if ( clipRtSizes != NULL )
         { clipRtSizes[threadId] = scRight; }
@@ -330,7 +331,7 @@ __global__ void GPUBacktrack ( uint * packedDNASequence, uint * DNALengths, uint
             uint TPARA = ( threadId & 0x1F ) << 1;
             uint readTPARA = ( threadId >> 5 ) * ( MC_CeilDivide16 ( maxReadLength ) << 5 ) + ( threadId & 0x1F );
             uint dnaTPARA = ( threadId >> 5 ) * ( MC_CeilDivide16 ( maxDNALength ) << 5 ) + ( threadId & 0x1F );
-            uchar * curPattern = pattern + threadId * PatternLength();
+            uchar * curPattern = pattern + threadId * PatternLength ();
             uint pIndex = 0;
             uint readLength = readLengths[threadId];
             uint refOffset = startOffsets[threadId];
@@ -380,8 +381,8 @@ __global__ void GPUBacktrack ( uint * packedDNASequence, uint * DNALengths, uint
                     {
                         // Match/Mismatch --> reference X : read X
                         MC_PatternAppend ( 'm' - ( ( refChar == readChar ) << 5 ) );
-                        MC_NextRefCharNInitScore();
-                        MC_NextReadChar();
+                        MC_NextRefCharNInitScore ();
+                        MC_NextReadChar ();
                         curScore = nextScore;
                     }
                     else if ( curScore == GapOpenScore +
@@ -389,7 +390,7 @@ __global__ void GPUBacktrack ( uint * packedDNASequence, uint * DNALengths, uint
                     {
                         // Deletion --> reference X : read -
                         MC_PatternAppend ( 'D' );
-                        MC_NextRefCharNInitScore();
+                        MC_NextRefCharNInitScore ();
                         curScore = nextScore;
                     }
                     else if ( curScore == GapExtendScore +
@@ -397,7 +398,7 @@ __global__ void GPUBacktrack ( uint * packedDNASequence, uint * DNALengths, uint
                     {
                         // (start extension) Deletion --> reference X : read -
                         MC_PatternAppend ( 'D' );
-                        MC_NextRefCharNInitScore();
+                        MC_NextRefCharNInitScore ();
                         curScore -= GapExtendScore;
                         state = DP_BT_D_EXT;
                     }
@@ -423,14 +424,14 @@ __global__ void GPUBacktrack ( uint * packedDNASequence, uint * DNALengths, uint
                         {
                             //  Insertion --> reference - : read X
                             MC_PatternAppend ( 'I' );
-                            MC_NextReadChar();
+                            MC_NextReadChar ();
                             curScore = nextScore;
                         }
                         else
                         {
                             // (start extension) Insertion --> reference - : read X
                             MC_PatternAppend ( 'I' );
-                            MC_NextReadChar();
+                            MC_NextReadChar ();
                             curScore -= GapExtendScore;
                             state = DP_BT_I_EXT;
                         }
@@ -443,7 +444,7 @@ __global__ void GPUBacktrack ( uint * packedDNASequence, uint * DNALengths, uint
                     {
                         // (extension) Deletion --> reference X : read -
                         MC_PatternAppend ( 'D' );
-                        MC_NextRefCharNInitScore();
+                        MC_NextRefCharNInitScore ();
                     }
                     else
                     {
@@ -457,7 +458,7 @@ __global__ void GPUBacktrack ( uint * packedDNASequence, uint * DNALengths, uint
 
                         // (extension) Insertion --> reference - : read X
                         MC_PatternAppend ( 'I' );
-                        MC_NextReadChar();
+                        MC_NextReadChar ();
                     }
 
                     if ( curScore == GapOpenScore + ( nextScore = MC_ScoreAddr ( score, refIndex, readPos ) ) )
@@ -532,7 +533,7 @@ uint SemiGlobalAligner::estimateThreadSize ( int maxReadLength, int maxDNALength
     return tableSizeOfThread + otherSizeOfThread + 16; // 16 is padding size
 }
 
-SemiGlobalAligner::SemiGlobalAligner()
+SemiGlobalAligner::SemiGlobalAligner ()
 {
     n_conf = 6;
 
@@ -627,7 +628,7 @@ void SemiGlobalAligner::decideConfiguration (
     }
 
     fflush ( stdout );
-    patternLength = PatternLength();
+    patternLength = PatternLength ();
 }
 
 void SemiGlobalAligner::init (
@@ -654,7 +655,7 @@ void SemiGlobalAligner::init (
     DP_HANDLE_ERROR ( cudaMalloc ( ( void ** ) &_clipRtSizes, batchSize * sizeof ( uint ) ) );
     DP_HANDLE_ERROR ( cudaMalloc ( ( void ** ) &_anchorLeftLocs, batchSize * sizeof ( uint ) ) );
     DP_HANDLE_ERROR ( cudaMalloc ( ( void ** ) &_anchorRightLocs, batchSize * sizeof ( uint ) ) );
-    DP_HANDLE_ERROR ( cudaMalloc ( ( void ** ) &_pattern, batchSize * PatternLength() * sizeof ( uchar ) ) );
+    DP_HANDLE_ERROR ( cudaMalloc ( ( void ** ) &_pattern, batchSize * PatternLength () * sizeof ( uchar ) ) );
     DP_HANDLE_ERROR ( cudaMalloc ( ( void ** ) &_maxScoreCounts, batchSize * sizeof ( uint ) ) );
     //      showGPUMemInfo("alloc");
 }
@@ -708,11 +709,12 @@ void SemiGlobalAligner::performAlignment (
     //Fetch results
     DP_HANDLE_ERROR ( cudaMemcpy ( scores, _scores, batchSize * sizeof ( int ), cudaMemcpyDeviceToHost ) );
     DP_HANDLE_ERROR ( cudaMemcpy ( hitLocs, _hitLocs, batchSize * sizeof ( uint ), cudaMemcpyDeviceToHost ) );
-    DP_HANDLE_ERROR ( cudaMemcpy ( pattern, _pattern, batchSize * PatternLength() * sizeof ( uchar ), cudaMemcpyDeviceToHost ) );
+    DP_HANDLE_ERROR ( cudaMemcpy ( pattern, _pattern, batchSize * PatternLength () * sizeof ( uchar ), cudaMemcpyDeviceToHost ) );
     DP_HANDLE_ERROR ( cudaMemcpy ( maxScoreCounts, _maxScoreCounts, batchSize * sizeof ( uint ), cudaMemcpyDeviceToHost ) );
+
 }
 
-void SemiGlobalAligner::freeMemory()
+void SemiGlobalAligner::freeMemory ()
 {
     cudaFree ( _DPTable );
     cudaFree ( _packedDNASequence );
@@ -749,10 +751,10 @@ AlgnmtFlags::AlgnmtFlags ( uint range )
     }
 
     pthread_mutex_init ( &occupy_mutex, NULL );
-    clear();
+    clear ();
 }
 
-void AlgnmtFlags::clear()
+void AlgnmtFlags::clear ()
 {
     memset ( flags, 0, size * sizeof ( uint ) );
 }
@@ -850,7 +852,7 @@ void AlgnmtFlags::XOR ( AlgnmtFlags * algnFlags )
     }
 }
 
-AlgnmtFlags::~AlgnmtFlags()
+AlgnmtFlags::~AlgnmtFlags ()
 {
     free ( flags );
 }
@@ -954,7 +956,7 @@ bool ResultCompare ( const DeepDPAlignResult & a, const DeepDPAlignResult & b )
     return ( a.algnmt_1 < b.algnmt_1 );
 }
 
-QueryIDStream::QueryIDStream()
+QueryIDStream::QueryIDStream ()
 {
     data = new vector<int>;
 }
@@ -972,13 +974,13 @@ QueryIDStream::QueryIDStream ( BothUnalignedPairsArrays * input )
         }
     }
 }
-QueryIDStream::~QueryIDStream()
+QueryIDStream::~QueryIDStream ()
 {
     delete data;
 }
 void QueryIDStream::append ( QueryIDStream * stream )
 {
-    data->insert ( data->end(), stream->data->begin(), stream->data->end() );
+    data->insert ( data->end (), stream->data->begin (), stream->data->end () );
 }
 void QueryIDStream::setBuffer ( vector<int> * input )
 {
@@ -996,7 +998,7 @@ using namespace SingleDP_Space;
 #define DPS_SEEDING_BATCH_SIZE 256 * 1024
 #define DPS_MARGIN(l) ((l>100) ? (l>>2) : 25)
 
-CandidateStream::CandidateStream()
+CandidateStream::CandidateStream ()
 {
     pthread_mutex_init ( &occupy_mutex, NULL );
 }
@@ -1004,8 +1006,8 @@ void CandidateStream::append ( vector<CandidateInfo> * canInfo, AlgnmtFlags * al
 {
     pthread_mutex_lock ( &occupy_mutex );
 
-    for ( vector<CandidateInfo>::iterator it = canInfo->begin();
-            it < canInfo->end(); ++it )
+    for ( vector<CandidateInfo>::iterator it = canInfo->begin ();
+            it < canInfo->end (); ++it )
     {
         data.push_back ( *it );
         alignFlags->set ( it->readID );
@@ -1032,9 +1034,9 @@ SingleEndSeedingEngine::SingleEndSeedingBatch::SingleEndSeedingBatch (
     MC_CheckMalloc ( offsets, uint,   batchSize );
     MC_CheckMalloc ( seeds,   uint,   batchSize * wordPerSeed );
     MC_CheckMalloc ( seedPositions,   int,    inputMaxReadLength );
-    clear();
+    clear ();
 }
-SingleEndSeedingEngine::SingleEndSeedingBatch::~SingleEndSeedingBatch()
+SingleEndSeedingEngine::SingleEndSeedingBatch::~SingleEndSeedingBatch ()
 {
     freeSingleAlgnResultArray ( algnResultArray );
     free ( readIDs );
@@ -1043,7 +1045,7 @@ SingleEndSeedingEngine::SingleEndSeedingBatch::~SingleEndSeedingBatch()
     free ( seeds );
     free ( seedPositions );
 }
-void SingleEndSeedingEngine::SingleEndSeedingBatch::clear()
+void SingleEndSeedingEngine::SingleEndSeedingBatch::clear ()
 {
     numQueries = 0;
 }
@@ -1095,7 +1097,7 @@ vector<CandidateInfo> * SingleEndSeedingEngine::SingleEndSeedingBatch::singleMer
     SeedPos * readPos
 )
 {
-    vector<CandidateInfo> * canInfo = new vector<CandidateInfo>();
+    vector<CandidateInfo> * canInfo = new vector<CandidateInfo> ();
     SeedPos * readIter = readPos;
     uint seedReadCnt = 0;
 
@@ -1175,7 +1177,7 @@ SeedPos * SingleEndSeedingEngine::SingleEndSeedingBatch::decodePositions (
 
                     for ( uint k = iter_sa->saLeft; k <= iter_sa->saRight; k++ )
                     {
-                        uint estimatedPos = MC_EstimatedPos ( (*bwt->_bwtSaValue) ( bwt, k ) );
+                        uint estimatedPos = MC_EstimatedPos ( ( *bwt->_bwtSaValue ) ( bwt, k ) );
                         MC_AppendPos ( iter_pos, readID, strand,
                                        estimatedPos, offset );
                     }
@@ -1205,6 +1207,7 @@ SeedPos * SingleEndSeedingEngine::SingleEndSeedingBatch::decodePositions (
     uint len = iter_pos - pos;
     MC_RadixSort_32_16 ( pos, pos, auxPos, len );
     MC_RadixSort_32_16 ( pos, readID, auxPos, len );
+    MC_RadixSort_8_8 ( pos, strand, auxPos, len );
     free ( auxPos );
     return pos;
 }
@@ -1225,18 +1228,18 @@ void SingleEndSeedingEngine::SingleEndSeedingThreadContext::init ( SingleEndSeed
     sem_init ( &ACKSem, 0, 0 );
     sem_init ( &GPUFinishSem, 0, 0 );
     this->batch = batch;
-    this->batch->clear();
+    this->batch->clear ();
 }
 
-void SingleEndSeedingEngine::SingleEndSeedingThreadContext::freeMemory()
+void SingleEndSeedingEngine::SingleEndSeedingThreadContext::freeMemory ()
 {
     delete batch;
 }
 
 // ****
-SingleEndSeedingEngine::SingleEndSeedingEngine() {}
+SingleEndSeedingEngine::SingleEndSeedingEngine () {}
 
-void SingleEndSeedingEngine::performSeeding()
+void SingleEndSeedingEngine::performSeeding ()
 {
     cuCtxPopCurrent ( & ( ctx ) );
     seedingSwapBatch =
@@ -1262,7 +1265,7 @@ void SingleEndSeedingEngine::performSeeding()
     int threadId;
     void * empty;
 
-    for ( uint i = 0; i < queryIDStream->data->size(); i++ )
+    for ( uint i = 0; i < queryIDStream->data->size (); i++ )
     {
         int readID = ( * ( queryIDStream->data ) ) [i];
         inputFlags->set ( readID );
@@ -1272,7 +1275,7 @@ void SingleEndSeedingEngine::performSeeding()
             // launch one batch
             threadId = seedingCPUThreadDelegator.schedule ( empty );
             sem_wait ( & ( seedingThreadContext[threadId].ACKSem ) );
-            seedingSwapBatch->clear();
+            seedingSwapBatch->clear ();
             seedingSwapBatch->packSeeds ( readID, STAGE_SINGLE_DP );
         }
     }
@@ -1284,8 +1287,8 @@ void SingleEndSeedingEngine::performSeeding()
         sem_wait ( & ( seedingThreadContext[threadId].ACKSem ) );
     }
 
-    seedingCPUThreadDelegator.finalize();
-    seedingGPUThreadDelegator.finalize();
+    seedingCPUThreadDelegator.finalize ();
+    seedingGPUThreadDelegator.finalize ();
     alignFlags->getXOR ( inputFlags, unseededIDStream->data );
     delete inputFlags;
     delete alignFlags;
@@ -1293,7 +1296,7 @@ void SingleEndSeedingEngine::performSeeding()
 
     for ( int i = 0; i < dpPara->numOfCPUForSeeding; i++ )
     {
-        seedingThreadContext[i].freeMemory();
+        seedingThreadContext[i].freeMemory ();
     }
 
     delete[] seedingThreadContext;
@@ -1313,10 +1316,10 @@ void SingleEndSeedingEngine::performSeeding (
     QueryIDStream    *    unseededIDStream
 )
 {
-    engine = new SingleEndSeedingEngine();
+    engine = new SingleEndSeedingEngine ();
     MC_MemberCopy5 ( engine->, , queryIDStream, dpPara, queries, queryLengths, inputMaxReadLength );
     MC_MemberCopy4 ( engine->, , soap3Wrapper, index, canStream, unseededIDStream );
-    engine->performSeeding();
+    engine->performSeeding ();
     delete engine;
 }
 SingleEndSeedingEngine * SingleEndSeedingEngine::engine;
@@ -1336,7 +1339,7 @@ void SingleDP_Space::SeedingCPUThread ( int threadId, void *& empty )
     delete canInfo;
 }
 
-void SingleDP_Space::SeedingGPUThreadInit()
+void SingleDP_Space::SeedingGPUThreadInit ()
 {
     cuCtxPushCurrent ( SingleEndSeedingEngine::engine->ctx );
 }
@@ -1355,7 +1358,7 @@ void SingleDP_Space::SeedingGPUThread ( int threadId, int *& pCallThreadId )
     sem_post ( & ( engine->seedingThreadContext[*pCallThreadId].GPUFinishSem ) );
 }
 
-void SingleDP_Space::SeedingGPUThreadFinalize()
+void SingleDP_Space::SeedingGPUThreadFinalize ()
 {
     cuCtxPopCurrent ( & ( SingleEndSeedingEngine::engine->ctx ) );
 }
@@ -1389,10 +1392,10 @@ SingleEndAlignmentEngine::SingleEndAlgnBatch::SingleEndAlgnBatch (
     MC_CheckMalloc ( hitLocs,             uint,           batchSize );
     MC_CheckMalloc ( pattern,             uchar,          batchSize * patternLength );
     MC_CheckMalloc ( maxScoreCounts,      uint,           batchSize );
-    clear();
+    clear ();
 }
 
-SingleEndAlignmentEngine::SingleEndAlgnBatch::~SingleEndAlgnBatch()
+SingleEndAlignmentEngine::SingleEndAlgnBatch::~SingleEndAlgnBatch ()
 {
     free ( canInfos );
     free ( DNALengths );
@@ -1408,7 +1411,7 @@ SingleEndAlignmentEngine::SingleEndAlgnBatch::~SingleEndAlgnBatch()
     free ( maxScoreCounts );
 }
 
-void SingleEndAlignmentEngine::SingleEndAlgnBatch::clear()
+void SingleEndAlignmentEngine::SingleEndAlgnBatch::clear ()
 {
     numOfThreads = 0;
 }
@@ -1488,7 +1491,7 @@ inline void SingleEndAlignmentEngine::SingleEndAlgnBatch::packRead (
         for ( int i = 1; i <= length; i++ )
         {
             int rev_i = length - i;
-            register uint c_nucleotide = soap3DnaComplement[( uint ) MC_OldReadUnpack ( queries, rev_i )];
+            register uint c_nucleotide = soap3DnaComplement[ ( uint ) MC_OldReadUnpack ( queries, rev_i )];
 #ifdef BS_MOD
             c_nucleotide = c_nucleotide ^ ( ( c_nucleotide == index->sraIndex->hsp->flag ) << 1 );
 #endif
@@ -1523,25 +1526,25 @@ void SingleEndAlignmentEngine::SingleEndAlgnThreadContext::init ( SingleEndAlgnB
     this->batch = batch;
 }
 
-void SingleEndAlignmentEngine::SingleEndAlgnThreadContext::freeMemory()
+void SingleEndAlignmentEngine::SingleEndAlgnThreadContext::freeMemory ()
 {
     delete batch;
 }
 
 // ****
-SingleEndAlignmentEngine::AlgnmtResultStream::AlgnmtResultStream()
+SingleEndAlignmentEngine::AlgnmtResultStream::AlgnmtResultStream ()
 {
     numOut = 0;
     pthread_mutex_init ( &occupy_mutex, NULL );
 }
 
-SingleEndAlignmentEngine::AlgnmtResultStream::~AlgnmtResultStream()
+SingleEndAlignmentEngine::AlgnmtResultStream::~AlgnmtResultStream ()
 {
-    for ( int i = 0; i < dpSResult.size(); i++ )
+    for ( int i = 0; i < dpSResult.size (); i++ )
     {
         SingleDPResultBatch & resultBatch = * ( dpSResult[i] );
 
-        for ( int j = 0; j < resultBatch.size(); j++ )
+        for ( int j = 0; j < resultBatch.size (); j++ )
         {
             free ( resultBatch[j].cigarString );
         }
@@ -1549,7 +1552,7 @@ SingleEndAlignmentEngine::AlgnmtResultStream::~AlgnmtResultStream()
         delete dpSResult[i];
     }
 
-    dpSResult.clear();
+    dpSResult.clear ();
 }
 
 // ****
@@ -1566,7 +1569,7 @@ void SingleEndAlignmentEngine::performAlignment (
     inputFlags = new AlgnmtFlags;
     alignFlags = new AlgnmtFlags;
     resultStream = new AlgnmtResultStream;
-    outputBuf = new OutputBuffer<SingleAlgnmtResult>();
+    outputBuf = new OutputBuffer<SingleAlgnmtResult> ();
     outputBuf->setAlignmentType ( alignmentType );
     maxReadLength = ( inputMaxReadLength / 4 + 1 ) * 4;
     maxDNALength = maxReadLength + 2 * DPS_MARGIN ( inputMaxReadLength ) + 8;
@@ -1597,7 +1600,7 @@ void SingleEndAlignmentEngine::performAlignment (
     int threadId;
     void * empty;
 
-    for ( uint i = 0; i < canStream->data.size(); i++ )
+    for ( uint i = 0; i < canStream->data.size (); i++ )
     {
         CandidateInfo & info = canStream->data[i];
         inputFlags->set ( info.readID );
@@ -1607,7 +1610,7 @@ void SingleEndAlignmentEngine::performAlignment (
             // launch one batch
             threadId = algnmtCPUThreadDelegator.schedule ( empty );
             sem_wait ( & ( algnThreadContext[threadId].ACKSem ) );
-            algnSwapBatch->clear();
+            algnSwapBatch->clear ();
             algnSwapBatch->pack ( info );
         }
     }
@@ -1620,9 +1623,9 @@ void SingleEndAlignmentEngine::performAlignment (
     }
 
     /* finalize */
-    algnmtCPUThreadDelegator.finalize();
-    algnmtGPUThreadDelegator.finalize();
-    outputThreadDelegator.finalize();
+    algnmtCPUThreadDelegator.finalize ();
+    algnmtGPUThreadDelegator.finalize ();
+    outputThreadDelegator.finalize ();
     alignFlags->getXOR ( inputFlags, unalignedIDStream->data );
     delete inputFlags;
     delete alignFlags;
@@ -1630,7 +1633,7 @@ void SingleEndAlignmentEngine::performAlignment (
 
     for ( int i = 0; i < dpPara->numOfCPUThreads; i++ )
     {
-        algnThreadContext[i].freeMemory();
+        algnThreadContext[i].freeMemory ();
     }
 
     delete[] algnThreadContext;
@@ -1657,7 +1660,7 @@ void SingleEndAlignmentEngine::performAlignment (
     uint         &        numDPAlignment
 )
 {
-    engine = new SingleEndAlignmentEngine();
+    engine = new SingleEndAlignmentEngine ();
     MC_MemberCopy2 ( engine->, , canStream, dpPara );
     MC_MemberCopy4 ( engine->, , queries, upkdQueryNames, upkdReadLengths, inputMaxReadLength );
     MC_MemberCopy2 ( engine->, , origReadIDs, upkdQualities );
@@ -1731,7 +1734,7 @@ void SingleDP_Space::algnmtCPUThread ( int threadId, void *& empty )
     sem_wait ( & ( engine->algnThreadContext[threadId].outputACKSem ) );
 }
 
-void SingleDP_Space::algnmtGPUThreadInit()
+void SingleDP_Space::algnmtGPUThreadInit ()
 {
     SingleEndAlignmentEngine * engine = SingleEndAlignmentEngine::engine;
     cuCtxPushCurrent ( engine->ctx );
@@ -1756,10 +1759,10 @@ void SingleDP_Space::algnmtGPUThread ( int threadId, int *& pCallThreadId )
     sem_post ( & ( engine->algnThreadContext[*pCallThreadId].GPUFinishSem ) );
 }
 
-void SingleDP_Space::algnmtGPUThreadFinalize()
+void SingleDP_Space::algnmtGPUThreadFinalize ()
 {
     SingleEndAlignmentEngine * engine = SingleEndAlignmentEngine::engine;
-    engine->semiGlobalAligner.freeMemory();
+    engine->semiGlobalAligner.freeMemory ();
     //  showGPUMemInfo("algn exit");
     cuCtxPopCurrent ( & ( engine->ctx ) );
 }
@@ -1773,7 +1776,7 @@ void SingleDP_Space::DPSOutputThread ( int threadId, int *& pCallThreadId )
     sem_post ( & ( engine->algnThreadContext[callThreadId].outputACKSem ) );
     vector<SingleDPResultBatch *> & dpResult = engine->resultStream->dpSResult;
 
-    while ( dpResult.size() <= batchID )
+    while ( dpResult.size () <= batchID )
     {
         dpResult.push_back ( NULL );
     }
@@ -1795,20 +1798,20 @@ void SingleDP_Space::DPSOutputThread ( int threadId, int *& pCallThreadId )
     }
     uint numOut = engine->resultStream->numOut;
 
-    while ( numOut < dpResult.size() && dpResult[numOut] != NULL )
+    while ( numOut < dpResult.size () && dpResult[numOut] != NULL )
     {
         //OUTPUT HERE
         SingleDPResultBatch & batch = *dpResult[numOut];
 
-        for ( int i = 0; i < batch.size(); i++ )
+        for ( int i = 0; i < batch.size (); i++ )
         {
             SingleAlgnmtResult & result = batch[i];
             int readID = result.readID;
 
             if ( readID != engine->lastReadID )
             {
-                MC_DPSOutputRead();
-                engine->outputBuf->clear();
+                MC_DPSOutputRead ();
+                engine->outputBuf->clear ();
                 engine->lastReadID = readID;
             }
 
@@ -1821,11 +1824,11 @@ void SingleDP_Space::DPSOutputThread ( int threadId, int *& pCallThreadId )
     engine->resultStream->numOut = numOut;
 }
 
-void SingleDP_Space::DPSOutputThreadFinalize()
+void SingleDP_Space::DPSOutputThreadFinalize ()
 {
     SingleEndAlignmentEngine * engine = SingleEndAlignmentEngine::engine;
-    MC_DPSOutputRead();
-    engine->outputBuf->clear();
+    MC_DPSOutputRead ();
+    engine->outputBuf->clear ();
 }
 
 void SingleDP_Space::DPSOutputUnalignedReads (
@@ -1848,7 +1851,7 @@ void SingleDP_Space::DPSOutputUnalignedReads (
     MC_CheckMalloc ( buf, SingleAlgnmtResult, 1024 );
     int idx = 0;
 
-    for ( uint i = 0; i < unalignedIDStream->data->size(); i++ )
+    for ( uint i = 0; i < unalignedIDStream->data->size (); i++ )
     {
         buf[idx].readID = ( * ( unalignedIDStream->data ) ) [i];
         buf[idx].algnmt = 0xFFFFFFFF;
@@ -1857,13 +1860,13 @@ void SingleDP_Space::DPSOutputUnalignedReads (
 
         if ( idx >= 1024 )
         {
-            MC_DPSOutputUnalgnRead();
+            MC_DPSOutputUnalgnRead ();
             idx = 0;
         }
     }
 
     if ( idx > 0 )
-    { MC_DPSOutputUnalgnRead(); }
+    { MC_DPSOutputUnalgnRead (); }
 
     free ( buf );
 }
@@ -1906,7 +1909,7 @@ int HalfEndOccStream::fetchNextOcc ( SRAOccurrence & occ )
 
         if ( nextSAIndex != -1 )
         {
-            SA2OCC();
+            SA2OCC ();
         }
         else if ( iter_occ == end_occ )
         {
@@ -1929,7 +1932,7 @@ int HalfEndOccStream::fetchNextOcc ( SRAOccurrence & occ )
             else
             {
                 nextSAIndex = iter_sa->saIndexLeft;
-                SA2OCC();
+                SA2OCC ();
             }
         }
         else
@@ -1945,7 +1948,7 @@ int HalfEndOccStream::fetchNextOcc ( SRAOccurrence & occ )
                 else
                 {
                     nextSAIndex = iter_sa->saIndexLeft;
-                    SA2OCC();
+                    SA2OCC ();
                 }
             }
         }
@@ -1988,10 +1991,10 @@ HalfEndAlignmentEngine::HalfEndAlgnBatch::HalfEndAlgnBatch (
     MC_CheckMalloc ( peRightAnchorLocs,   uint,           batchSize );
     MC_CheckMalloc ( pattern,             uchar,          batchSize * patternLength );
     MC_CheckMalloc ( maxScoreCounts,      uint,           batchSize );
-    clear();
+    clear ();
 }
 
-HalfEndAlignmentEngine::HalfEndAlgnBatch::~HalfEndAlgnBatch()
+HalfEndAlignmentEngine::HalfEndAlgnBatch::~HalfEndAlgnBatch ()
 {
     free ( canInfo );
     free ( DNALengths );
@@ -2010,7 +2013,7 @@ HalfEndAlignmentEngine::HalfEndAlgnBatch::~HalfEndAlgnBatch()
     free ( maxScoreCounts );
 }
 
-void HalfEndAlignmentEngine::HalfEndAlgnBatch::clear()
+void HalfEndAlignmentEngine::HalfEndAlgnBatch::clear ()
 {
     numOfThreads = 0;
 }
@@ -2049,9 +2052,10 @@ int HalfEndAlignmentEngine::HalfEndAlgnBatch::pack (
         //aligned read: at left, unaligned read: at right
         uint rightEnd = alignedPos + insert_high;
         uint rightStart = alignedPos + insert_low - unalignedReadLength;
+
         // rightStart has to be >= alignedPos
-        if (rightStart < alignedPos)
-            rightStart = alignedPos;
+        if ( rightStart < alignedPos )
+        { rightStart = alignedPos; }
 
         if ( rightStart < fullDNALength && rightEnd <= fullDNALength )
         {
@@ -2074,9 +2078,10 @@ int HalfEndAlignmentEngine::HalfEndAlgnBatch::pack (
         //aligned read: at right, unaligned read: at left
         uint leftStart = alignedPos + alignedReadLength - insert_high;
         uint leftEnd = alignedPos + alignedReadLength - insert_low + unalignedReadLength;
+
         // leftEnd has to be < alignedPos + alignedReadLength
-        if (leftEnd >= alignedPos + alignedReadLength)
-            leftEnd = alignedPos + alignedReadLength - 1;
+        if ( leftEnd >= alignedPos + alignedReadLength )
+        { leftEnd = alignedPos + alignedReadLength - 1; }
 
         if ( leftStart < fullDNALength && leftEnd <= fullDNALength )
         {
@@ -2128,7 +2133,7 @@ inline void HalfEndAlignmentEngine::HalfEndAlgnBatch::packRead (
         for ( int i = 1; i <= length; i++ )
         {
             int rev_i = length - i;
-            register uint c_nucleotide = soap3DnaComplement[( uint ) MC_OldReadUnpack ( queries, rev_i )];
+            register uint c_nucleotide = soap3DnaComplement[ ( uint ) MC_OldReadUnpack ( queries, rev_i )];
 #ifdef BS_MOD
             c_nucleotide = c_nucleotide ^ ( ( c_nucleotide == index->sraIndex->hsp->flag ) << 1 );
 #endif
@@ -2166,25 +2171,25 @@ void HalfEndAlignmentEngine::HalfEndAlgnThreadContext::init (
     this->batch = batch;
 }
 
-void HalfEndAlignmentEngine::HalfEndAlgnThreadContext::freeMemory()
+void HalfEndAlignmentEngine::HalfEndAlgnThreadContext::freeMemory ()
 {
     resultBatch = NULL;
     delete batch;
 }
 
 // ****
-HalfEndAlignmentEngine::AlgnmtResultStream::AlgnmtResultStream()
+HalfEndAlignmentEngine::AlgnmtResultStream::AlgnmtResultStream ()
 {
     numOut = 0;
     pthread_mutex_init ( &occupy_mutex, NULL );
 }
-HalfEndAlignmentEngine::AlgnmtResultStream::~AlgnmtResultStream()
+HalfEndAlignmentEngine::AlgnmtResultStream::~AlgnmtResultStream ()
 {
-    for ( int i = 0; i < dpResult.size(); i++ )
+    for ( int i = 0; i < dpResult.size (); i++ )
     {
         DPResultBatch & resultBatch = * ( dpResult[i] );
 
-        for ( int j = 0; j < resultBatch.size(); j++ )
+        for ( int j = 0; j < resultBatch.size (); j++ )
         {
             free ( resultBatch[j].cigarString );
         }
@@ -2192,7 +2197,7 @@ HalfEndAlignmentEngine::AlgnmtResultStream::~AlgnmtResultStream()
         delete dpResult[i];
     }
 
-    dpResult.clear();
+    dpResult.clear ();
 }
 
 // ****
@@ -2207,7 +2212,7 @@ void HalfEndAlignmentEngine::performAlignment ( uint & numDPAlignedRead, uint & 
     inputFlags = new AlgnmtFlags;
     alignFlags = new AlgnmtFlags;
     resultStream = new AlgnmtResultStream;
-    outputBuf = new OutputBuffer<AlgnmtDPResult>();
+    outputBuf = new OutputBuffer<AlgnmtDPResult> ();
     outputBuf->setAlignmentType ( alignmentType );
     maxReadLength = ( inputMaxReadLength / 4 + 1 ) * 4;
     maxDNALength = insert_high - insert_low + inputMaxReadLength + 1;
@@ -2249,7 +2254,7 @@ void HalfEndAlignmentEngine::performAlignment ( uint & numDPAlignedRead, uint & 
         {
             threadId = algnmtCPUThreadDelegator.schedule ( empty );
             sem_wait ( & ( algnThreadContext[threadId].dispatchACKSem ) );
-            algnSwapBatch->clear();
+            algnSwapBatch->clear ();
             algnSwapBatch->pack ( occ );
         }
     }
@@ -2262,9 +2267,9 @@ void HalfEndAlignmentEngine::performAlignment ( uint & numDPAlignedRead, uint & 
     }
 
     /* finalize */
-    algnmtCPUThreadDelegator.finalize();
-    algnmtGPUThreadDelegator.finalize();
-    outputThreadDelegator.finalize();
+    algnmtCPUThreadDelegator.finalize ();
+    algnmtGPUThreadDelegator.finalize ();
+    outputThreadDelegator.finalize ();
     alignFlags->getXOR ( inputFlags, unalignedIDStream->data );
     delete inputFlags;
     delete alignFlags;
@@ -2272,7 +2277,7 @@ void HalfEndAlignmentEngine::performAlignment ( uint & numDPAlignedRead, uint & 
 
     for ( int i = 0; i < dpPara->numOfCPUThreads; i++ )
     {
-        algnThreadContext[i].freeMemory();
+        algnThreadContext[i].freeMemory ();
     }
 
     delete[] algnThreadContext;
@@ -2301,7 +2306,7 @@ void HalfEndAlignmentEngine::performAlignment (
     uint         &        numDPAlignment
 )
 {
-    engine = new HalfEndAlignmentEngine();
+    engine = new HalfEndAlignmentEngine ();
     MC_MemberCopy2 ( engine->, , canStream, dpPara );
     MC_MemberCopy4 ( engine->, , queries, upkdQueryNames, upkdReadLengths, inputMaxReadLength );
     MC_MemberCopy4 ( engine->, , insert_high, insert_low, peStrandLeftLeg, peStrandRightLeg );
@@ -2428,7 +2433,7 @@ void DP_Space::algnmtCPUThread ( int threadId, void *& empty )
     sem_wait ( & ( engine->algnThreadContext[threadId].outputACKSem ) );
 }
 
-void DP_Space::algnmtGPUThreadInit()
+void DP_Space::algnmtGPUThreadInit ()
 {
     HalfEndAlignmentEngine * engine = HalfEndAlignmentEngine::engine;
     cuCtxPushCurrent ( engine->ctx );
@@ -2437,10 +2442,10 @@ void DP_Space::algnmtGPUThreadInit()
                                      engine->maxDNALength, engine->maxDPTableLength, * ( engine->dpPara ) );
 }
 
-void DP_Space::algnmtGPUThreadFinalize()
+void DP_Space::algnmtGPUThreadFinalize ()
 {
     HalfEndAlignmentEngine * engine = HalfEndAlignmentEngine::engine;
-    engine->semiGlobalAligner.freeMemory();
+    engine->semiGlobalAligner.freeMemory ();
     cuCtxPopCurrent ( & ( engine->ctx ) );
 }
 
@@ -2471,7 +2476,7 @@ void DP_Space::DPOutputThread ( int outputThreadId, int *& pCallThreadId )
     sem_post ( & ( engine->algnThreadContext[threadId].outputACKSem ) );
     vector<DPResultBatch *> & dpResult = engine->resultStream->dpResult;
 
-    while ( dpResult.size() <= batchID )
+    while ( dpResult.size () <= batchID )
     {
         dpResult.push_back ( NULL );
     }
@@ -2494,19 +2499,19 @@ void DP_Space::DPOutputThread ( int outputThreadId, int *& pCallThreadId )
     }
     uint numOut = engine->resultStream->numOut;
 
-    while ( numOut < dpResult.size() && dpResult[numOut] != NULL )
+    while ( numOut < dpResult.size () && dpResult[numOut] != NULL )
     {
         //OUTPUT HERE
         DPResultBatch & batch = *dpResult[numOut];
 
-        for ( int i = 0; i < batch.size(); i++ )
+        for ( int i = 0; i < batch.size (); i++ )
         {
             AlgnmtDPResult & result = batch[i];
 
             if ( result.readID != engine->lastReadID )
             {
-                MC_OutputRead();
-                engine->outputBuf->clear();
+                MC_OutputRead ();
+                engine->outputBuf->clear ();
                 engine->lastReadID = result.readID;
             }
 
@@ -2519,12 +2524,12 @@ void DP_Space::DPOutputThread ( int outputThreadId, int *& pCallThreadId )
     engine->resultStream->numOut = numOut;
 }
 
-void DP_Space::DPOutputThreadFinalize()
+void DP_Space::DPOutputThreadFinalize ()
 {
     // last read
     HalfEndAlignmentEngine * engine = HalfEndAlignmentEngine::engine;
-    MC_OutputRead();
-    engine->outputBuf->clear();
+    MC_OutputRead ();
+    engine->outputBuf->clear ();
 }
 
 
@@ -2537,7 +2542,7 @@ using namespace DeepDP_Space;
 #define DP2_MARGIN(l) ((l>100) ? (l>>2) : 25)
 
 // ****
-DeepDP_Space::CandidateStream::CandidateStream()
+DeepDP_Space::CandidateStream::CandidateStream ()
 {
     pthread_mutex_init ( &occupy_mutex, NULL );
 }
@@ -2545,8 +2550,8 @@ void DeepDP_Space::CandidateStream::append ( vector<CandidateInfo> * canInfo, Al
 {
     pthread_mutex_lock ( &occupy_mutex );
 
-    for ( vector<CandidateInfo>::iterator it = canInfo->begin();
-            it < canInfo->end(); ++it )
+    for ( vector<CandidateInfo>::iterator it = canInfo->begin ();
+            it < canInfo->end (); ++it )
     {
         data.push_back ( *it );
         alignFlags->set ( ( it->readIDLeft >> 1 ) << 1 );
@@ -2586,10 +2591,10 @@ PairEndSeedingEngine::PairEndSeedingBatch::PairEndSeedingBatch (
     }
 
     MC_CheckMalloc ( seedPositions,       int,    inputMaxReadLength );
-    clear();
+    clear ();
 }
 
-PairEndSeedingEngine::PairEndSeedingBatch::~PairEndSeedingBatch()
+PairEndSeedingEngine::PairEndSeedingBatch::~PairEndSeedingBatch ()
 {
     for ( int lOr = 0; lOr < 2; lOr++ )
     {
@@ -2601,12 +2606,12 @@ PairEndSeedingEngine::PairEndSeedingBatch::~PairEndSeedingBatch()
     }
 }
 
-void PairEndSeedingEngine::PairEndSeedingBatch::clear()
+void PairEndSeedingEngine::PairEndSeedingBatch::clear ()
 {
     for ( int i = 0; i < 2; i++ )
     {
         numQueries[i] = 0;
-        inPosArr[i].clear();
+        inPosArr[i].clear ();
     }
 
     lastPairID = -1;
@@ -2782,17 +2787,17 @@ void PairEndSeedingEngine::PairEndSeedingBatch::pairEndMerge (
 
     while ( true )
     {
-        mateID = MC_MateID();
+        mateID = MC_MateID ();
 
-        while ( MC_ReadID() < mateID )
+        while ( MC_ReadID () < mateID )
         { ++readIter; }
 
-        readID = MC_ReadID();
+        readID = MC_ReadID ();
 
-        while ( MC_MateID() < readID )
+        while ( MC_MateID () < readID )
         { ++mateIter; }
 
-        mateID = MC_MateID();
+        mateID = MC_MateID ();
 
         if ( mateID == 0x7FFFFFFF )
         { break; }
@@ -2803,10 +2808,10 @@ void PairEndSeedingEngine::PairEndSeedingBatch::pairEndMerge (
         SeedPos * mateStart = mateIter;
 
         // assert : readID == mateID
-        while ( MC_ReadID() == readID )
+        while ( MC_ReadID () == readID )
         { ++readIter; }
 
-        while ( MC_MateID() == mateID )
+        while ( MC_MateID () == mateID )
         { ++mateIter; }
 
         SeedPos * readEnd = readIter;
@@ -2828,8 +2833,10 @@ void PairEndSeedingEngine::PairEndSeedingBatch::pairEndMerge (
         int readLength = readLengths[readID];
         int margin = DP2_MARGIN ( readLength );
         int length_low = insert_low - readLength - margin;
-        if (length_low < 0)
-            length_low = 0;
+
+        if ( length_low < 0 )
+        { length_low = 0; }
+
         int length_high = insert_high - readLength + margin;
         SeedPos * readP = readStart;
         SeedPos * mateP = mateStart;
@@ -2875,14 +2882,14 @@ int PairEndSeedingEngine::PairEndSeedingBatch::decodePositions (
         posIter->pos = ePos; \
         ++posIter; \
     }
-    int inPosSize = inPosArr[readOrMate].size();
+    int inPosSize = inPosArr[readOrMate].size ();
     int arrSize = inPosSize + MC_Inc2 ( numOfAnswer[readOrMate] );
     SeedPos * auxPos;
     MC_CheckMalloc ( pos,     SeedPos,    arrSize );
     MC_CheckMalloc ( auxPos,  SeedPos,    arrSize );
     // pre-input value
-    copy ( inPosArr[readOrMate].begin(), inPosArr[readOrMate].end(), pos );
-    inPosArr[readOrMate].clear();
+    copy ( inPosArr[readOrMate].begin (), inPosArr[readOrMate].end (), pos );
+    inPosArr[readOrMate].clear ();
     SeedPos * iter_pos = pos + inPosSize;
 
     for ( uint cpuThread = 0; cpuThread < algnResultArray[readOrMate]->arrayNum; cpuThread++ )
@@ -2914,7 +2921,7 @@ int PairEndSeedingEngine::PairEndSeedingBatch::decodePositions (
 
                     for ( uint k = iter_sa->saLeft; k <= iter_sa->saRight; k++ )
                     {
-                        uint estimatedPos = MC_SingleDP_EstimatedPos ( (*bwt->_bwtSaValue) ( bwt, k ) );
+                        uint estimatedPos = MC_SingleDP_EstimatedPos ( ( *bwt->_bwtSaValue ) ( bwt, k ) );
                         MC_SingleDP_AppendPos ( iter_pos, readID, strandIndex,
                                                 estimatedPos, offset );
                     }
@@ -2977,7 +2984,7 @@ vector<DeepDP_Space::CandidateInfo> * PairEndSeedingEngine::PairEndSeedingBatch:
     // Sort the candidates so that readID will be in order
     // To be revised
     vector<CandidateInfo> & candArr = *canInfo;
-    uint arrLength = candArr.size();
+    uint arrLength = candArr.size ();
     CandidateInfo * auxCandArr;
     MC_CheckMalloc ( auxCandArr, CandidateInfo, arrLength );
     MC_RadixSort_32_16 ( candArr, readIDLeft, auxCandArr, arrLength );
@@ -2993,22 +3000,22 @@ void PairEndSeedingEngine::PairEndSeedingThreadContext::init (
     sem_init ( &ACKSem, 0, 0 );
     sem_init ( &GPUFinishSem, 0, 0 );
     this->batch = batch;
-    this->batch->clear();
+    this->batch->clear ();
 }
-void PairEndSeedingEngine::PairEndSeedingThreadContext::freeMemory()
+void PairEndSeedingEngine::PairEndSeedingThreadContext::freeMemory ()
 {
     delete batch;
 }
 
 // ****
-PairEndSeedingEngine::PairEndSeedingEngine()
+PairEndSeedingEngine::PairEndSeedingEngine ()
 {
     queryIDStream = NULL;
     halfEndOccStream = NULL;
     tooManyHitIDStream = NULL;
 }
 
-void PairEndSeedingEngine::performSeeding()
+void PairEndSeedingEngine::performSeeding ()
 {
     cuCtxPopCurrent ( & ( ctx ) );
     seedingSwapBatch =
@@ -3059,7 +3066,7 @@ void PairEndSeedingEngine::performSeeding()
                 // launch one batch
                 threadId = seedingCPUThreadDelegator.schedule ( empty );
                 sem_wait ( & ( seedingThreadContext[threadId].ACKSem ) );
-                seedingSwapBatch->clear();
+                seedingSwapBatch->clear ();
                 seedingSwapBatch->packSeeds ( occ, seedingStage );
             }
         }
@@ -3067,7 +3074,7 @@ void PairEndSeedingEngine::performSeeding()
 
     if ( queryIDStream != NULL )
     {
-        for ( uint i = 0; i < queryIDStream->data->size(); i++ )
+        for ( uint i = 0; i < queryIDStream->data->size (); i++ )
         {
             int readID = ( * ( queryIDStream->data ) ) [i];
             inputFlags->set ( readID );
@@ -3077,7 +3084,7 @@ void PairEndSeedingEngine::performSeeding()
                 // launch one batch
                 threadId = seedingCPUThreadDelegator.schedule ( empty );
                 sem_wait ( & ( seedingThreadContext[threadId].ACKSem ) );
-                seedingSwapBatch->clear();
+                seedingSwapBatch->clear ();
                 seedingSwapBatch->packSeeds ( readID, seedingStage );
             }
         }
@@ -3086,8 +3093,8 @@ void PairEndSeedingEngine::performSeeding()
     // last batch
     threadId = seedingCPUThreadDelegator.schedule ( empty );
     sem_wait ( & ( seedingThreadContext[threadId].ACKSem ) );
-    seedingCPUThreadDelegator.finalize();
-    seedingGPUThreadDelegator.finalize();
+    seedingCPUThreadDelegator.finalize ();
+    seedingGPUThreadDelegator.finalize ();
 
     if ( tooManyHitIDStream == NULL )
     {
@@ -3113,7 +3120,7 @@ void PairEndSeedingEngine::performSeeding()
 
     for ( int i = 0; i < dpPara->numOfCPUForSeeding; i++ )
     {
-        seedingThreadContext[i].freeMemory();
+        seedingThreadContext[i].freeMemory ();
     }
 
     delete[] seedingThreadContext;
@@ -3136,12 +3143,12 @@ void PairEndSeedingEngine::performSeeding (
     QueryIDStream    *    unseededIDStream
 )
 {
-    engine = new PairEndSeedingEngine();
+    engine = new PairEndSeedingEngine ();
     MC_MemberCopy5 ( engine->, , queryIDStream, dpPara, queries, queryLengths, inputMaxReadLength );
     MC_MemberCopy4 ( engine->, , insert_high, insert_low, peStrandLeftLeg, peStrandRightLeg );
     MC_MemberCopy4 ( engine->, , soap3Wrapper, index, canStream, unseededIDStream );
     engine->seedingStage = seedingStage;
-    engine->performSeeding();
+    engine->performSeeding ();
     delete engine;
 }
 
@@ -3162,12 +3169,12 @@ void PairEndSeedingEngine::performSeeding (
     QueryIDStream    *    unseededIDStream
 )
 {
-    engine = new PairEndSeedingEngine();
+    engine = new PairEndSeedingEngine ();
     MC_MemberCopy5 ( engine->, , queryIDStream, dpPara, queries, queryLengths, inputMaxReadLength );
     MC_MemberCopy4 ( engine->, , insert_high, insert_low, peStrandLeftLeg, peStrandRightLeg );
     MC_MemberCopy5 ( engine->, , soap3Wrapper, index, canStream, tooManyHitIDStream, unseededIDStream );
     engine->seedingStage = seedingStage;
-    engine->performSeeding();
+    engine->performSeeding ();
     delete engine;
 }
 
@@ -3189,18 +3196,18 @@ void PairEndSeedingEngine::performSeeding (
     QueryIDStream    *    unseededIDStream
 )
 {
-    engine = new PairEndSeedingEngine();
+    engine = new PairEndSeedingEngine ();
     MC_MemberCopy5 ( engine->, , halfEndOccStream, dpPara, queries, queryLengths, inputMaxReadLength );
     MC_MemberCopy4 ( engine->, , insert_high, insert_low, peStrandLeftLeg, peStrandRightLeg );
     MC_MemberCopy4 ( engine->, , soap3Wrapper, index, canStream, unseededIDStream );
     engine->seedingStage = seedingStage;
-    engine->performSeeding();
+    engine->performSeeding ();
     delete engine;
 }
 
 PairEndSeedingEngine * PairEndSeedingEngine::engine;
 
-void DeepDP_Space::SeedingGPUThreadInit()
+void DeepDP_Space::SeedingGPUThreadInit ()
 {
     cuCtxPushCurrent ( PairEndSeedingEngine::engine->ctx );
     //  showGPUMemInfo("seeding enter");
@@ -3224,7 +3231,7 @@ void DeepDP_Space::SeedingGPUThread ( int threadId, int *& pCallThreadId )
 
     sem_post ( & ( engine->seedingThreadContext[*pCallThreadId].GPUFinishSem ) );
 }
-void DeepDP_Space::SeedingGPUThreadFinalize()
+void DeepDP_Space::SeedingGPUThreadFinalize ()
 {
     //  showGPUMemInfo("seeding exit");
     cuCtxPopCurrent ( & ( PairEndSeedingEngine::engine->ctx ) );
@@ -3267,7 +3274,7 @@ void DeepDP_Space::DP2OutputUnalignedReads (
     MC_CheckMalloc ( buf, DeepDPAlignResult, 1024 );
     int idx = 0;
 
-    for ( uint i = 0; i < unalignedIDStream->data->size(); i++ )
+    for ( uint i = 0; i < unalignedIDStream->data->size (); i++ )
     {
         buf[idx].readID = ( * ( unalignedIDStream->data ) ) [i];
         buf[idx].algnmt_1 = 0xFFFFFFFF;
@@ -3278,13 +3285,13 @@ void DeepDP_Space::DP2OutputUnalignedReads (
 
         if ( idx >= 1024 )
         {
-            MC_DP2OutputUnalgnRead();
+            MC_DP2OutputUnalgnRead ();
             idx = 0;
         }
     }
 
     if ( idx > 0 )
-    { MC_DP2OutputUnalgnRead(); }
+    { MC_DP2OutputUnalgnRead (); }
 
     free ( buf );
 }
@@ -3328,9 +3335,9 @@ PairEndAlignmentEngine::PairEndAlgnBatch::PairEndAlgnBatch (
     MC_CheckMalloc ( softClipRtSizes,     uint,           batchSize );
     MC_CheckMalloc ( peLeftAnchorLocs,    uint,           batchSize );
     MC_CheckMalloc ( peRightAnchorLocs,   uint,           batchSize );
-    clear();
+    clear ();
 }
-PairEndAlignmentEngine::PairEndAlgnBatch::~PairEndAlgnBatch()
+PairEndAlignmentEngine::PairEndAlgnBatch::~PairEndAlgnBatch ()
 {
     free ( packedDNASeq );
     free ( packedReadSeq );
@@ -3352,7 +3359,7 @@ PairEndAlignmentEngine::PairEndAlgnBatch::~PairEndAlgnBatch()
     free ( peLeftAnchorLocs );
     free ( peRightAnchorLocs );
 }
-void PairEndAlignmentEngine::PairEndAlgnBatch::clear()
+void PairEndAlignmentEngine::PairEndAlgnBatch::clear ()
 {
     numOfThreads = 0;
 }
@@ -3403,7 +3410,7 @@ int PairEndAlignmentEngine::PairEndAlgnBatch::packLeft (
     return 1;
 }
 
-void PairEndAlignmentEngine::PairEndAlgnBatch::packRight()
+void PairEndAlignmentEngine::PairEndAlgnBatch::packRight ()
 {
     for ( int i = 0; i < numOfThreads; i++ )
     {
@@ -3488,7 +3495,7 @@ inline void PairEndAlignmentEngine::PairEndAlgnBatch::packRead (
         for ( int i = 1; i <= length; i++ )
         {
             int rev_i = length - i;
-            register uint c_nucleotide = soap3DnaComplement[( uint ) MC_OldReadUnpack ( queries, rev_i )];
+            register uint c_nucleotide = soap3DnaComplement[ ( uint ) MC_OldReadUnpack ( queries, rev_i )];
 #ifdef BS_MOD
             c_nucleotide = c_nucleotide ^ ( ( c_nucleotide == index->sraIndex->hsp->flag ) << 1 );
 #endif
@@ -3524,25 +3531,25 @@ void PairEndAlignmentEngine::PairEndAlgnThreadContext::init (
     sem_init ( &outputACKSem, 0, 0 );
     this->batch = batch;
 }
-void PairEndAlignmentEngine::PairEndAlgnThreadContext::freeMemory()
+void PairEndAlignmentEngine::PairEndAlgnThreadContext::freeMemory ()
 {
     delete batch;
 }
 
 // ****
-PairEndAlignmentEngine::AlgnmtResultStream::AlgnmtResultStream()
+PairEndAlignmentEngine::AlgnmtResultStream::AlgnmtResultStream ()
 {
     numOut = 0;
     pthread_mutex_init ( &occupy_mutex, NULL );
 }
 
-PairEndAlignmentEngine::AlgnmtResultStream::~AlgnmtResultStream()
+PairEndAlignmentEngine::AlgnmtResultStream::~AlgnmtResultStream ()
 {
-    for ( int i = 0; i < dp2Result.size(); i++ )
+    for ( int i = 0; i < dp2Result.size (); i++ )
     {
         DP2ResultBatch & resultBatch = * ( dp2Result[i] );
 
-        for ( int j = 0; j < resultBatch.size(); j++ )
+        for ( int j = 0; j < resultBatch.size (); j++ )
         {
             free ( resultBatch[j].cigarString_1 );
             free ( resultBatch[j].cigarString_2 );
@@ -3551,11 +3558,11 @@ PairEndAlignmentEngine::AlgnmtResultStream::~AlgnmtResultStream()
         delete dp2Result[i];
     }
 
-    dp2Result.clear();
+    dp2Result.clear ();
 }
 
 // ****
-PairEndAlignmentEngine::PairEndAlignmentEngine() {}
+PairEndAlignmentEngine::PairEndAlignmentEngine () {}
 
 void PairEndAlignmentEngine::performAlignment ( uint & numDPAlignedRead, uint & numDPAlignment )
 {
@@ -3568,7 +3575,7 @@ void PairEndAlignmentEngine::performAlignment ( uint & numDPAlignedRead, uint & 
     inputFlags = new AlgnmtFlags;
     alignFlags = new AlgnmtFlags;
     resultStream = new AlgnmtResultStream;
-    outputBuf = new OutputBuffer<DeepDPAlignResult>();
+    outputBuf = new OutputBuffer<DeepDPAlignResult> ();
     outputBuf->setAlignmentType ( alignmentType );
     maxReadLength = ( inputMaxReadLength / 4 + 1 ) * 4;
     maxDNALength = maxReadLength + 2 * DP2_MARGIN ( inputMaxReadLength ) + 8;
@@ -3601,7 +3608,7 @@ void PairEndAlignmentEngine::performAlignment ( uint & numDPAlignedRead, uint & 
     int threadId;
     void * empty;
 
-    for ( uint i = 0; i < canStream->data.size(); i++ )
+    for ( uint i = 0; i < canStream->data.size (); i++ )
     {
         CandidateInfo & info = canStream->data[i];
         inputFlags->set ( ( info.readIDLeft >> 1 ) << 1 );
@@ -3611,7 +3618,7 @@ void PairEndAlignmentEngine::performAlignment ( uint & numDPAlignedRead, uint & 
             // launch one batch
             threadId = algnmtCPUThreadDelegator.schedule ( empty );
             sem_wait ( & ( algnThreadContext[threadId].ACKSem ) );
-            algnSwapBatch->clear();
+            algnSwapBatch->clear ();
             algnSwapBatch->packLeft ( info );
         }
     }
@@ -3624,9 +3631,9 @@ void PairEndAlignmentEngine::performAlignment ( uint & numDPAlignedRead, uint & 
     }
 
     /* finalize */
-    algnmtCPUThreadDelegator.finalize();
-    algnmtGPUThreadDelegator.finalize();
-    outputThreadDelegator.finalize();
+    algnmtCPUThreadDelegator.finalize ();
+    algnmtGPUThreadDelegator.finalize ();
+    outputThreadDelegator.finalize ();
     alignFlags->getXOR ( inputFlags, unalignedIDStream->data );
     delete inputFlags;
     delete alignFlags;
@@ -3634,7 +3641,7 @@ void PairEndAlignmentEngine::performAlignment ( uint & numDPAlignedRead, uint & 
 
     for ( int i = 0; i < dpPara->numOfCPUThreads; i++ )
     {
-        algnThreadContext[i].freeMemory();
+        algnThreadContext[i].freeMemory ();
     }
 
     delete[] algnThreadContext;
@@ -3663,7 +3670,7 @@ void PairEndAlignmentEngine::performAlignment (
     uint         &        numDPAlignment
 )
 {
-    engine = new PairEndAlignmentEngine();
+    engine = new PairEndAlignmentEngine ();
     MC_MemberCopy2 ( engine->, , canStream, dpPara );
     MC_MemberCopy4 ( engine->, , queries, upkdQueryNames, upkdReadLengths, inputMaxReadLength );
     MC_MemberCopy4 ( engine->, , insert_high, insert_low, peStrandLeftLeg, peStrandRightLeg );
@@ -3677,7 +3684,7 @@ void PairEndAlignmentEngine::performAlignment (
 PairEndAlignmentEngine * PairEndAlignmentEngine::engine;
 
 // ****
-void DeepDP_Space::DP2GPUAlgnThreadInit()
+void DeepDP_Space::DP2GPUAlgnThreadInit ()
 {
     PairEndAlignmentEngine * engine = PairEndAlignmentEngine::engine;
     cuCtxPushCurrent ( engine->ctx );
@@ -3707,10 +3714,10 @@ void DeepDP_Space::DP2GPUAlgnThread ( int threadId, int *& pCallThreadId )
     sem_post ( & ( engine->algnThreadContext[*pCallThreadId].GPUFinishSem ) );
 }
 
-void DeepDP_Space::DP2GPUAlgnThreadFinalize()
+void DeepDP_Space::DP2GPUAlgnThreadFinalize ()
 {
     PairEndAlignmentEngine * engine = PairEndAlignmentEngine::engine;
-    engine->semiGlobalAligner.freeMemory();
+    engine->semiGlobalAligner.freeMemory ();
     cuCtxPopCurrent ( & ( engine->ctx ) );
 }
 
@@ -3728,7 +3735,7 @@ void DeepDP_Space::DP2CPUAlgnThread ( int threadId, void *& empty )
     engine->algnmtGPUThreadDelegator.schedule ( pThreadId );
     sem_wait ( & ( engine->algnThreadContext[threadId].GPUFinishSem ) );
     // align right side
-    batch->packRight();
+    batch->packRight ();
     batch->leftOrRight = 1;
     engine->algnmtGPUThreadDelegator.schedule ( pThreadId );
     sem_wait ( & ( engine->algnThreadContext[threadId].GPUFinishSem ) );
@@ -3738,7 +3745,7 @@ void DeepDP_Space::DP2CPUAlgnThread ( int threadId, void *& empty )
     cutoffThreshold[0] = engine->dpPara->paramRead[0].cutoffThreshold;
     cutoffThreshold[1] = engine->dpPara->paramRead[1].cutoffThreshold;
     // rearrange result and Output
-    vector<DeepDPAlignResult> * resultBatch = new vector<DeepDPAlignResult>();
+    vector<DeepDPAlignResult> * resultBatch = new vector<DeepDPAlignResult> ();
 
     for ( int i = 0; i < batch->numOfThreads; i++ )
     {
@@ -3822,7 +3829,7 @@ void DeepDP_Space::DP2OutputThread ( int threadId, int *& pCallThreadId )
     sem_post ( & ( engine->algnThreadContext[callThreadId].outputACKSem ) );
     vector<DP2ResultBatch *> & dpResult = engine->resultStream->dp2Result;
 
-    while ( dpResult.size() <= batchID )
+    while ( dpResult.size () <= batchID )
     {
         dpResult.push_back ( NULL );
     }
@@ -3844,20 +3851,20 @@ void DeepDP_Space::DP2OutputThread ( int threadId, int *& pCallThreadId )
     }
     uint numOut = engine->resultStream->numOut;
 
-    while ( numOut < dpResult.size() && dpResult[numOut] != NULL )
+    while ( numOut < dpResult.size () && dpResult[numOut] != NULL )
     {
         //OUTPUT HERE
         DP2ResultBatch & batch = *dpResult[numOut];
 
-        for ( int i = 0; i < batch.size(); i++ )
+        for ( int i = 0; i < batch.size (); i++ )
         {
             DeepDPAlignResult & result = batch[i];
             int pairID = result.readID >> 1;
 
             if ( pairID != engine->lastReadID )
             {
-                MC_DP2OutputRead();
-                engine->outputBuf->clear();
+                MC_DP2OutputRead ();
+                engine->outputBuf->clear ();
                 engine->lastReadID = pairID;
             }
 
@@ -3870,12 +3877,12 @@ void DeepDP_Space::DP2OutputThread ( int threadId, int *& pCallThreadId )
     engine->resultStream->numOut = numOut;
 }
 
-void DeepDP_Space::DP2OutputThreadFinalize()
+void DeepDP_Space::DP2OutputThreadFinalize ()
 {
     PairEndAlignmentEngine * engine = PairEndAlignmentEngine::engine;
     // last read
-    MC_DP2OutputRead();
-    engine->outputBuf->clear();
+    MC_DP2OutputRead ();
+    engine->outputBuf->clear ();
 }
 
 
@@ -3884,7 +3891,7 @@ void DeepDP_Space::DP2OutputThreadFinalize()
 // Temporary data for testing
 // DPParameters Constants::deepDPPara_Len100;
 
-Constants::Constants()
+Constants::Constants ()
 {
     /*  deepDPPara_Len100.paramRead[0].cutoffThreshold = 30;
         deepDPPara_Len100.paramRead[0].maxHitNum = 100;

@@ -81,7 +81,7 @@ class SingleDPWrapper
                                          _bwt, _revBwt,
                                          _occ, _revOcc );
         }
-        ~SingleDPWrapper()
+        ~SingleDPWrapper ()
         {
             delete soap3Wrapper;
         }
@@ -121,9 +121,9 @@ class SingleDPWrapper
                                 QueryIDStream * unseededIDStream, QueryIDStream * unalignedIDStream )
         {
             CandidateStream * canStream = new CandidateStream;
-            soap3Wrapper->copyIndex();
+            soap3Wrapper->copyIndex ();
             seeding ( inputStream, canStream, unseededIDStream );
-            soap3Wrapper->freeIndex();
+            soap3Wrapper->freeIndex ();
             alignment ( canStream, unalignedIDStream );
             delete canStream;
         }
@@ -138,7 +138,7 @@ class SingleDPWrapper
             );
         }
 
-        void run()
+        void run ()
         {
             numDPAlignedRead = 0;
             numDPAlignment = 0;
@@ -174,7 +174,7 @@ void DPForUnalignSingle2 ( UnalignedSinglesArrays * unalignedReads,
         alignmentType, dpParameters,
         accumReadNum, outputFormat,
         outputFile, samOutputDPFilePtr );
-    singleDPWrapper.run();
+    singleDPWrapper.run ();
     numDPAlignedRead = singleDPWrapper.numDPAlignedRead;
     numDPAlignment = singleDPWrapper.numDPAlignment;
 }

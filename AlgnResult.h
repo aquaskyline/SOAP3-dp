@@ -96,7 +96,7 @@ SingleAlgnResultArray * constructSingleAlgnResultArray ( unsigned int numCPUThre
 void freeSingleAlgnResultArray ( SingleAlgnResultArray * algnResultArray );
 
 // Construct the structure SingleAlgnResult for each CPU thread
-SingleAlgnResult * constructSingleAlgnResult();
+SingleAlgnResult * constructSingleAlgnResult ();
 
 // Release the memory for the structure ReadInputForDP
 void freeSingleAlgnResult ( SingleAlgnResult * algnResult );
@@ -140,7 +140,7 @@ typedef BothUnalignedPairs UnalignedSingles;
 typedef BothUnalignedPairsArrays UnalignedSinglesArrays;
 
 // Construct the structure BothUnalignedPairs
-BothUnalignedPairs * constructBothUnalignedPairs();
+BothUnalignedPairs * constructBothUnalignedPairs ();
 
 // Release the memory for the structure BothUnalignedPairs
 void freeBothUnalignedPairs ( BothUnalignedPairs * bothUnalignedPairs );

@@ -55,7 +55,7 @@ void createRevQueryPackedDNA ( unsigned char * query, unsigned int query_length,
 
     for ( i = 0; i < query_length; i++ )
     {
-        outPackedDNA[i / CHAR_PER_WORD] |= ( ( soap3DnaComplement[( unsigned int ) query[query_length - 1 - i]] ) << ( ( CHAR_PER_WORD - 1 - i % CHAR_PER_WORD ) * BIT_PER_CHAR ) );
+        outPackedDNA[i / CHAR_PER_WORD] |= ( ( soap3DnaComplement[ ( unsigned int ) query[query_length - 1 - i]] ) << ( ( CHAR_PER_WORD - 1 - i % CHAR_PER_WORD ) * BIT_PER_CHAR ) );
     }
 }
 
@@ -330,7 +330,7 @@ void SRAEnrichSARanges ( HSP * hsp, BWT * bwt, unsigned int * query, unsigned in
     // SRAEnrichSARanges takes a SA range as input and return the mismatch count and the strand of the SA range.
     // create the packedDNA for the target sequence;
     unsigned int targetPackedDNA[ ( MAX_READ_LENGTH + CHAR_PER_WORD - 1 ) / CHAR_PER_WORD];
-    createTargetPackedDNA ( hsp->packedDNA, (*bwt->_bwtSaValue) ( bwt, l ), query_length, targetPackedDNA );
+    createTargetPackedDNA ( hsp->packedDNA, ( *bwt->_bwtSaValue ) ( bwt, l ), query_length, targetPackedDNA );
     ( *num_mis ) = numMismatch ( query, targetPackedDNA, query_length, max_mismatch );
     ( *strand ) = QUERY_POS_STRAND;
 
@@ -371,8 +371,36 @@ char MismatchInPos(HSP* hsp, BWT* bwt, unsigned int* query, unsigned int* rev_qu
 }
  */
 
-int getMdStr ( HSP * hsp, unsigned char * query, char * qualities, unsigned int query_length, unsigned int pos, char strand, char mismatchNum, char * md_str, int * avg_mismatch_qual )
+int getMdStr ( HSP * hsp, unsigned char * query, char * qualities, unsigned int query_length, unsigned int pos, char strand, char mismatchNum, char * md_str, int * avg_mismatch_qual, int trim )
 {
+
+    if ( strand == QUERY_POS_STRAND )
+    {
+        if ( trim > 0 )
+        {
+            query += trim;
+            pos += trim;
+            query_length -= trim;
+        }
+        else if ( trim < 0 )
+        {
+            query_length -= -trim;
+        }
+    }
+    else
+    {
+        if ( trim > 0 )
+        {
+            pos += trim;
+            query_length -= trim;
+        }
+        else if ( trim < 0 )
+        {
+            query += -trim;
+            query_length -= -trim;
+        }
+    }
+
     // compute the MD string
     // return the size of MD string
     ( *avg_mismatch_qual ) = DEFAULT_QUAL_VALUE;
@@ -390,12 +418,14 @@ int getMdStr ( HSP * hsp, unsigned char * query, char * qualities, unsigned int 
     return mdStr ( outPackedDNA, qualities, targetPackedDNA, query_length, mismatchNum, md_str, avg_mismatch_qual );
 }
 
-int convertToCigarStr ( char * special_cigar, char * cigar )
+int convertToCigarStr ( char * special_cigar, char * cigar, int * deletedEnd )
 {
     // to convert the special_cigar into cigar string
     int currInt = 0;
     int currM = 0;
     int cigar_len = 0;
+
+    if ( deletedEnd ) { *deletedEnd = 0; }
 
     for ( int i = 0; i < strlen ( special_cigar ); i++ )
     {
@@ -414,11 +444,17 @@ int convertToCigarStr ( char * special_cigar, char * cigar )
                     break;
 
                 case 'D':
-                    if ((cigar_len == 0 && currM == 0) || (i == strlen ( special_cigar ) - 1))
+                    if ( ( cigar_len == 0 && currM == 0 ) || ( i == strlen ( special_cigar ) - 1 ) )
                     {
                         // the deletion in front or at the end is ignored
+                        if ( i == strlen ( special_cigar ) - 1 )
+                        {
+                            if ( deletedEnd ) { *deletedEnd = currM; }
+                        }
+
                         break;
                     }
+
                 case 'I':
                 case 'S':
                     if ( currM > 0 )
@@ -462,8 +498,36 @@ int convertToCigarStr2 ( char * special_cigar )
 
 int getMisInfoForDP ( HSP * hsp, unsigned char * query, char * qualities, unsigned int query_length,
                       unsigned int pos, char strand, char * special_cigar, char * md_str, int * numMismatch,
-                      int * gapOpen, int * gapExt, int * avg_mismatch_qual )
+                      int * gapOpen, int * gapExt, int * avg_mismatch_qual, int trim )
 {
+
+    if ( strand == QUERY_POS_STRAND )
+    {
+        if ( trim > 0 )
+        {
+            query += trim;
+            pos += trim;
+            query_length -= trim;
+        }
+        else if ( trim < 0 )
+        {
+            query_length -= -trim;
+        }
+    }
+    else
+    {
+        if ( trim > 0 )
+        {
+            pos += trim;
+            query_length -= trim;
+        }
+        else if ( trim < 0 )
+        {
+            query += -trim;
+            query_length -= -trim;
+        }
+    }
+
     // to compute the MD string, the number of mismatches, the number of gap open and the number of gap extension
     // return the size of MD string
     // this function is designed for DP module
@@ -493,13 +557,13 @@ int getMisInfoForDP ( HSP * hsp, unsigned char * query, char * qualities, unsign
     // print the query sequence
     printf("Query:\n");
     for (i=0; i<query_length; i++)
-          printf("%c", nucl[currQuery[i]]);
+    printf("%c", nucl[currQuery[i]]);
     printf("\n");
 
     printf("Target:\n");
     for (i=0; i<query_length; i++) {
-          j = (hsp->packedDNA[(pos+i)/16] >> (15-(pos+i)%16)*2) & 3;
-          printf("%c", nucl[j]);
+    j = (hsp->packedDNA[(pos+i)/16] >> (15-(pos+i)%16)*2) & 3;
+    printf("%c", nucl[j]);
     }
     printf("\n");
 
@@ -516,7 +580,9 @@ int getMisInfoForDP ( HSP * hsp, unsigned char * query, char * qualities, unsign
     int md_len = 0;
 
     // printf("MD:Z: ");
-    for ( i = 0; i < strlen ( special_cigar ); i++ )
+    int l = strlen ( special_cigar );
+
+    for ( i = 0; i < l; i++ )
     {
         if ( isdigit ( special_cigar[i] ) )
         {
@@ -562,6 +628,8 @@ int getMisInfoForDP ( HSP * hsp, unsigned char * query, char * qualities, unsign
                     break;
 
                 case 'D':
+                    if ( i == l - 1 ) { break; } // last delete, ignore
+
                     md_len += writeNumToStr ( currMatch, & ( md_str[md_len] ) );
                     md_str[md_len++] = '^';
 
@@ -590,7 +658,7 @@ int getMisInfoForDP ( HSP * hsp, unsigned char * query, char * qualities, unsign
     md_str[md_len] = '\0';
 
     // printf("%s\n", md_str);
-    // printf("numMismatch: %i\n", (*numMismatch));
+    //   printf("numMismatch: %i\n", (*numMismatch));
     if ( ( *numMismatch ) > 0 )
     { ( *avg_mismatch_qual ) = ( int ) ( sum_mismatch_qual / ( *numMismatch ) ); }
 

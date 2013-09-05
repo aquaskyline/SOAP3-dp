@@ -134,6 +134,7 @@ int main ( int argc, char ** argv )
     // not much effect, also this is not supported by old version of cuda library
     // like the machines in TJ
     // thus these are depreciated
+    cudaDeviceSetCacheConfig ( cudaFuncCachePreferL1 );
     // cudaFuncSetCacheConfig(kernel, cudaFuncCachePreferShared);
     // cudaFuncSetCacheConfig(kernel_4mismatch_1, cudaFuncCachePreferShared);
     // cudaFuncSetCacheConfig(kernel_4mismatch_2, cudaFuncCachePreferShared);
@@ -285,7 +286,7 @@ int main ( int argc, char ** argv )
     // | INDEX LOADING                                                                      |
     // ======================================================================================
     //Start measuring runtime..
-    startTime = setStartTime();
+    startTime = setStartTime ();
     lastEventTime = startTime;
     Soap3Index * index = INDEXLoad ( &ini_params, input_options.indexName, ini_params.Ini_shareIndex );
     HSP * hsp = index->sraIndex->hsp;
@@ -334,7 +335,10 @@ int main ( int argc, char ** argv )
     hspaux->occ_start = ( unsigned int * ) malloc ( roundUp * sizeof ( unsigned int ) );
     hspaux->sa_num = ( unsigned int * ) malloc ( roundUp * sizeof ( unsigned int ) );
     hspaux->occ_num = ( unsigned int * ) malloc ( roundUp * sizeof ( unsigned int ) );
-    
+
+    // print MD string and NM tag?
+    hspaux->isPrintMDNM = input_options.isPrintMDNM;
+
     // For the SAM output information
     hspaux->readGroup = input_options.readGroup;
 
@@ -353,7 +357,7 @@ int main ( int argc, char ** argv )
     // ==================================================================
 #ifdef PERFORM_DEEP_DP_FOR_UNALIGN_READS
     hspaux->readsIDForSingleDP = ( BothUnalignedPairsArrays * ) constructBothUnalignedPairsArrays ( 1 );
-    hspaux->allHits = ( AllHits * ) constructAllHits(); // for storing the corresponding algnments
+    hspaux->allHits = ( AllHits * ) constructAllHits (); // for storing the corresponding algnments
 #endif
     // ======================================================================================
     // | ALLOCATE MEMORY FOR THE ARRAYS                                                     |
@@ -499,9 +503,9 @@ int main ( int argc, char ** argv )
     {
         // the query file is in BAM format
         bamQueryFile = bam_open ( queryFileName, "r" );
-        bamHeader = bam_header_init();
+        bamHeader = bam_header_init ();
         bamHeader = bam_header_read ( bamQueryFile );
-        bam = bam_init1();
+        bam = bam_init1 ();
     }
     else
     {
@@ -568,7 +572,7 @@ int main ( int argc, char ** argv )
                                  readLengths1, readIDs1, upkdQualities1, upkdQueryNames1,
                                  isFastq, ini_params.Ini_maxReadNameLen );
     AIOInputBuffer * aiob = AIOInputBufferCreate ( buffer0, buffer1 );
-    InputFilePointers * ifp = InputFilePointersCreate();
+    InputFilePointers * ifp = InputFilePointersCreate ();
 
     if ( input_options.isReadBAM )
     {
@@ -607,7 +611,7 @@ int main ( int argc, char ** argv )
         printf ( "[Main] Elapsed time on host : %9.4f seconds\n\n", readLoadTime - lastEventTime );
         totalReadLoadTime += readLoadTime - lastEventTime;
         lastEventTime = readLoadTime;
-        
+
         numOfAnswer = 0;
         numOfAlignedRead = 0;
         numOfUnAlignedPairs = 0;
@@ -623,10 +627,11 @@ int main ( int argc, char ** argv )
             if ( input_options.readType == PAIR_END_READ )
             {
                 detected_read_length = GetReadLength ( readLengths, numQueries, 2 );
-                detected_read_length2 = GetReadLength ( readLengths+1, numQueries, 2 );
+                detected_read_length2 = GetReadLength ( readLengths + 1, numQueries, 2 );
+
                 // the minimum insert size cannot be smaller than detected_read_length2
-                if (input_options.insert_low < detected_read_length2)
-                    input_options.insert_low = detected_read_length2;
+                if ( input_options.insert_low < detected_read_length2 )
+                { input_options.insert_low = detected_read_length2; }
             }
             else
             {
@@ -797,13 +802,13 @@ int main ( int argc, char ** argv )
         numQueries = readyReadsBuffer->filledNum;
 
         // If the current opened file still have queries returned
-        // skip the code to process the result / open next file; and continue 
+        // skip the code to process the result / open next file; and continue
         if ( numQueries > 0 )
         {
             // Skip
             continue;
         }
-    
+
         // show the summary of the result and then load another pair of read files
         // ======================================================================================
         // | SHOW THE SUMMARY                                                                   |
@@ -1069,9 +1074,9 @@ int main ( int argc, char ** argv )
             {
                 // the query file is in BAM format
                 bamQueryFile = bam_open ( queryFileName, "r" );
-                bamHeader = bam_header_init();
+                bamHeader = bam_header_init ();
                 bamHeader = bam_header_read ( bamQueryFile );
-                bam = bam_init1();
+                bam = bam_init1 ();
             }
             else
             {
@@ -1127,13 +1132,13 @@ int main ( int argc, char ** argv )
             upkdQueryNames = readyReadsBuffer->upkdQueryNames;
             isFastq = readyReadsBuffer->isFastq;
             numQueries = readyReadsBuffer->filledNum;
-            
+
             // Update the isFastq variable inside HSP
             hspaux->isFastq = isFastq;
         }
     }
 
-    cudaThreadExit();
+    cudaThreadExit ();
     // ======================================================================================
     // | CLEAN UP                                                                           |
     // ======================================================================================

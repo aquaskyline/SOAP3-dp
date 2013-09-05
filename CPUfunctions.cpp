@@ -621,8 +621,8 @@ unsigned long long ProcessReadDoubleStrand2 ( SRAQueryInput * qInput, SRAQueryIn
     return saCount;
 }
 
-unsigned long long ProcessOneMoreMismatchAllCases ( unsigned char * charMap, SRAQueryInput * qInput_Positive, SRAQueryInput * qInput_Negative, 
-                                                    SRAModel * aModel, SRAModel * aModel_neg, SAList * sa_list, OCCList * occ_list, int totalNumCases )
+unsigned long long ProcessOneMoreMismatchAllCases ( unsigned char * charMap, SRAQueryInput * qInput_Positive, SRAQueryInput * qInput_Negative,
+        SRAModel * aModel, SRAModel * aModel_neg, SAList * sa_list, OCCList * occ_list, int totalNumCases )
 {
     unsigned long long saCount = 0;
     int i;
@@ -632,7 +632,7 @@ unsigned long long ProcessOneMoreMismatchAllCases ( unsigned char * charMap, SRA
     SRASetting * qSetting = qInput_Positive->QuerySetting;
     SRAQueryResultCount * rOutput = qInput_Positive->QueryOutput;
     rOutput->TotalOccurrences = 0;
-    memset(rOutput->WithError,0,sizeof(unsigned int)* (MAX_NUM_OF_ERROR + 1));
+    memset ( rOutput->WithError, 0, sizeof ( unsigned int ) * ( MAX_NUM_OF_ERROR + 1 ) );
     qSetting->MaxError++;
 #ifndef BGS_DISABLE_NEGATIVE_STRAND
     unsigned char oStrandQuery[MAX_READ_LENGTH];
@@ -790,7 +790,7 @@ void setHostKernelArguments ( HostKernelArguements * hostKernelArguments, pthrea
     int alignmentType = input_options->alignmentType; // for CPU Alignment
     int reportType = input_options->alignmentType; // for reporting the alignments
     int outputFormat = input_options->outputFormat;
-    
+
     // Convert to CPU Kernel data
     // This shouldn't have been needed...
     if ( readType == SINGLE_READ )
@@ -823,7 +823,7 @@ void setHostKernelArguments ( HostKernelArguements * hostKernelArguments, pthrea
     for ( uint threadId = 0; threadId < ini_params.Ini_NumOfCpuThreads; ++threadId )
     {
         threads[threadId] = 0;
-        hostKernelArguments[threadId].occ = OCCConstruct();
+        hostKernelArguments[threadId].occ = OCCConstruct ();
 
         for ( uint i = 0 ; i <= MAX_NUM_OF_MISMATCH ; i++ )
         {
@@ -831,8 +831,8 @@ void setHostKernelArguments ( HostKernelArguements * hostKernelArguments, pthrea
         }
 
         // Copy SRAIndex
-        memcpy(&(hostKernelArguments[threadId].sraIndex),index->sraIndex,sizeof(SRAIndex));
-        
+        memcpy ( & ( hostKernelArguments[threadId].sraIndex ), index->sraIndex, sizeof ( SRAIndex ) );
+
         hostKernelArguments[threadId].sraQuerySettings.occ = hostKernelArguments[threadId].occ;
         hostKernelArguments[threadId].sraQuerySettings.OutFilePtr = NULL;
         hostKernelArguments[threadId].sraQuerySettings.OutFileName = NULL;
@@ -849,7 +849,7 @@ void setHostKernelArguments ( HostKernelArguements * hostKernelArguments, pthrea
         hostKernelArguments[threadId].sraQuerySettings.ErrorType = SRA_STEP_ERROR_TYPE_MISMATCH_ONLY;
         hostKernelArguments[threadId].sraQuerySettings.OutputType = alignmentType;
         hostKernelArguments[threadId].sraQuerySettings.SAMOutFilePtr = NULL;
-        
+
         hostKernelArguments[threadId].sraAccumulatedResultCount.TotalOccurrences = 0;
         hostKernelArguments[threadId].sraAccumulatedResultCount.RetrievedBySa = 0;
         hostKernelArguments[threadId].sraAccumulatedResultCount.RetrievedByCe = 0;
@@ -1227,7 +1227,7 @@ void collect_all_answers ( SAList * sa_list, OCCList * occ_list, unsigned int **
                            unsigned int word_per_ans, SRAQueryInput * qInput_Positive, SRAQueryInput * qInput_Negative,
                            unsigned int sa_range_allowed_1, unsigned int sa_range_allowed_2, char skip_round_2,
                            unsigned int numCases, int readLength, unsigned char * thisQuery, SRAModel ** SRAMismatchModel, SRAModel ** SRAMismatchModel_neg,
-                           unsigned char * charMap, 
+                           unsigned char * charMap,
                            unsigned int ** badReadIndices, unsigned int ** badAnswers,
                            unsigned int * badStartOffset, unsigned int * badCountOffset,
                            unsigned int * badReadPos, bool only_get_round1_ans, bool & isMoreThanSA1 )
@@ -1243,7 +1243,7 @@ void collect_all_answers ( SAList * sa_list, OCCList * occ_list, unsigned int **
     SRAIndex * aIndex = qInput_Positive->AlgnmtIndex;
     SRAQueryResultCount * rOutput = qInput_Positive->QueryOutput;
     rOutput->TotalOccurrences = 0;
-    memset(rOutput->WithError,0,sizeof(unsigned int)* (MAX_NUM_OF_ERROR + 1));
+    memset ( rOutput->WithError, 0, sizeof ( unsigned int ) * ( MAX_NUM_OF_ERROR + 1 ) );
     BWT * bwt = aIndex->bwt;
     uint * ans;
     unsigned int l, r;
@@ -1416,7 +1416,8 @@ void collect_all_answers ( SAList * sa_list, OCCList * occ_list, unsigned int **
 }
 
 
-inline unsigned long long PEDumpAllOccurrence ( PEOutput * pe_out, SRAQueryInput * qInput, char reportType, int minMismatchCount, unsigned int maxOutputCount )
+inline unsigned long long PEDumpAllOccurrence ( PEOutput * pe_out, SRAQueryInput * qInput, char reportType, int minMismatchCount, unsigned int maxOutputCount,
+        int preReadLength, int readLength )
 {
     unsigned long long numOfPairEndAlignment = 0;
     unsigned long long numOfAnswer = 0;
@@ -1447,22 +1448,24 @@ inline unsigned long long PEDumpAllOccurrence ( PEOutput * pe_out, SRAQueryInput
                 numOfPairEndAlignment++;
 
                 // output the alignment of the first read
-                if ( occ->occPositionCacheCount >= OCC_CACHE_SIZE ) {OCCFlushCache ( qInput );}
+                if ( 1 || occ->occPositionCacheCount >= OCC_CACHE_SIZE ) {OCCFlushCache ( qInput );} // condition made always true by cx
 
                 occ->occPositionCache[occ->occPositionCacheCount].tp = pePair->algnmt_1;
                 occ->occPositionCache[occ->occPositionCacheCount].ReadStrand = pePair->strand_1;
                 occ->occPositionCache[occ->occPositionCacheCount].ChromId = 0;
                 occ->occPositionCache[occ->occPositionCacheCount].occMismatch = pePair->mismatch_1;
+                occ->occPositionCache[occ->occPositionCacheCount].len = preReadLength; // cx
                 occ->occPositionCacheCount++;
 
                 // output the alignment of the second read
                 // OCCReportDelimitor(occ,hsp,outputFile,(unsigned long long)readId+accumReadNum);
-                if ( occ->occPositionCacheCount >= OCC_CACHE_SIZE ) {OCCFlushCache ( qInput );}
+                if ( 1 ||  occ->occPositionCacheCount >= OCC_CACHE_SIZE ) {OCCFlushCache ( qInput );} // condition made always true by cx
 
                 occ->occPositionCache[occ->occPositionCacheCount].tp = pePair->algnmt_2;
                 occ->occPositionCache[occ->occPositionCacheCount].ReadStrand = pePair->strand_2;
                 occ->occPositionCache[occ->occPositionCacheCount].ChromId = 0;
                 occ->occPositionCache[occ->occPositionCacheCount].occMismatch = pePair->mismatch_2;
+                occ->occPositionCache[occ->occPositionCacheCount].len = readLength; // cx
                 occ->occPositionCacheCount++;
 
                 if ( numOfPairEndAlignment >= maxOutputCount )
@@ -1479,7 +1482,7 @@ inline unsigned long long PEDumpAllOccurrence ( PEOutput * pe_out, SRAQueryInput
             pairList = pairList->next;
         }
     }
-    
+
     return numOfAnswer;
 }
 
@@ -1536,13 +1539,13 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
     int preReadLength = MAX_READ_LENGTH;
     char * preQueryName = NULL;
     // for collecting the SA ranges from GPU alignment
-    SAList * sa_list1 = SAListConstruct();
-    SAList * sa_list2 = SAListConstruct();
+    SAList * sa_list1 = SAListConstruct ();
+    SAList * sa_list2 = SAListConstruct ();
     SAList * curr_sa_list = sa_list1;
-    OCCList * occ_list1 = OCCListConstruct();
-    OCCList * occ_list2 = OCCListConstruct();
+    OCCList * occ_list1 = OCCListConstruct ();
+    OCCList * occ_list2 = OCCListConstruct ();
     OCCList * curr_occ_list = occ_list1;
-    PEOutput * pe_out = PEOutputConstruct();
+    PEOutput * pe_out = PEOutputConstruct ();
     BWT * bwt = aIndex->bwt;
     HSP * hsp = aIndex->hsp;
     HSPAux * hspaux = aIndex->hspaux;
@@ -1551,16 +1554,16 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
     AlgnResultArrays * algnResultArrays = hspaux->algnResultArrays;
     int outputFormat = qSetting->OutFileFormat;
     DynamicUint8Array * charArray = NULL;
-    
+
     unsigned int previousTotalOccurrences;
     unsigned int previousWithError[ MAX_NUM_OF_ERROR + 1];
     int previousMinNumMismatch;
     unsigned int currentTotalOccurrences;
     unsigned int currentWithError[ MAX_NUM_OF_ERROR + 1];
     int currentMinNumMismatch;
-    
+
     char dummyQuality[MAX_READ_LENGTH];
-    memset(dummyQuality,1,sizeof(char)*MAX_READ_LENGTH);
+    memset ( dummyQuality, 1, sizeof ( char ) *MAX_READ_LENGTH );
     SRAQueryInput qInput_Positive;
     SRAQueryInfo qInfo_Positive;
     qInfo_Positive.ReadStrand = QUERY_POS_STRAND;
@@ -1569,7 +1572,7 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
     qInput_Positive.QuerySetting = qSetting;
     qInput_Positive.AlgnmtIndex = aIndex;
     qInput_Positive.QueryOutput = rOutput;
-    
+
     SRAQueryInput qInput_Negative;
     SRAQueryInfo qInfo_Negative;
     qInfo_Negative.ReadStrand = QUERY_NEG_STRAND;
@@ -1582,15 +1585,15 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
     /////////////////////////////////
     // Allocate and Fill CharMap
     unsigned char charMap[256];
-    INDEXFillCharMap(charMap);
+    INDEXFillCharMap ( charMap );
 
     if ( outputFormat == SRA_OUTPUT_FORMAT_SAM_API )
     {
-        charArray = DynamicUint8ArrayConstruct();
+        charArray = DynamicUint8ArrayConstruct ();
     }
 
 #ifdef BGS_ROUND_BREAKDOWN_TIME
-    double start_time = setStartTime();
+    double start_time = setStartTime ();
 #endif
     FILE * outputFile = NULL;
 
@@ -1753,15 +1756,19 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
         {
             //Store mismatch statistics and total number of occurrences for later process
             currentTotalOccurrences = rOutput->TotalOccurrences;
-            memcpy(currentWithError,rOutput->WithError,sizeof(unsigned int)* (MAX_NUM_OF_ERROR + 1));
+            memcpy ( currentWithError, rOutput->WithError, sizeof ( unsigned int ) * ( MAX_NUM_OF_ERROR + 1 ) );
 
             currentMinNumMismatch = 999;
-            for (int mismatchi=0;mismatchi<=currNumMismatch;mismatchi++) {
-                if (currentWithError[mismatchi]>0) {
-                    currentMinNumMismatch=mismatchi;break;
+
+            for ( int mismatchi = 0; mismatchi <= currNumMismatch; mismatchi++ )
+            {
+                if ( currentWithError[mismatchi] > 0 )
+                {
+                    currentMinNumMismatch = mismatchi;
+                    break;
                 }
             }
-            
+
             bool need_special_handle = ( currentMinNumMismatch == currNumMismatch );
 
             if ( need_special_handle )
@@ -1781,11 +1788,11 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                     SAListReset ( curr_sa_list );
                     OCCListReset ( curr_occ_list );
                     ProcessOneMoreMismatchAllCases ( charMap, &qInput_Positive, &qInput_Negative, SRAMismatchModel2[readLength], SRAMismatchModel2_neg[readLength], curr_sa_list, curr_occ_list, numCases2 );
-                    
+
                     //Store mismatch statistics and total number of occurrences for later process
                     currentTotalOccurrences = rOutput->TotalOccurrences;
-                    memcpy(currentWithError,rOutput->WithError,sizeof(unsigned int)* (MAX_NUM_OF_ERROR + 1));
-                    
+                    memcpy ( currentWithError, rOutput->WithError, sizeof ( unsigned int ) * ( MAX_NUM_OF_ERROR + 1 ) );
+
                     // fprintf(stderr, "size of curr_sa_list = %u; size of curr_occ_list = %u\n", curr_sa_list->curr_size, curr_occ_list->curr_size);
                     isUnique = ( rOutput->TotalOccurrences == 1 ); // whether the hit is unique
                     moreThanOne = ( rOutput->TotalOccurrences > 1 ); // whether there is more than one hit
@@ -1860,12 +1867,13 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                     {
                         if ( outputFormat != SRA_OUTPUT_FORMAT_SAM_API )
                         {
-                            if ( occ->occPositionCacheCount >= OCC_CACHE_SIZE ) {OCCFlushCache ( &qInput_Positive );}
+                            if ( 1 || occ->occPositionCacheCount >= OCC_CACHE_SIZE ) {OCCFlushCache ( &qInput_Positive );} // condition made always true by cx
 
                             occ->occPositionCache[occ->occPositionCacheCount].tp = ( curr_occ_list->occ[0] ).ambPosition;
                             occ->occPositionCache[occ->occPositionCacheCount].ReadStrand = ( curr_occ_list->occ[0] ).strand;
                             occ->occPositionCache[occ->occPositionCacheCount].ChromId = 0;
                             occ->occPositionCache[occ->occPositionCacheCount].occMismatch = ( curr_occ_list->occ[0] ).mismatchCount;
+                            occ->occPositionCache[occ->occPositionCacheCount].len = readLength; // cx
                             occ->occPositionCacheCount++;
                         }
                         else
@@ -1896,12 +1904,13 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                     {
                         if ( outputFormat != SRA_OUTPUT_FORMAT_SAM_API )
                         {
-                            if ( occ->occPositionCacheCount >= OCC_CACHE_SIZE ) {OCCFlushCache ( &qInput_Positive );}
+                            if ( 1 || occ->occPositionCacheCount >= OCC_CACHE_SIZE ) {OCCFlushCache ( &qInput_Positive );} // condition made always true by cx
 
                             occ->occPositionCache[occ->occPositionCacheCount].tp = ( curr_occ_list->occ[0] ).ambPosition;
                             occ->occPositionCache[occ->occPositionCacheCount].ReadStrand = ( curr_occ_list->occ[0] ).strand;
                             occ->occPositionCache[occ->occPositionCacheCount].ChromId = 0;
                             occ->occPositionCache[occ->occPositionCacheCount].occMismatch = ( curr_occ_list->occ[0] ).mismatchCount;
+                            occ->occPositionCache[occ->occPositionCacheCount].len = readLength; // cx
                             occ->occPositionCacheCount++;
                         }
                         else
@@ -1936,12 +1945,13 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                         // long read mode and succint
                         for ( i = 0; i < curr_occ_list->curr_size; i++ )
                         {
-                            if ( occ->occPositionCacheCount >= OCC_CACHE_SIZE ) {OCCFlushCache ( &qInput_Positive );}
+                            if ( 1 || occ->occPositionCacheCount >= OCC_CACHE_SIZE ) {OCCFlushCache ( &qInput_Positive );} // condition made always true by cx
 
                             occ->occPositionCache[occ->occPositionCacheCount].tp = ( curr_occ_list->occ[i] ).ambPosition;
                             occ->occPositionCache[occ->occPositionCacheCount].ReadStrand = ( curr_occ_list->occ[i] ).strand;
                             occ->occPositionCache[occ->occPositionCacheCount].ChromId = 0;
                             occ->occPositionCache[occ->occPositionCacheCount].occMismatch = ( curr_occ_list->occ[i] ).mismatchCount;
+                            occ->occPositionCache[occ->occPositionCacheCount].len = readLength; // cx
                             occ->occPositionCacheCount++;
                         }
 
@@ -1973,7 +1983,7 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
         {
             // FOR FIRST READ OF THE PAIR-END READ
             if ( rOutput->TotalOccurrences == 0 &&
-                ( !needOutputUnalignedReads ) && ( !needProceedDP ) )
+                    ( !needOutputUnalignedReads ) && ( !needProceedDP ) )
             {
                 // no hits for the first read
                 // and no need to output unaligned reads
@@ -1984,21 +1994,26 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                 unAlignedIDs[numOfUnAligned++] = batchFirstReadId + skipFirst + j;
                 continue;
             }
-            
+
             //Store mismatch statistics and total number of occurrences for later process
             previousTotalOccurrences = rOutput->TotalOccurrences;
-            memcpy(previousWithError,rOutput->WithError,sizeof(unsigned int)* (MAX_NUM_OF_ERROR + 1));
+            memcpy ( previousWithError, rOutput->WithError, sizeof ( unsigned int ) * ( MAX_NUM_OF_ERROR + 1 ) );
 
             // This block is going to be removed for further performance enhancement.
             if ( needOutputMAPQ && ( !needOutputUnalignedReads ) && ( !needProceedDP ) )
             {
                 //int totalNumAns1 = 0;
                 currentMinNumMismatch = 999;
-                for (int mismatchi=0;mismatchi<=currNumMismatch;mismatchi++) { 
-                    if (previousWithError[mismatchi]>0) {
-                        currentMinNumMismatch=mismatchi;break;
+
+                for ( int mismatchi = 0; mismatchi <= currNumMismatch; mismatchi++ )
+                {
+                    if ( previousWithError[mismatchi] > 0 )
+                    {
+                        currentMinNumMismatch = mismatchi;
+                        break;
                     }
                 }
+
                 bool need_handle_first = ( ( currentMinNumMismatch == currNumMismatch ) &&
                                            ( previousTotalOccurrences < qSetting->MaxOutputPerRead ) );
 
@@ -2015,8 +2030,8 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
         {
             //Store mismatch statistics and total number of occurrences for later process
             currentTotalOccurrences = rOutput->TotalOccurrences;
-            memcpy(currentWithError,rOutput->WithError,sizeof(unsigned int)* (MAX_NUM_OF_ERROR + 1));
-            
+            memcpy ( currentWithError, rOutput->WithError, sizeof ( unsigned int ) * ( MAX_NUM_OF_ERROR + 1 ) );
+
             // FOR SECOND READ OF THE PAIR-END READ
             int first_X0 = 0;
             int first_X1 = 0;
@@ -2041,20 +2056,24 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                 bool need_handle_first = false;
                 bool need_handle_second = false;
 
-                if ( previousTotalOccurrences>0 )
+                if ( previousTotalOccurrences > 0 )
                 {
                     previousMinNumMismatch = 999;
-                    for (int mismatchi=0;mismatchi<=currNumMismatch;mismatchi++) { 
-                        if (previousWithError[mismatchi]>0) {
-                            previousMinNumMismatch=mismatchi;
+
+                    for ( int mismatchi = 0; mismatchi <= currNumMismatch; mismatchi++ )
+                    {
+                        if ( previousWithError[mismatchi] > 0 )
+                        {
+                            previousMinNumMismatch = mismatchi;
                             break;
                         }
                     }
-                    need_handle_first = previousTotalOccurrences > 0 && 
+
+                    need_handle_first = previousTotalOccurrences > 0 &&
                                         previousMinNumMismatch == currNumMismatch &&
                                         previousTotalOccurrences < qSetting->MaxOutputPerRead &&
                                         currNumMismatch < 4;
-                                        
+
 
                     if ( need_handle_first )
                     {
@@ -2067,34 +2086,39 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                         // back to the normal values
                         qInfo_Positive.ReadCode = thisQuery;
                         qInfo_Positive.ReadLength = readLength;
-                        
+
                         //Store mismatch statistics and total number of occurrences for later process
                         previousTotalOccurrences = rOutput->TotalOccurrences;
-                        memcpy(previousWithError,rOutput->WithError,sizeof(unsigned int)* (MAX_NUM_OF_ERROR + 1));
+                        memcpy ( previousWithError, rOutput->WithError, sizeof ( unsigned int ) * ( MAX_NUM_OF_ERROR + 1 ) );
                     }
-                    
+
                     first_X0 = previousWithError[previousMinNumMismatch];
-                    first_X1 = previousWithError[previousMinNumMismatch+1];
-                    
-                    if (needProceedDP) {
+                    first_X1 = previousWithError[previousMinNumMismatch + 1];
+
+                    if ( needProceedDP )
+                    {
                         hspaux->x0_array[batchFirstReadId + batchReadId - 1] = first_X0;
                         hspaux->x1_array[batchFirstReadId + batchReadId - 1] = first_X1;
                         hspaux->mismatch_array[batchFirstReadId + batchReadId - 1] = previousMinNumMismatch;
                     }
                 }
 
-                if ( currentTotalOccurrences>0 )
+                if ( currentTotalOccurrences > 0 )
                 {
                     currentMinNumMismatch = 999;
-                    for (int mismatchi=0;mismatchi<=currNumMismatch;mismatchi++) { 
-                        if (currentWithError[mismatchi]>0) {
-                            currentMinNumMismatch=mismatchi;
+
+                    for ( int mismatchi = 0; mismatchi <= currNumMismatch; mismatchi++ )
+                    {
+                        if ( currentWithError[mismatchi] > 0 )
+                        {
+                            currentMinNumMismatch = mismatchi;
                             break;
                         }
                     }
+
                     need_handle_second = currentMinNumMismatch == currNumMismatch &&
-                                        currentTotalOccurrences < qSetting->MaxOutputPerRead &&
-                                        currNumMismatch < 4;
+                                         currentTotalOccurrences < qSetting->MaxOutputPerRead &&
+                                         currNumMismatch < 4;
 
                     if ( need_handle_second )
                     {
@@ -2104,22 +2128,23 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                         qInfo_Positive.ReadCode = thisQuery;
                         qInfo_Positive.ReadLength = readLength;
                         ProcessOneMoreMismatchAllCases ( charMap, &qInput_Positive, &qInput_Negative, SRAMismatchModel2[readLength], SRAMismatchModel2_neg[preReadLength], sa_list2, occ_list2, numCases2 );
-                        
+
                         //Store mismatch statistics and total number of occurrences for later process
                         currentTotalOccurrences = rOutput->TotalOccurrences;
-                        memcpy(currentWithError,rOutput->WithError,sizeof(unsigned int)* (MAX_NUM_OF_ERROR + 1));
+                        memcpy ( currentWithError, rOutput->WithError, sizeof ( unsigned int ) * ( MAX_NUM_OF_ERROR + 1 ) );
                     }
 
                     second_X0 = currentWithError[currentMinNumMismatch];
-                    second_X1 = currentWithError[currentMinNumMismatch+1];
-                    
-                    if (needProceedDP) {
+                    second_X1 = currentWithError[currentMinNumMismatch + 1];
+
+                    if ( needProceedDP )
+                    {
                         hspaux->x0_array[batchFirstReadId + batchReadId] = second_X0;
                         hspaux->x1_array[batchFirstReadId + batchReadId] = second_X1;
                         hspaux->mismatch_array[batchFirstReadId + batchReadId] = currentMinNumMismatch;
                     }
                 }
-            
+
                 // obtain the value of X0 and X1 for both ends
                 // X0: the number of best hits
                 // X1: the number of second best hits
@@ -2131,7 +2156,7 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
             {
 #ifdef SKIP_DEFAULT_DP
 
-                if ( previousTotalOccurrences==0 || currentTotalOccurrences==0 )
+                if ( previousTotalOccurrences == 0 || currentTotalOccurrences == 0 )
                 {
                     // either first read or second read do not have any hit
                     addReadIDToBothUnalignedPairs ( bothUnalignedPairs, batchFirstReadId + batchReadId - 1 );
@@ -2140,7 +2165,7 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
 
 #else
 
-                if ( previousTotalOccurrences>0 && currentTotalOccurrences==0 )
+                if ( previousTotalOccurrences > 0 && currentTotalOccurrences == 0 )
                 {
                     // first read has hit but second read has not
                     if ( occ_list1->curr_size <= maxHitNumForDP && ( tooManyNumOcc ( sa_list1, maxHitNumForDP - occ_list1->curr_size ) == 0 ) )
@@ -2187,7 +2212,7 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                         continue;
                     }
                 }
-                else if ( currentTotalOccurrences>0 && previousTotalOccurrences==0 )
+                else if ( currentTotalOccurrences > 0 && previousTotalOccurrences == 0 )
                 {
                     // second read has hit but first read has not
                     if ( occ_list2->curr_size <= maxHitNumForDP2 && ( tooManyNumOcc ( sa_list2, maxHitNumForDP2 - occ_list2->curr_size ) == 0 ) )
@@ -2233,7 +2258,7 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                         continue;
                     }
                 }
-                else if ( previousTotalOccurrences==0 && currentTotalOccurrences==0 )
+                else if ( previousTotalOccurrences == 0 && currentTotalOccurrences == 0 )
                 {
                     // both first read and second read do not have any hit
                     addReadIDToBothUnalignedPairs ( bothUnalignedPairs, batchFirstReadId + batchReadId - 1 );
@@ -2242,7 +2267,7 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
 
 #endif
             }
-            
+
             // transfer all the SA ranges in sa_list to occ_list
             transferAllSAToOcc ( sa_list1, occ_list1, bwt );
             transferAllSAToOcc ( sa_list2, occ_list2, bwt );
@@ -2250,12 +2275,12 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
             PEPairList * pairList;
             unsigned int numPEAlgnmt = 0;
             // pair-end alignment result exists
-            unsigned int peAlgnmtMismatchStats[MAX_NUM_OF_ERROR*2];
-            memset(peAlgnmtMismatchStats,0,sizeof(unsigned int)*MAX_NUM_OF_ERROR*2);
+            unsigned int peAlgnmtMismatchStats[MAX_NUM_OF_ERROR * 2];
+            memset ( peAlgnmtMismatchStats, 0, sizeof ( unsigned int ) *MAX_NUM_OF_ERROR * 2 );
 
             // fprintf(stderr, "size of occ_list1: %i size of occ_list2: %i\n", occ_list1->curr_size, occ_list2->curr_size);
 
-            if ( previousTotalOccurrences>0 && currentTotalOccurrences>0 )
+            if ( previousTotalOccurrences > 0 && currentTotalOccurrences > 0 )
             {
                 // FIND THE VALID ALIGNMENT PAIRS
                 pe_in->patternLength = readLength;
@@ -2264,7 +2289,7 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                                        occ_list2->occ, occ_list2->curr_size );
                 unsigned int num_minMismatch = 0; // the number of optimal pairs with the same minimum sum of mismatches
                 unsigned int num_soMinMismatch = 0; // the number of sub-optimal pairs with the same minimum sum of mismatches
-                
+
                 if ( pe_out->root->pairsCount > 0 )
                 {
                     // pair-end alignment result exists
@@ -2279,15 +2304,17 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                         // find the minimum total number of mismatches for the resulting paired-end alignments (the best pair)
                         char first_isBestHit = 0;
                         char second_isBestHit = 0;
-                        
-                        numPEAlgnmt = PEStatsPEOutput(pe_out,&optimal,&suboptimal,peAlgnmtMismatchStats);
 
-                        if ( optimal != NULL ) {
+                        numPEAlgnmt = PEStatsPEOutput ( pe_out, &optimal, &suboptimal, peAlgnmtMismatchStats );
+
+                        if ( optimal != NULL )
+                        {
                             min_totalMismatchCount = optimal->totalMismatchCount;
                             num_minMismatch = peAlgnmtMismatchStats[min_totalMismatchCount];
                         }
-                        
-                        if ( suboptimal != NULL ) {
+
+                        if ( suboptimal != NULL )
+                        {
                             secMin_totalMismatchCount = suboptimal->totalMismatchCount;
                             num_soMinMismatch = peAlgnmtMismatchStats[secMin_totalMismatchCount];
                         }
@@ -2365,22 +2392,24 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
 
                             // output the alignment of the first read
                             // qInfo_Positive.ReadStrand = strand;
-                            if ( occ->occPositionCacheCount >= OCC_CACHE_SIZE ) {OCCFlushCache ( &qInput_Positive );}
+                            if ( 1 || occ->occPositionCacheCount >= OCC_CACHE_SIZE ) {OCCFlushCache ( &qInput_Positive );} // condition made always true by cx
 
                             occ->occPositionCache[occ->occPositionCacheCount].tp = optimal->algnmt_1;
                             occ->occPositionCache[occ->occPositionCacheCount].ReadStrand = optimal->strand_1;
                             occ->occPositionCache[occ->occPositionCacheCount].ChromId = 0;
                             occ->occPositionCache[occ->occPositionCacheCount].occMismatch = optimal->mismatch_1;
+                            occ->occPositionCache[occ->occPositionCacheCount].len = preReadLength; // cx
                             occ->occPositionCacheCount++;
 
                             // output the alignment of the second read
                             // OCCReportDelimitor(occ,hsp,outputFile,(unsigned long long)readId+accumReadNum);
-                            if ( occ->occPositionCacheCount >= OCC_CACHE_SIZE ) {OCCFlushCache ( &qInput_Positive );}
+                            if ( 1 || occ->occPositionCacheCount >= OCC_CACHE_SIZE ) {OCCFlushCache ( &qInput_Positive );} // condition made always true by cx
 
                             occ->occPositionCache[occ->occPositionCacheCount].tp = optimal->algnmt_2;
                             occ->occPositionCache[occ->occPositionCacheCount].ReadStrand = optimal->strand_2;
                             occ->occPositionCache[occ->occPositionCacheCount].ChromId = 0;
                             occ->occPositionCache[occ->occPositionCacheCount].occMismatch = optimal->mismatch_2;
+                            occ->occPositionCache[occ->occPositionCacheCount].len = readLength; // cx
                             occ->occPositionCacheCount++;
                             numOfAnswer++;
                             numOfAlignedRead += 2;
@@ -2397,10 +2426,13 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                     if ( ( reportType == OUTPUT_ALL_BEST || reportType == OUTPUT_ALL_VALID ) &&
                             ( outputFormat != SRA_OUTPUT_FORMAT_SAM_API ) )
                     {
-                        unsigned long long dumpOcc = PEDumpAllOccurrence(pe_out,&qInput_Positive,reportType,min_totalMismatchCount,peMaxOutputPerPair);
-                        if (dumpOcc>0) {
-                            numOfAnswer+=dumpOcc;
-                            numOfPairEndAlignment+=dumpOcc;
+                        unsigned long long dumpOcc = PEDumpAllOccurrence ( pe_out, &qInput_Positive, reportType, min_totalMismatchCount, peMaxOutputPerPair,
+                                                     preReadLength, readLength );
+
+                        if ( dumpOcc > 0 )
+                        {
+                            numOfAnswer += dumpOcc;
+                            numOfPairEndAlignment += dumpOcc;
                             numOfAlignedRead += 2;
                             pair_alignment_exist = 1;
                             numPEAlgnmt = numOfPairEndAlignment;
@@ -2420,7 +2452,7 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                 {
                     // only case remain: both reads can be aligned
                     // but the insert size is out of range.
-                    if ( previousTotalOccurrences>0 && currentTotalOccurrences>0 )
+                    if ( previousTotalOccurrences > 0 && currentTotalOccurrences > 0 )
                     {
                         // first read has hits AND second read has hits
                         if ( previousTotalOccurrences > maxHitNumForDP )
@@ -2627,13 +2659,13 @@ inline unsigned long long hostKernelSingle ( char * upkdQueryNames, unsigned int
     HSP * hsp = aIndex->hsp;
     HSPAux * hspaux = aIndex->hspaux;
 #ifdef BGS_ROUND_BREAKDOWN_TIME
-    double start_time = setStartTime();
+    double start_time = setStartTime ();
 #endif
     int word_per_ans_2 = sa_range_allowed_2 * 2;
     uint * badReadPos = ( uint * ) malloc ( numCases * sizeof ( uint ) );
-    
+
     char dummyQuality[MAX_READ_LENGTH];
-    memset(dummyQuality,1,sizeof(char)*MAX_READ_LENGTH);
+    memset ( dummyQuality, 1, sizeof ( char ) *MAX_READ_LENGTH );
     SRAQueryInput qInput_Positive;
     SRAQueryInfo qInfo_Positive;
     qInfo_Positive.ReadStrand = QUERY_POS_STRAND;
@@ -2642,7 +2674,7 @@ inline unsigned long long hostKernelSingle ( char * upkdQueryNames, unsigned int
     qInput_Positive.QuerySetting = qSetting;
     qInput_Positive.AlgnmtIndex = aIndex;
     qInput_Positive.QueryOutput = rOutput;
-    
+
     SRAQueryInput qInput_Negative;
     SRAQueryInfo qInfo_Negative;
     qInfo_Negative.ReadStrand = QUERY_NEG_STRAND;
@@ -2655,8 +2687,8 @@ inline unsigned long long hostKernelSingle ( char * upkdQueryNames, unsigned int
     /////////////////////////////////
     // Allocate and Fill CharMap
     unsigned char charMap[256];
-    
-    INDEXFillCharMap(charMap);
+
+    INDEXFillCharMap ( charMap );
 
     for ( j = 0; j < numCases; j++ )
     { badReadPos[j] = 0; }
@@ -2882,7 +2914,7 @@ inline unsigned long long hostKernelSingle ( char * upkdQueryNames, unsigned int
 
                             for ( k = l; k <= r; k++ )
                             {
-                                addOccToAlgnResult ( alignResult, (*bwt->_bwtSaValue) ( bwt, k ), strand );
+                                addOccToAlgnResult ( alignResult, ( *bwt->_bwtSaValue ) ( bwt, k ), strand );
                             }
 
                             currNumOcc += ( r - l + 1 );
@@ -2993,7 +3025,7 @@ void * hostKernelThreadWrapper ( void * arg )
 {
     HostKernelArguements * myArgs = ( HostKernelArguements * ) arg;
 #ifdef BGS_CPU_CASE_BREAKDOWN_TIME
-    double startTime = setStartTime();
+    double startTime = setStartTime ();
 #endif
     hostKernel ( myArgs->upkdQualities, myArgs->upkdQueryNames, myArgs->batchFirstReadId, myArgs->skipFirst, myArgs->numQueries,
                  myArgs->queries, myArgs->word_per_query,
@@ -3031,7 +3063,7 @@ void * hostKernelThreadWrapperSingle ( void * arg )
 {
     HostKernelArguements * myArgs = ( HostKernelArguements * ) arg;
 #ifdef BGS_CPU_CASE_BREAKDOWN_TIME
-    double startTime = setStartTime();
+    double startTime = setStartTime ();
 #endif
     hostKernelSingle ( myArgs->upkdQueryNames, myArgs->batchFirstReadId, myArgs->skipFirst, myArgs->numQueries,
                        myArgs->queries, myArgs->word_per_query,
@@ -3066,7 +3098,7 @@ void setHostKernelArguments2 ( HostKernelArguements * hostKernelArguments, pthre
     for ( uint threadId = 0; threadId < cpuNumThreads; ++threadId )
     {
         threads[threadId] = 0;
-        hostKernelArguments[threadId].occ = OCCConstruct();
+        hostKernelArguments[threadId].occ = OCCConstruct ();
 
         for ( uint i = 0 ; i <= MAX_NUM_OF_MISMATCH ; i++ )
         {
@@ -3074,8 +3106,8 @@ void setHostKernelArguments2 ( HostKernelArguements * hostKernelArguments, pthre
         }
 
         // Copy SRAIndex
-        memcpy(&(hostKernelArguments[threadId].sraIndex),index->sraIndex,sizeof(SRAIndex));
-        
+        memcpy ( & ( hostKernelArguments[threadId].sraIndex ), index->sraIndex, sizeof ( SRAIndex ) );
+
         hostKernelArguments[threadId].sraQuerySettings.occ = hostKernelArguments[threadId].occ;
         hostKernelArguments[threadId].sraQuerySettings.OutFilePtr = NULL;
         hostKernelArguments[threadId].sraQuerySettings.OutFileName = NULL;

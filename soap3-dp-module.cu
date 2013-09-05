@@ -73,7 +73,7 @@ void alignSingleR ( unsigned int * queries, unsigned int * readLengths, unsigned
     double lastEventTime;
     double totalAlignmentTime = 0.0;
     //Start measuring runtime..
-    startTime = setStartTime();
+    startTime = setStartTime ();
     lastEventTime = 0;
     // Indicate whether the index has been loaded to GPU
     uint indexLoadedToGPU = 0;

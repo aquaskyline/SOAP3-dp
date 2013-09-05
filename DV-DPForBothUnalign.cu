@@ -86,7 +86,7 @@ class DeepDPWrapper
                                          _bwt, _revBwt,
                                          _occ, _revOcc );
         }
-        ~DeepDPWrapper()
+        ~DeepDPWrapper ()
         {
             delete soap3Wrapper;
         }
@@ -180,9 +180,9 @@ class DeepDPWrapper
                       QueryIDStream * unseededIDStream, QueryIDStream * unalignedIDStream )
         {
             CandidateStream * canStream = new CandidateStream;
-            soap3Wrapper->copyIndex();
+            soap3Wrapper->copyIndex ();
             seeding ( inputStream, canStream, unseededIDStream, STAGE_DEEP_DP_ROUND2 );
-            soap3Wrapper->freeIndex();
+            soap3Wrapper->freeIndex ();
             alignment ( canStream, unalignedIDStream );
             delete canStream;
         }
@@ -191,9 +191,9 @@ class DeepDPWrapper
                           QueryIDStream * unseededIDStream, QueryIDStream * unalignedIDStream )
         {
             CandidateStream * canStream = new CandidateStream;
-            soap3Wrapper->copyIndex();
+            soap3Wrapper->copyIndex ();
             seeding_ext ( inputStream, canStream, unseededIDStream );
-            soap3Wrapper->freeIndex();
+            soap3Wrapper->freeIndex ();
             alignment ( canStream, unalignedIDStream );
             delete canStream;
         }
@@ -210,7 +210,7 @@ class DeepDPWrapper
             );
         }
 
-        void run()
+        void run ()
         {
             numDPAlignedRead = 0;
             numDPAlignment = 0;
@@ -223,7 +223,7 @@ class DeepDPWrapper
             delete unaligned_round1;
         }
 
-        void run2()
+        void run2 ()
         {
             numDPAlignedRead = 0;
             numDPAlignment = 0;
@@ -266,7 +266,7 @@ void DPForUnalignPairs2 ( BothUnalignedPairsArrays * unalignedReads, int insert_
         alignmentType, dpParameters,
         accumReadNum, outputFormat,
         outputFile, samOutputDPFilePtr );
-    deepDPWrapper.run2();
+    deepDPWrapper.run2 ();
     numDPAlignedRead = deepDPWrapper.numDPAlignedRead;
     numDPAlignment = deepDPWrapper.numDPAlignment;
 }

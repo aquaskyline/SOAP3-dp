@@ -103,7 +103,7 @@ class SemiDPWrapper
                                          _bwt, _revBwt,
                                          _occ, _revOcc );
         }
-        ~SemiDPWrapper()
+        ~SemiDPWrapper ()
         {
             if ( soap3Wrapper )
             { delete soap3Wrapper; }
@@ -133,7 +133,7 @@ class SemiDPWrapper
 
         void passUnalignedToDeepDP ( QueryIDStream * unalignedIDStream )
         {
-            for ( int i = 0; i < unalignedIDStream->data->size(); i++ )
+            for ( int i = 0; i < unalignedIDStream->data->size (); i++ )
             {
                 addReadIDToBothUnalignedPairs ( unalignedReads, ( * ( unalignedIDStream->data ) ) [i] );
             }
@@ -227,9 +227,9 @@ class SemiDPWrapper
                             QueryIDStream * unseededIDStream, QueryIDStream * unalignedIDStream )
         {
             DeepDP_Space::CandidateStream * canStream = new DeepDP_Space::CandidateStream;
-            soap3Wrapper->copyIndex();
+            soap3Wrapper->copyIndex ();
             seeding ( inputStream, canStream, unseededIDStream, STAGE_NEW_DEFAULT_DP );
-            soap3Wrapper->freeIndex();
+            soap3Wrapper->freeIndex ();
             alignment ( canStream, unalignedIDStream );
             delete canStream;
         }
@@ -239,17 +239,17 @@ class SemiDPWrapper
         {
             DeepDP_Space::CandidateStream * canStream = new DeepDP_Space::CandidateStream;
             QueryIDStream * tmpStream = new QueryIDStream;
-            soap3Wrapper->copyIndex();
+            soap3Wrapper->copyIndex ();
             seeding ( inputStream, canStream, tmpStream, STAGE_NEW_DEFAULT_DP );
             //      printf("unseeded 1: %d\n", (int) tmpStream->data->size());
             seeding_ext ( tmpStream, canStream, unseededIDStream );
             delete tmpStream;
-            soap3Wrapper->freeIndex();
+            soap3Wrapper->freeIndex ();
             alignment ( canStream, unalignedIDStream );
             delete canStream;
         }
 
-        void run()
+        void run ()
         {
             numDPAlignedRead = 0;
             numDPAlignment = 0;
@@ -262,7 +262,7 @@ class SemiDPWrapper
             delete unalignedIDStream;
         }
 
-        void run2()
+        void run2 ()
         {
             numDPAlignedRead = 0;
             numDPAlignment = 0;
@@ -275,7 +275,7 @@ class SemiDPWrapper
             delete unalignedIDStream;
         }
 
-        void run3()
+        void run3 ()
         {
             numDPAlignedRead = 0;
             numDPAlignment = 0;
@@ -334,7 +334,7 @@ void semiGlobalDP2 ( ReadInputForDPArrays * readInputArrays, int insert_high, in
         accumReadNum, outputFormat,
         outputFile, samOutputDPFilePtr,
         unalignedReads );
-    semiDPWrapper.run();
+    semiDPWrapper.run ();
     numDPAlignedRead = semiDPWrapper.numDPAlignedRead;
     numDPAlignment = semiDPWrapper.numDPAlignment;
     return;
@@ -379,7 +379,7 @@ void newSemiGlobalDP ( ReadInputForDPArrays * readInputArrays, int insert_high, 
         accumReadNum, outputFormat,
         outputFile, samOutputDPFilePtr,
         unalignedReads );
-    semiDPWrapper.run2();
+    semiDPWrapper.run2 ();
     numDPAlignedRead = semiDPWrapper.numDPAlignedRead;
     numDPAlignment = semiDPWrapper.numDPAlignment;
     return;

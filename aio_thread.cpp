@@ -2,7 +2,7 @@
 #include "CPUfunctions.h"
 
 //InputFilePointers
-InputFilePointers * InputFilePointersCreate()
+InputFilePointers * InputFilePointersCreate ()
 {
     InputFilePointers * t = ( InputFilePointers * ) calloc ( 1, sizeof ( InputFilePointers ) );
 
@@ -49,7 +49,7 @@ void InputFilePointersFree ( InputFilePointers * ifp )
 
 
 //InputReadsBuffer
-InputReadsBuffer * InputReadsBufferCreate()
+InputReadsBuffer * InputReadsBufferCreate ()
 {
     InputReadsBuffer * t = ( InputReadsBuffer * ) calloc ( 1, sizeof ( InputReadsBuffer ) );
 
@@ -68,7 +68,7 @@ InputReadsBuffer * InputReadsBufferFullCreate ( uint maxReadLength, uint maxNumQ
         uint * queries, uint * readLengths, uint * readIDs, char * upkdQualities, char * upkdQueryNames,
         char isFastq, int maxLenReadName )
 {
-    InputReadsBuffer * t = InputReadsBufferCreate();
+    InputReadsBuffer * t = InputReadsBufferCreate ();
     t->maxReadLength = maxReadLength;
     t->maxNumQueries = maxNumQueries;
     t->wordPerQuery = wordPerQuery;

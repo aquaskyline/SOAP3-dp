@@ -76,6 +76,24 @@ typedef unsigned long long uint64;
         MCInner_RadixSort_32_16_OneRound(auxArr, item, arr, length, 16) \
     }
 
+#define MCInner_RadixSort_8_8_OneRound(arr, item, auxArr, length, shift) { \
+        memset(count, 0, 256 * sizeof(char)); \
+        for(uint i = 0; i < length; i++) \
+            ++count[(arr[i].item >> shift) & MASK]; \
+        position[0] = 0; \
+        for(uint i = 1; i < 256; i++) \
+            position[i] = position[i-1] + count[i-1]; \
+        for(uint i = 0; i < length; i++) \
+            auxArr[position[(arr[i].item >> shift) & MASK]++] = arr[i]; \
+    }
+
+#define MC_RadixSort_8_8(arr, item, auxArr, length) { \
+        unsigned char count[256]; \
+        unsigned char position[256]; \
+        unsigned char MASK = 0xFF; \
+        MCInner_RadixSort_8_8_OneRound(arr, item, auxArr, length, 0) \
+    }
+
 static void * addr;
 #define MC_CheckMalloc(var,type,size) \
     addr = malloc((size) * sizeof(type)); \
@@ -122,7 +140,7 @@ class SemiGlobalAligner
         int tryAlloc ( size_t estimatedThreadSize, size_t numOfBlocks );
 
     public:
-        SemiGlobalAligner();
+        SemiGlobalAligner ();
         void decideConfiguration (
             int maxReadLength, int maxDNALength,
             int & maxDPTableLength, int & numOfBlocks,
@@ -142,7 +160,7 @@ class SemiGlobalAligner
             uint * clipLtSizes = NULL, uint * clipRtSizes = NULL,
             uint * anchorLeftLocs = NULL, uint * anchorRightLocs = NULL
         );
-        void freeMemory();
+        void freeMemory ();
 };
 
 
@@ -167,11 +185,11 @@ class SOAP3Wrapper
             MC_MemberCopy4 ( this->, , _bwt, _revBwt, _occ, _revOcc );
             this->indexInside = indexInside;
         }
-        ~SOAP3Wrapper()
+        ~SOAP3Wrapper ()
         {
-            freeIndex();
+            freeIndex ();
         }
-        void copyIndex()
+        void copyIndex ()
         {
             if ( !indexInside )
             {
@@ -180,7 +198,7 @@ class SOAP3Wrapper
                 indexInside = 1;
             }
         }
-        void freeIndex()
+        void freeIndex ()
         {
             if ( indexInside )
             {
@@ -197,7 +215,7 @@ class SOAP3Wrapper
                        int numOfCPUForSeeding,
                        SingleAlgnResultArray * algnResultArray, int maxHitNum )
         {
-            if ( !indexInside ) { copyIndex(); }
+            if ( !indexInside ) { copyIndex (); }
 
             single_1_mismatch_alignment2 ( seeds, lengths,
                                            maxSeedLength, wordPerSeed, batchSize,
@@ -237,20 +255,20 @@ struct OutputBuffer
     int size;
     int alignmentType;
 
-    OutputBuffer()
+    OutputBuffer ()
     {
         // srand(time(NULL));
         capacity = 128;
         elements = ( ResultType * ) malloc ( capacity * sizeof ( ResultType ) );
-        clear();
+        clear ();
     }
-    ~OutputBuffer()
+    ~OutputBuffer ()
     {
         free ( elements );
     }
-    void clear()
+    void clear ()
     {
-        rawBuffer.clear();
+        rawBuffer.clear ();
         size = 0;
     }
     void setAlignmentType ( int alignmentType )
@@ -261,7 +279,7 @@ struct OutputBuffer
     {
         rawBuffer.push_back ( result );
     }
-    inline void filterBest()
+    inline void filterBest ()
     {
         if ( size == 0 ) { return; }
 
@@ -287,7 +305,7 @@ struct OutputBuffer
 
         size = arrSize;
     }
-    inline void filterInvalid()
+    inline void filterInvalid ()
     {
         int arrSize = 0;
 
@@ -301,9 +319,9 @@ struct OutputBuffer
 
         size = arrSize;
     }
-    inline void arrayCopy()
+    inline void arrayCopy ()
     {
-        size = rawBuffer.size();
+        size = rawBuffer.size ();
 
         if ( size > 0 )
         {
@@ -314,12 +332,12 @@ struct OutputBuffer
                 elements = ( ResultType * ) malloc ( capacity * sizeof ( ResultType ) );
             }
 
-            copy ( rawBuffer.begin(), rawBuffer.end(), elements );
+            copy ( rawBuffer.begin (), rawBuffer.end (), elements );
         }
     }
-    inline void arrayCopyNRemoveDuplicate()
+    inline void arrayCopyNRemoveDuplicate ()
     {
-        size = rawBuffer.size();
+        size = rawBuffer.size ();
 
         if ( size > 0 )
         {
@@ -331,10 +349,10 @@ struct OutputBuffer
             }
 
             int arrPointer = 0;
-            sort ( rawBuffer.begin(), rawBuffer.end(), ResultCompare<ResultType> );
+            sort ( rawBuffer.begin (), rawBuffer.end (), ResultCompare<ResultType> );
             elements[arrPointer] = rawBuffer[0];
 
-            for ( uint i = 1; i < rawBuffer.size(); i++ )
+            for ( uint i = 1; i < rawBuffer.size (); i++ )
             {
                 if ( ResultCompare ( elements[arrPointer], rawBuffer[i] ) )
                 {
@@ -358,9 +376,9 @@ struct OutputBuffer
 #define OUTPUT_AS_INPUT_ORDER       2
 
         if ( optionFlag & OUTPUT_AS_INPUT_ORDER )
-        { arrayCopy(); }
+        { arrayCopy (); }
         else
-        { arrayCopyNRemoveDuplicate(); }
+        { arrayCopyNRemoveDuplicate (); }
 
         if ( size == 0 ) { return; }
 
@@ -368,13 +386,13 @@ struct OutputBuffer
         {
             if ( optionFlag & DO_NOT_OUTPUT_HALF_ALIGNED )
             {
-                filterInvalid();
+                filterInvalid ();
             }
         }
         else
         {
             /* alignmentType > 1 */
-            filterBest();
+            filterBest ();
 
             if ( alignmentType == 2 )
             {
@@ -403,7 +421,7 @@ struct AlgnmtFlags
     pthread_mutex_t occupy_mutex;
 
     AlgnmtFlags ( uint range = 16777216 );
-    void clear();
+    void clear ();
     inline void increaseSize ( uint newSize );
     inline void reserveSize ( AlgnmtFlags * algnFlags );
 
@@ -416,7 +434,7 @@ struct AlgnmtFlags
     void XOR ( AlgnmtFlags * algnFlags );
     void AND ( AlgnmtFlags * algnFlags );
 
-    ~AlgnmtFlags();
+    ~AlgnmtFlags ();
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -434,17 +452,17 @@ class TimeRecorder
             int state;
             int length;
             cudaEvent_t start, stop;
-            TimeLine();
+            TimeLine ();
             vector<double> startTime;
             vector<double> endTime;
         };
         map<string, TimeLine> recorder;
     private:
-        double setStartTime();
+        double setStartTime ();
         double getElapsedTime ( double startTime );
     public:
-        TimeRecorder();
-        void reset();
+        TimeRecorder ();
+        void reset ();
         void appendStart ( string label = "default", string type = "CPU" );
         void appendEnd ( string label = "default", string type = "CPU" );
         double getTotalTime ( string label = "default" );
@@ -474,22 +492,22 @@ class MultiThreadDelegator
         void ( *threadInit ) ( void );
         void ( *threadFinalize ) ( void );
     private:
-        void clear();
-        int allocThread();
+        void clear ();
+        int allocThread ();
         void releaseThread ( int threadId );
         int checkFinish ( int threadId );
     protected:
-        void thread_run_func();
+        void thread_run_func ();
         template <class T>
         friend void * MultiThreadDelegator_call_func ( void * classRef );
     public:
-        MultiThreadDelegator();
-        ~MultiThreadDelegator();
+        MultiThreadDelegator ();
+        ~MultiThreadDelegator ();
 
         void init ( int numOfThreads, void ( *threadRunFunc ) ( int, ArgType & ),
                     void ( *threadInitFunc ) ( void ) = NULL, void ( *threadFinalizeFunc ) ( void ) = NULL );
         int schedule ( ArgType & arg );
-        void finalize();
+        void finalize ();
 };
 
 ////////////////////////////////// struct MyCigarStringEncoder ////////////////////////////////
@@ -505,7 +523,7 @@ struct CigarStringEncoder
     char * cigarString;
     int charCount[128], gapPenalty;
 
-    CigarStringEncoder();
+    CigarStringEncoder ();
     void append ( char type, int cnt );
     void encodeCigarString ( int GapOpenScore, int GapExtendScore );
 };
@@ -518,7 +536,7 @@ struct CigarStringDecoder
     int index;
 
     CigarStringDecoder ( char * cigarString );
-    bool isEmpty();
+    bool isEmpty ();
     void decodeNext ( char & cigarType, int & cigarCnt );
     int totalCount ( char c1, char c2 = 'N' );
 };
@@ -527,7 +545,7 @@ struct CigarStringDecoder
 
 //////////////////////////////////// struct CigarStringEncoder //////////////////////////////
 template <class T>
-CigarStringEncoder<T>::CigarStringEncoder()
+CigarStringEncoder<T>::CigarStringEncoder ()
 {
     lastType = 'N';
     lastCnt = 0;
@@ -586,7 +604,7 @@ CigarStringDecoder<T>::CigarStringDecoder ( char * cigarString )
     index = 0;
 }
 template <class T>
-bool CigarStringDecoder<T>::isEmpty()
+bool CigarStringDecoder<T>::isEmpty ()
 {
     return ( cigarString[index] == 0 );
 }
@@ -611,7 +629,7 @@ int CigarStringDecoder<T>::totalCount ( char c1, char c2 )
     int cnt;
     uint total = 0;
 
-    while ( !isEmpty() )
+    while ( !isEmpty () )
     {
         decodeNext ( type, cnt );
 
@@ -632,18 +650,18 @@ int CigarStringDecoder<T>::totalCount ( char c1, char c2 )
 
 //////////////////////////////////// class TimeRecorder /////////////////////////////////
 template <class T>
-TimeRecorder<T>::TimeLine::TimeLine()
+TimeRecorder<T>::TimeLine::TimeLine ()
 {
     state = 0;
     length = 0;
 }
 template <class T>
-TimeRecorder<T>::TimeRecorder()
+TimeRecorder<T>::TimeRecorder ()
 {
-    reset();
+    reset ();
 }
 template <class T>
-double TimeRecorder<T>::setStartTime()
+double TimeRecorder<T>::setStartTime ()
 {
     struct timeval tp;
     gettimeofday ( &tp, NULL );
@@ -657,9 +675,9 @@ double TimeRecorder<T>::getElapsedTime ( double startTime )
     return ( double ) tp.tv_sec + ( double ) tp.tv_usec / ( double ) 1000000 - startTime;
 }
 template <class T>
-void TimeRecorder<T>::reset()
+void TimeRecorder<T>::reset ()
 {
-    referenceTime = setStartTime();
+    referenceTime = setStartTime ();
 }
 template <class T>
 void TimeRecorder<T>::appendStart ( string label, string type )
@@ -720,7 +738,7 @@ template <class T>
 void TimeRecorder<T>::printTimeLine ( string label, FILE * output )
 {
     TimeLine & timeLine = recorder[label];
-    fprintf ( output, "Label: %s  --  Total %d records.\n", label.c_str(), timeLine.length );
+    fprintf ( output, "Label: %s  --  Total %d records.\n", label.c_str (), timeLine.length );
 
     for ( uint i = 0; i < timeLine.length; i++ )
     {
@@ -733,21 +751,21 @@ template <class T>
 void * MultiThreadDelegator_call_func ( void * classRef )
 {
     MultiThreadDelegator<T> * delegator = ( MultiThreadDelegator<T> * ) classRef;
-    delegator -> thread_run_func();
+    delegator -> thread_run_func ();
     return NULL;
 }
 template <class ArgType>
-MultiThreadDelegator<ArgType>::MultiThreadDelegator()
+MultiThreadDelegator<ArgType>::MultiThreadDelegator ()
 {
     threadHandles = NULL;
 }
 template <class ArgType>
-MultiThreadDelegator<ArgType>::~MultiThreadDelegator()
+MultiThreadDelegator<ArgType>::~MultiThreadDelegator ()
 {
-    clear();
+    clear ();
 }
 template <class ArgType>
-void MultiThreadDelegator<ArgType>::clear()
+void MultiThreadDelegator<ArgType>::clear ()
 {
     if ( threadHandles != NULL )
     {
@@ -761,11 +779,11 @@ void MultiThreadDelegator<ArgType>::clear()
     threadHandles = NULL;
 }
 template <class ArgType>
-int MultiThreadDelegator<ArgType>::allocThread()
+int MultiThreadDelegator<ArgType>::allocThread ()
 {
     pthread_mutex_lock ( &occupy_mutex );
-    int threadId = threadPool->top();
-    threadPool->pop();
+    int threadId = threadPool->top ();
+    threadPool->pop ();
     threadFlags[threadId] = 1;
     pthread_mutex_unlock ( &occupy_mutex );
     return threadId;
@@ -783,7 +801,7 @@ void MultiThreadDelegator<ArgType>::init ( int num, void ( *inFuncWrapper ) ( in
         void ( *inThreadInit ) ( void ),
         void ( *inThreadFinalize ) ( void ) )
 {
-    clear();
+    clear ();
     numOfThreads = num;
     threadHandles = new pthread_t[numOfThreads];
     threadSems = new sem_t[numOfThreads];
@@ -822,14 +840,14 @@ int MultiThreadDelegator<ArgType>::checkFinish ( int threadId )
     return flag;
 }
 template <class ArgType>
-void MultiThreadDelegator<ArgType>::thread_run_func()
+void MultiThreadDelegator<ArgType>::thread_run_func ()
 {
     pthread_mutex_lock ( &occupy_mutex );
     int threadId = createThreadCnt++;
     pthread_mutex_unlock ( &occupy_mutex );
 
     if ( threadInit != NULL )
-    { threadInit(); }
+    { threadInit (); }
 
     releaseThread ( threadId );
     sem_post ( &availableSem );
@@ -845,19 +863,19 @@ void MultiThreadDelegator<ArgType>::thread_run_func()
     }
 
     if ( threadFinalize != NULL )
-    { threadFinalize(); }
+    { threadFinalize (); }
 }
 template <class ArgType>
 int MultiThreadDelegator<ArgType>::schedule ( ArgType & arg )
 {
     sem_wait ( &availableSem );
-    int threadId = allocThread();
+    int threadId = allocThread ();
     argList[threadId] = arg;
     sem_post ( threadSems + threadId );
     return threadId;
 }
 template <class ArgType>
-void MultiThreadDelegator<ArgType>::finalize()
+void MultiThreadDelegator<ArgType>::finalize ()
 {
     pthread_mutex_lock ( &occupy_mutex );
     finishFlag = 1;
@@ -869,7 +887,7 @@ void MultiThreadDelegator<ArgType>::finalize()
     for ( int i = 0; i < numOfThreads; i++ )
     { pthread_join ( threadHandles[i], NULL ); }
 
-    clear();
+    clear ();
 }
 
 
@@ -884,9 +902,9 @@ struct QueryIDStream
 {
     vector<int> * data;
 
-    QueryIDStream();
+    QueryIDStream ();
     QueryIDStream ( BothUnalignedPairsArrays * input );
-    ~QueryIDStream();
+    ~QueryIDStream ();
     void append ( QueryIDStream * stream );
     void setBuffer ( vector<int> * input );
 };
@@ -911,14 +929,14 @@ struct CandidateStream
 {
     vector<CandidateInfo> data;
     pthread_mutex_t occupy_mutex;
-    CandidateStream();
+    CandidateStream ();
     void append ( vector<CandidateInfo> * canInfo, AlgnmtFlags * alignFlags );
 };
 
 void SeedingCPUThread ( int threadId, void *& empty );
-void SeedingGPUThreadInit();
+void SeedingGPUThreadInit ();
 void SeedingGPUThread ( int threadId, int *& pCallThreadId );
-void SeedingGPUThreadFinalize();
+void SeedingGPUThreadFinalize ();
 
 class SingleEndSeedingEngine
 {
@@ -950,9 +968,9 @@ class SingleEndSeedingEngine
                 uint batchSize, DPParameters * dpPara,
                 uint * queries, uint * queryLengths, uint inputMaxReadLength
             );
-            ~SingleEndSeedingBatch();
+            ~SingleEndSeedingBatch ();
 
-            void clear();
+            void clear ();
             inline void pack ( uint readID, int off, int seedLength );
             int packSeeds ( uint readID, int stage );
 
@@ -968,11 +986,11 @@ class SingleEndSeedingEngine
             sem_t GPUFinishSem;
 
             void init ( SingleEndSeedingBatch * batch );
-            void freeMemory();
+            void freeMemory ();
         };
 
         static SingleEndSeedingEngine * engine;
-        SingleEndSeedingEngine();
+        SingleEndSeedingEngine ();
 
         QueryIDStream  *  queryIDStream;
         DPParameters   *  dpPara;
@@ -993,11 +1011,11 @@ class SingleEndSeedingEngine
         MultiThreadDelegator<int *>     seedingGPUThreadDelegator;
 
         friend void SeedingCPUThread ( int threadId, void *& empty );
-        friend void SeedingGPUThreadInit();
+        friend void SeedingGPUThreadInit ();
         friend void SeedingGPUThread ( int threadId, int *& pCallThreadId );
-        friend void SeedingGPUThreadFinalize();
+        friend void SeedingGPUThreadFinalize ();
 
-        void performSeeding();
+        void performSeeding ();
 
     public:
         static void performSeeding (
@@ -1015,12 +1033,12 @@ class SingleEndSeedingEngine
 };
 
 void algnmtCPUThread ( int threadId, void *& empty );
-void algnmtGPUThreadInit();
+void algnmtGPUThreadInit ();
 void algnmtGPUThread ( int threadId, int *& pCallThreadId );
-void algnmtGPUThreadFinalize();
+void algnmtGPUThreadFinalize ();
 
 void DPSOutputThread ( int threadId, int *& pCallThreadId );
-void DPSOutputThreadFinalize();
+void DPSOutputThreadFinalize ();
 
 class SingleEndAlignmentEngine
 {
@@ -1054,9 +1072,9 @@ class SingleEndAlignmentEngine
                 int batchSize, DPParameters * dpPara,
                 int maxReadLength, int maxDNALength, int maxDPTableLength, int patternLength,
                 Soap3Index * index, uint * queries, uint inputMaxReadLength, uint * upkdLengths );
-            ~SingleEndAlgnBatch();
+            ~SingleEndAlgnBatch ();
 
-            void clear();
+            void clear ();
             int pack ( CandidateInfo & canInfo );
             inline void packRead ( uint * packedSeq, uint threadId, uint readID, uint length, int strand );
             inline void repackDNA ( uint * packedSeq, uint threadId, uint * seq, uint start, uint length );
@@ -1071,7 +1089,7 @@ class SingleEndAlignmentEngine
             sem_t GPUFinishSem;
             sem_t outputACKSem;
             void init ( SingleEndAlgnBatch * batch );
-            void freeMemory();
+            void freeMemory ();
         };
 
         struct AlgnmtResultStream
@@ -1079,17 +1097,17 @@ class SingleEndAlignmentEngine
             vector<SingleDPResultBatch *> dpSResult;
             uint numOut;
             pthread_mutex_t occupy_mutex;
-            AlgnmtResultStream();
-            ~AlgnmtResultStream();
+            AlgnmtResultStream ();
+            ~AlgnmtResultStream ();
         };
 
         friend void algnmtCPUThread ( int threadId, void *& empty );
-        friend void algnmtGPUThreadInit();
+        friend void algnmtGPUThreadInit ();
         friend void algnmtGPUThread ( int threadId, int *& pCallThreadId );
-        friend void algnmtGPUThreadFinalize();
+        friend void algnmtGPUThreadFinalize ();
 
         friend void DPSOutputThread ( int threadId, int *& pCallThreadId );
-        friend void DPSOutputThreadFinalize();
+        friend void DPSOutputThreadFinalize ();
 
         static SingleEndAlignmentEngine * engine;
 
@@ -1199,12 +1217,12 @@ struct CandidateInfo
 };
 
 void algnmtCPUThread ( int threadId, void *& empty );
-void algnmtGPUThreadInit();
+void algnmtGPUThreadInit ();
 void algnmtGPUThread ( int threadId, int *& pCallThreadId );
-void algnmtGPUThreadFinalize();
+void algnmtGPUThreadFinalize ();
 
 void DPOutputThread ( int threadId, int *& pCallThreadId );
-void DPOutputThreadFinalize();
+void DPOutputThreadFinalize ();
 
 class HalfEndAlignmentEngine
 {
@@ -1243,8 +1261,8 @@ class HalfEndAlignmentEngine
                 int maxReadLength, int maxDNALength, int maxDPTableLength, int patternLength,
                 Soap3Index * index, uint * queries, int inputMaxReadLength, uint * upkdReadLengths
             );
-            ~HalfEndAlgnBatch();
-            void clear();
+            ~HalfEndAlgnBatch ();
+            void clear ();
 
             int pack ( SRAOccurrence & curOcc );
             inline void packRead ( uint * packedSeq, uint threadId, uint readID, uint length, int strand );
@@ -1261,7 +1279,7 @@ class HalfEndAlignmentEngine
             sem_t outputACKSem;
 
             void init ( HalfEndAlgnBatch * batch );
-            void freeMemory();
+            void freeMemory ();
         };
 
         struct AlgnmtResultStream
@@ -1269,17 +1287,17 @@ class HalfEndAlignmentEngine
             vector<DPResultBatch *> dpResult;
             uint numOut;
             pthread_mutex_t occupy_mutex;
-            AlgnmtResultStream();
-            ~AlgnmtResultStream();
+            AlgnmtResultStream ();
+            ~AlgnmtResultStream ();
         };
 
         friend void algnmtCPUThread ( int threadId, void *& empty );
-        friend void algnmtGPUThreadInit();
+        friend void algnmtGPUThreadInit ();
         friend void algnmtGPUThread ( int threadId, int *& pCallThreadId );
-        friend void algnmtGPUThreadFinalize();
+        friend void algnmtGPUThreadFinalize ();
 
         friend void DPOutputThread ( int threadId, int *& pCallThreadId );
-        friend void DPOutputThreadFinalize();
+        friend void DPOutputThreadFinalize ();
 
         static HalfEndAlignmentEngine * engine;
 
@@ -1378,14 +1396,14 @@ struct CandidateStream
 {
     vector<CandidateInfo> data;
     pthread_mutex_t occupy_mutex;
-    CandidateStream();
+    CandidateStream ();
     void append ( vector<CandidateInfo> * canInfo, AlgnmtFlags * alignFlags );
 };
 
 void SeedingCPUThread ( int threadId, void *& empty );
-void SeedingGPUThreadInit();
+void SeedingGPUThreadInit ();
 void SeedingGPUThread ( int threadId, int *& pCallThreadId );
-void SeedingGPUThreadFinalize();
+void SeedingGPUThreadFinalize ();
 
 class PairEndSeedingEngine
 {
@@ -1429,8 +1447,8 @@ class PairEndSeedingEngine
                 int peStrandLeftLeg, int peStrandRightLeg,
                 BWT * bwt
             );
-            ~PairEndSeedingBatch();
-            void clear();
+            ~PairEndSeedingBatch ();
+            void clear ();
 
             inline void pack ( uint evenReadID, uint readID, int off, int seedLength, int readOrMate );
             int packSeeds ( uint evenReadID, int stage );
@@ -1455,7 +1473,7 @@ class PairEndSeedingEngine
             sem_t ACKSem;
             sem_t GPUFinishSem;
             void init ( PairEndSeedingBatch * batch );
-            void freeMemory();
+            void freeMemory ();
         };
 
         static PairEndSeedingEngine * engine;
@@ -1484,13 +1502,13 @@ class PairEndSeedingEngine
         MultiThreadDelegator<void *>    seedingCPUThreadDelegator;
         MultiThreadDelegator<int *>     seedingGPUThreadDelegator;
 
-        PairEndSeedingEngine();
+        PairEndSeedingEngine ();
         friend void SeedingCPUThread ( int threadId, void *& empty );
-        friend void SeedingGPUThreadInit();
+        friend void SeedingGPUThreadInit ();
         friend void SeedingGPUThread ( int threadId, int *& pCallThreadId );
-        friend void SeedingGPUThreadFinalize();
+        friend void SeedingGPUThreadFinalize ();
 
-        void performSeeding();
+        void performSeeding ();
 
     public:
         static void performSeeding (
@@ -1546,12 +1564,12 @@ class PairEndSeedingEngine
 };
 
 void DP2CPUAlgnThread ( int threadId, void *& empty );
-void DP2GPUAlgnThreadInit();
+void DP2GPUAlgnThreadInit ();
 void DP2GPUAlgnThread ( int threadId, int *& pCallThreadId );
-void DP2GPUAlgnThreadFinalize();
+void DP2GPUAlgnThreadFinalize ();
 
 void DP2OutputThread ( int threadId, int *& pCallThreadId );
-void DP2OutputThreadFinalize();
+void DP2OutputThreadFinalize ();
 
 class PairEndAlignmentEngine
 {
@@ -1598,11 +1616,11 @@ class PairEndAlignmentEngine
                 int maxReadLength, int maxDNALength, int maxDPTableLength, int patternLength,
                 Soap3Index * index, uint * queries, uint inputMaxReadLength, uint * upkdLengths
             );
-            ~PairEndAlgnBatch();
-            void clear();
+            ~PairEndAlgnBatch ();
+            void clear ();
 
             int packLeft ( CandidateInfo & canInfo );
-            void packRight();
+            void packRight ();
 
             inline void packRead ( uint * packedSeq, uint threadId, uint readID, uint length, int strand );
             inline void repackDNA ( uint * packedSeq, uint threadId, uint * seq, uint start, uint length );
@@ -1618,7 +1636,7 @@ class PairEndAlignmentEngine
             sem_t outputACKSem;
 
             void init ( PairEndAlgnBatch * batch );
-            void freeMemory();
+            void freeMemory ();
         };
 
         struct AlgnmtResultStream
@@ -1626,19 +1644,19 @@ class PairEndAlignmentEngine
             vector<DP2ResultBatch *> dp2Result;
             uint numOut;
             pthread_mutex_t occupy_mutex;
-            AlgnmtResultStream();
-            ~AlgnmtResultStream();
+            AlgnmtResultStream ();
+            ~AlgnmtResultStream ();
         };
 
-        PairEndAlignmentEngine();
+        PairEndAlignmentEngine ();
 
         friend void DP2CPUAlgnThread ( int threadId, void *& empty );
-        friend void DP2GPUAlgnThreadInit();
+        friend void DP2GPUAlgnThreadInit ();
         friend void DP2GPUAlgnThread ( int threadId, int *& pCallThreadId );
-        friend void DP2GPUAlgnThreadFinalize();
+        friend void DP2GPUAlgnThreadFinalize ();
 
         friend void DP2OutputThread ( int threadId, int *& pCallThreadId );
-        friend void DP2OutputThreadFinalize();
+        friend void DP2OutputThreadFinalize ();
 
         static PairEndAlignmentEngine * engine;
 
@@ -1728,7 +1746,7 @@ class Constants
         //  static DPParameters deepDPPara_Len100;
         //  static DPParameters deepDPParaRound2_Len100;
 
-        Constants();
+        Constants ();
 };
 
 

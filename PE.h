@@ -68,20 +68,20 @@ int writeNumToStr ( int num, char * str );
 // write number to string
 // return size of the text of the number
 
-int getMdStr ( HSP * hsp, unsigned char * query, char * qualities, unsigned int query_length, unsigned int pos, char strand, char mismatchNum, char * md_str, int * avg_mismatch_qual );
+int getMdStr ( HSP * hsp, unsigned char * query, char * qualities, unsigned int query_length, unsigned int pos, char strand, char mismatchNum, char * md_str, int * avg_mismatch_qual, int trim = 0 );
 // compute the MD string
 // return the size of MD string
 
 int getMisInfoForDP ( HSP * hsp, unsigned char * query, char * qualities, unsigned int query_length,
                       unsigned int pos, char strand, char * special_cigar, char * md_str, int * numMismatch,
-                      int * gapOpen, int * gapExt, int * avg_mismatch_qual );
+                      int * gapOpen, int * gapExt, int * avg_mismatch_qual, int trim = 0 );
 // to compute the MD string, the number of mismatches, the number of gap open and the number of gap extension
 // return the size of MD string
 // this function is designed for DP module
 // the md string is a char array with length > query's length * 2
 // special_cigar includes the "m" character for mismatches
 
-int convertToCigarStr ( char * special_cigar, char * cigar );
+int convertToCigarStr ( char * special_cigar, char * cigar, int * deletedEnd = NULL );
 // to convert the special_cigar into cigar string
 
 int convertToCigarStr2 ( char * cigar );

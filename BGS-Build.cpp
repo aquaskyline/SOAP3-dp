@@ -34,13 +34,13 @@
 
 int PoolSize = 2097152;                // 2M  - fixed; not configurable through ini
 
-void printUsage()
+void printUsage ()
 {
 
-    printf("\n[Main] %s 2BWT Index Enhancer v%d.%d.%d (%s) - Usage guide:\n",PROJECT_NAME,PROJECT_MAJOR,PROJECT_MINOR,PROJECT_REV,PROJECT_SPECIAL);
-    printf("\n");
-    printf("Syntax: BGS-Build <2bwtIndex>\n");
-    printf("        2bwtIndex : The bwt index built by %s.\n", PROJECT_BUILDER_BINARY );
+    printf ( "\n[Main] %s 2BWT Index Enhancer v%d.%d.%d (%s) - Usage guide:\n", PROJECT_NAME, PROJECT_MAJOR, PROJECT_MINOR, PROJECT_REV, PROJECT_SPECIAL );
+    printf ( "\n" );
+    printf ( "Syntax: BGS-Build <2bwtIndex>\n" );
+    printf ( "        2bwtIndex : The bwt index built by %s.\n", PROJECT_BUILDER_BINARY );
 }
 
 void reAlignFile ( const char * fn, const char * to )
@@ -87,7 +87,7 @@ int main ( int argc, char ** argv )
     if ( argc != 2 )
     {
         fprintf ( stderr, "Invalid number of command-line arguments\n" );
-        printUsage();
+        printUsage ();
         return 1;
     }
 

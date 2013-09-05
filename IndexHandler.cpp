@@ -23,24 +23,27 @@
 
 #include "IndexHandler.h"
 
-void INDEXFillCharMap(unsigned char charMap[255]) {
+void INDEXFillCharMap ( unsigned char charMap[255] )
+{
 
     int i;
 
-    for (i=0; i<255; i++) {
+    for ( i = 0; i < 255; i++ )
+    {
         charMap[i] = 0;
     }
 
     //Replacing DNA_CHAR_SIZE with ALPHABET_SIZE as SOAP3 has been developed as
     // a restrictive tool..
-    for (i=0; i<ALPHABET_SIZE; i++) {
-        charMap[dnaChar[i]] = (unsigned char)i;
-        charMap[dnaChar[i] - 'A' + 'a'] = (unsigned char)i;
+    for ( i = 0; i < ALPHABET_SIZE; i++ )
+    {
+        charMap[dnaChar[i]] = ( unsigned char ) i;
+        charMap[dnaChar[i] - 'A' + 'a'] = ( unsigned char ) i;
     }
-    
+
     charMap['U'] = charMap['T'];
     charMap['N'] = charMap['G']; // N -> G
-    
+
     charMap['u'] = charMap['t'];
     charMap['n'] = charMap['g']; // N -> G
 }
@@ -50,7 +53,7 @@ Soap3Index * INDEXLoad ( IniParams * ini_params, char * indexName, char isShareI
 {
     MMMasterInitialize ( 3, 0, FALSE, NULL );
     printf ( "[Main] loading index into host...\n" );
-    double startTime = setStartTime();
+    double startTime = setStartTime ();
     Soap3Index * index = ( Soap3Index * ) malloc ( sizeof ( Soap3Index ) );
     SRAIndex * sraIndex = ( SRAIndex * ) malloc ( sizeof ( SRAIndex ) );
 
@@ -61,16 +64,16 @@ Soap3Index * INDEXLoad ( IniParams * ini_params, char * indexName, char isShareI
     INDEXLoad ( index->mmPool, indexFilenames, & ( sraIndex->bwt ), & ( sraIndex->rev_bwt ), & ( sraIndex->hsp ), & ( sraIndex->lookupTable ), & ( sraIndex->rev_lookupTable ),
                 & ( index->gpu_revOccValue ), & ( index->gpu_occValue ), index->gpu_numOfOccValue, isShareIndex );
 
-    
+
     /////////////////////////////////
     // Allocate and Fill CharMap
-    index->charMap = (unsigned char*) malloc(sizeof(unsigned char) * 256);
-    INDEXFillCharMap(index->charMap);
-    
+    index->charMap = ( unsigned char * ) malloc ( sizeof ( unsigned char ) * 256 );
+    INDEXFillCharMap ( index->charMap );
+
     /////////////////////////////////
     // Allocate HSPAuxilliary
-    index->sraIndex->hspaux = ( HSPAux* ) malloc( sizeof ( HSPAux ) );
-    
+    index->sraIndex->hspaux = ( HSPAux * ) malloc ( sizeof ( HSPAux ) );
+
     double loadIndexTime = getElapsedTime ( startTime );
     printf ( "[Main] Finished loading index into host.\n" );
     printf ( "[Main] Loading time : %9.4f seconds\n\n", loadIndexTime );
@@ -102,6 +105,7 @@ void INDEXFree ( Soap3Index * index, char isShareIndex )
 
     MMPoolFree ( index->mmPool );
     free ( index->sraIndex->hspaux );
+
     if ( isShareIndex )
     {
         munmap ( index->gpu_revOccValue, sizeof ( unsigned int ) * ( numOfOccValue * ALPHABET_SIZE + GPU_OCC_PAYLOAD_OFFSET ) );
@@ -112,6 +116,7 @@ void INDEXFree ( Soap3Index * index, char isShareIndex )
         free ( index->gpu_revOccValue );
         free ( index->gpu_occValue );
     }
+
     free ( index->charMap );
     free ( sraIndex );
     free ( index );
@@ -144,7 +149,7 @@ void INDEXLoad ( MMPool * mmPool, IndexFileNames indexFilenames, BWT ** bwt, BWT
     { ( *hsp ) = HSPLoad ( mmPool, indexFilenames.mmapPackedDnaFileName, indexFilenames.annotationFileName, indexFilenames.ambiguityFileName, indexFilenames.translateFileName, 1, isShareIndex ); }
     else
     { ( *hsp ) = HSPLoad ( mmPool, indexFilenames.packedDnaFileName, indexFilenames.annotationFileName, indexFilenames.ambiguityFileName, indexFilenames.translateFileName, 1, isShareIndex ); }
-    
+
     free ( indexFilenames.packedDnaFileName );
     free ( indexFilenames.mmapPackedDnaFileName );
     free ( indexFilenames.annotationFileName );
@@ -319,7 +324,7 @@ void INDEXLoad ( MMPool * mmPool, IndexFileNames indexFilenames, BWT ** bwt, BWT
         fprintf ( stderr, "SOAP3 only supports lookup table size of %u, please re-build index.\n", LOOKUP_SIZE );
         exit ( 1 );
     }
-    
+
     free ( indexFilenames.revLookupTableFileName );
     // SHOW THE MEMORY USAGE ON HOST
 #ifdef BGS_OUTPUT_MEMORY_USAGE

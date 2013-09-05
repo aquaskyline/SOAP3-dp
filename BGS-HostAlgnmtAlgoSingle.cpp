@@ -80,9 +80,9 @@ unsigned long long BWTMismatchModelAnyDirection_CE3 ( SRAQueryInput * qInput, in
     for ( j = l; j <= r; j++ )
     {
         occMismatches[k] = occMismatch;
-        occNBMismatch[k]=nbMismatch;
+        occNBMismatch[k] = nbMismatch;
         occQualities[k] = occQuality;
-        saPositions[k] = (*ceBwt->_bwtSaValue) ( ceBwt, j ) - leftAlign;
+        saPositions[k] = ( *ceBwt->_bwtSaValue ) ( ceBwt, j ) - leftAlign;
         k++;
     }
 
@@ -132,14 +132,17 @@ unsigned long long BWTMismatchModelAnyDirection_CE3 ( SRAQueryInput * qInput, in
             //}
             mismatch = mismatchCe + mismatchInserted;
 
-            if (mismatch>=minMismatch && mismatch<=(maxMismatch+qSetting->MaxNBMismatch-occNBMismatch[j])) {
-                occNBMismatch[newPosCount]=occNBMismatch[j]+((mismatch-maxMismatch)*(mismatch>maxMismatch));
+            if ( mismatch >= minMismatch && mismatch <= ( maxMismatch + qSetting->MaxNBMismatch - occNBMismatch[j] ) )
+            {
+                occNBMismatch[newPosCount] = occNBMismatch[j] + ( ( mismatch - maxMismatch ) * ( mismatch > maxMismatch ) );
 
                 occQualities[newPosCount] = occQualities[j];
+
                 for ( errorsIdx = 0; errorsIdx < mismatchCe; errorsIdx++ )
                 {
                     occQualities[newPosCount] += keyQuality[errorsTmp[errorsIdx].position];
                 }
+
                 occMismatches[newPosCount] = occMismatches[j] + mismatch;
                 saPositions[newPosCount] = readPos;
                 newPosCount++;
@@ -292,7 +295,7 @@ unsigned long long BWTExactModelForward_Lookup3 ( SRAQueryInput * qInput,
     int branchCount = 0;
     char branchChar = 0;
     uint8_t nbMismatch = 0;
-    
+
     unsigned int lookupLength = ( lookupTable->tableSize > len ) ? len : lookupTable->tableSize;
     int i;
 
@@ -361,30 +364,34 @@ unsigned long long BWTExactModelForward_Lookup3 ( SRAQueryInput * qInput,
         BWTAllOccValue ( bwt, rev_l, oL );
         BWTAllOccValue ( bwt, rev_r + 1, oR );
         oCount[ALPHABET_SIZE - 1] = 0;
-        branchCount = (oR[ALPHABET_SIZE-1]>oL[ALPHABET_SIZE-1]);
-        branchChar = (ALPHABET_SIZE-1) *  branchCount;
+        branchCount = ( oR[ALPHABET_SIZE - 1] > oL[ALPHABET_SIZE - 1] );
+        branchChar = ( ALPHABET_SIZE - 1 ) *  branchCount;
 
         for ( k = ALPHABET_SIZE - 2; k >= 0; k-- )
         {
             oCount[k] = oCount[k + 1] + oR[k + 1] - oL[k + 1];
-            
-            branchCount += (oR[k]>oL[k]);
-            branchChar |= k * (oR[k]>oL[k]);
+
+            branchCount += ( oR[k] > oL[k] );
+            branchChar |= k * ( oR[k] > oL[k] );
         }
 
         // Non-branching Mismatch Handler
-        if ( oL[c] + 1 > oR[c] && branchCount == 1 && nbMismatch < qSetting->MaxNBMismatch) {
+        if ( oL[c] + 1 > oR[c] && branchCount == 1 && nbMismatch < qSetting->MaxNBMismatch )
+        {
             rev_l = bwt->cumulativeFreq[branchChar] + oL[branchChar] + 1;
             rev_r = bwt->cumulativeFreq[branchChar] + oR[branchChar];
             r = r - oCount[branchChar];
-            l = r - (rev_r-rev_l);
+            l = r - ( rev_r - rev_l );
             nbMismatch++;
-        } else {
+        }
+        else
+        {
             rev_l = bwt->cumulativeFreq[c] + oL[c] + 1;
             rev_r = bwt->cumulativeFreq[c] + oR[c];
             r = r - oCount[c];
             l = r - ( rev_r - rev_l );
         }
+
         i++;
         pos++;
     }
@@ -443,12 +450,12 @@ unsigned long long BWTExactModelBackward_Lookup3 ( SRAQueryInput * qInput,
     int ceStart = alignmentCase->steps[stepInCase].ceStart;
     int ceEnd = alignmentCase->steps[stepInCase].ceEnd;
     int ceThreshold = alignmentCase->steps[stepInCase].ceThreshold;
-    
+
     //MARK_FOR_64_ENHANCEMENT ----
     unsigned int oL[ALPHABET_SIZE];
     unsigned int oR[ALPHABET_SIZE];
     //MARK_FOR_64_ENHANCEMENT ---
-    
+
     unsigned int lookupLength = ( lookupTable->tableSize > len ) ? len : lookupTable->tableSize;
     int branchCount = 0;
     unsigned char branchChar = 0;
@@ -489,25 +496,31 @@ unsigned long long BWTExactModelBackward_Lookup3 ( SRAQueryInput * qInput,
         }
 
         unsigned char c = convertedKey[pos];
-        BWTAllOccValue(bwt,l,oL);
-        BWTAllOccValue(bwt,r + 1,oR);
-        
+        BWTAllOccValue ( bwt, l, oL );
+        BWTAllOccValue ( bwt, r + 1, oR );
+
         branchCount = 0;
         branchChar = 0;
-        for (k=ALPHABET_SIZE-1;k>=0;k--) {
-            branchCount += (oR[k]>oL[k]);
-            branchChar |= k * (oR[k]>oL[k]);
+
+        for ( k = ALPHABET_SIZE - 1; k >= 0; k-- )
+        {
+            branchCount += ( oR[k] > oL[k] );
+            branchChar |= k * ( oR[k] > oL[k] );
         }
+
         // Non-branching Mismatch Handler
-        if ( oL[c] + 1 > oR[c] && branchCount == 1 && nbMismatch < qSetting->MaxNBMismatch) {
+        if ( oL[c] + 1 > oR[c] && branchCount == 1 && nbMismatch < qSetting->MaxNBMismatch )
+        {
             l = bwt->cumulativeFreq[branchChar] + oL[branchChar] + 1;
             r = bwt->cumulativeFreq[branchChar] + oR[branchChar];
             nbMismatch++;
-        } else {
+        }
+        else
+        {
             l = bwt->cumulativeFreq[c] + oL[c] + 1;
             r = bwt->cumulativeFreq[c] + oR[c];
         }
-        
+
         i++;
         pos--;
     }
@@ -532,19 +545,19 @@ unsigned long long BWTExactModelBackwardAnyDirection_Lookup3 ( SRAQueryInput * q
 {
     unsigned long long l_packedPattern = 0;
     unsigned long long r_packedPattern = 0;
-    
+
     unsigned long long l = 0;
     unsigned long long r = 0;
     unsigned long long rev_l = 0;
     unsigned long long rev_r = 0;
     unsigned long long j;
-    
+
     //MARK_FOR_64_ENHANCEMENT ----
     unsigned int oL[ALPHABET_SIZE];
     unsigned int oR[ALPHABET_SIZE];
     unsigned int oCount[ALPHABET_SIZE];
     //MARK_FOR_64_ENHANCEMENT ---
-    
+
     SRAQueryInfo * qInfo = qInput->QueryInfo;
     unsigned char * convertedKey = qInfo->ReadCode;
     char * keyQuality = qInfo->ReadQuality;
@@ -565,12 +578,12 @@ unsigned long long BWTExactModelBackwardAnyDirection_Lookup3 ( SRAQueryInput * q
     int branchCount = 0;
     char branchChar = 0;
     uint8_t nbMismatch = 0;
-    
+
     unsigned int lookupLength = ( lookupTable->tableSize > len ) ? len : lookupTable->tableSize;
-    
-    
+
+
     int i;
-    int pos = start-lookupLength+1;
+    int pos = start - lookupLength + 1;
 
     for ( i = 0; i < lookupLength ; i++ )
     {
@@ -620,7 +633,7 @@ unsigned long long BWTExactModelBackwardAnyDirection_Lookup3 ( SRAQueryInput * q
     }
 
     i = lookupLength;
-    pos = start-lookupLength;
+    pos = start - lookupLength;
 
     while ( i < len && l <= r )
     {
@@ -634,32 +647,37 @@ unsigned long long BWTExactModelBackwardAnyDirection_Lookup3 ( SRAQueryInput * q
         }
 
         unsigned char c = convertedKey[pos];
-        BWTAllOccValue(bwt,l,oL);
-        BWTAllOccValue(bwt,r + 1,oR);
-        oCount[ALPHABET_SIZE-1]=0;
-        branchCount = (oR[ALPHABET_SIZE-1]>oL[ALPHABET_SIZE-1]);
-        branchChar = (ALPHABET_SIZE-1) *  branchCount;
-        for (k=ALPHABET_SIZE-2;k>=0;k--) {
-            oCount[k]=oCount[k+1]+oR[k+1]-oL[k+1];
-            
-            branchCount += (oR[k]>oL[k]);
-            branchChar |= k * (oR[k]>oL[k]);
+        BWTAllOccValue ( bwt, l, oL );
+        BWTAllOccValue ( bwt, r + 1, oR );
+        oCount[ALPHABET_SIZE - 1] = 0;
+        branchCount = ( oR[ALPHABET_SIZE - 1] > oL[ALPHABET_SIZE - 1] );
+        branchChar = ( ALPHABET_SIZE - 1 ) *  branchCount;
+
+        for ( k = ALPHABET_SIZE - 2; k >= 0; k-- )
+        {
+            oCount[k] = oCount[k + 1] + oR[k + 1] - oL[k + 1];
+
+            branchCount += ( oR[k] > oL[k] );
+            branchChar |= k * ( oR[k] > oL[k] );
         }
 
         // Non-branching Mismatch Handler
-        if ( oL[c] + 1 > oR[c] && branchCount == 1 && nbMismatch < qSetting->MaxNBMismatch) {
+        if ( oL[c] + 1 > oR[c] && branchCount == 1 && nbMismatch < qSetting->MaxNBMismatch )
+        {
             l = bwt->cumulativeFreq[branchChar] + oL[branchChar] + 1;
             r = bwt->cumulativeFreq[branchChar] + oR[branchChar];
             rev_r = rev_r - oCount[branchChar];
-            rev_l = rev_r - (r-l);
+            rev_l = rev_r - ( r - l );
             nbMismatch++;
-        } else {
+        }
+        else
+        {
             l = bwt->cumulativeFreq[c] + oL[c] + 1;
             r = bwt->cumulativeFreq[c] + oR[c];
             rev_r = rev_r - oCount[c];
-            rev_l = rev_r - (r-l);
+            rev_l = rev_r - ( r - l );
         }
-        
+
         i++;
         pos--;
     }
@@ -724,10 +742,10 @@ unsigned long long BWTExactModelBackward3 ( SRAQueryInput * qInput, int i, int e
     unsigned int oL[ALPHABET_SIZE];
     unsigned int oR[ALPHABET_SIZE];
     //MARK_FOR_64_ENHANCEMENT ---
-    
+
     int branchCount = 0;
     char branchChar = 0;
-    
+
     //printf("[BWTExactModelBackward] from %d to %d allowing %u<%u<%u mismatches.\n", start,end, minError,errorInserted, maxError);
     //printf("[BWTExactModelBackward] %d/%d\n", i,len);
 
@@ -744,21 +762,26 @@ unsigned long long BWTExactModelBackward3 ( SRAQueryInput * qInput, int i, int e
                     saRanges, occError, nbMismatch, occQuality, algnResult );
         }
 
-        BWTAllOccValue(bwt,l,oL);
-        BWTAllOccValue(bwt,r + 1,oR);
+        BWTAllOccValue ( bwt, l, oL );
+        BWTAllOccValue ( bwt, r + 1, oR );
         branchCount = 0;
         branchChar = 0;
-        for (k=ALPHABET_SIZE-1;k>=0;k--) {
-            branchCount += (oR[k]>oL[k]);
-            branchChar |= k * (oR[k]>oL[k]);
+
+        for ( k = ALPHABET_SIZE - 1; k >= 0; k-- )
+        {
+            branchCount += ( oR[k] > oL[k] );
+            branchChar |= k * ( oR[k] > oL[k] );
         }
 
         // Non-branching Mismatch Handler
-        if ( oL[c] + 1 > oR[c] && branchCount == 1 && nbMismatch < qSetting->MaxNBMismatch) {
+        if ( oL[c] + 1 > oR[c] && branchCount == 1 && nbMismatch < qSetting->MaxNBMismatch )
+        {
             l = bwt->cumulativeFreq[branchChar] + oL[branchChar] + 1;
             r = bwt->cumulativeFreq[branchChar] + oR[branchChar];
             nbMismatch++;
-        } else {
+        }
+        else
+        {
             l = bwt->cumulativeFreq[c] + oL[c] + 1;
             r = bwt->cumulativeFreq[c] + oR[c];
         }
@@ -816,17 +839,17 @@ unsigned long long BWTExactModelAnyDirection3 ( SRAQueryInput * qInput, int i, i
     unsigned long long j;
     int branchCount = 0;
     char branchChar = 0;
-    
+
     //printf("Alignment from %d to %d allowing %u-%u mismatches.\n", start,end, minError, maxError);
     //printf("[BWTExactModelAnyDirection] from %d to %d allowing %u<%u<%u mismatches.\n", start,end, minError,errorInserted, maxError);
     //printf("[BWTExactModelAnyDirection] %d/%d\n", i,len);
-    
+
     //MARK_FOR_64_ENHANCEMENT ----
     unsigned int oL[ALPHABET_SIZE];
     unsigned int oR[ALPHABET_SIZE];
     unsigned int oCount[ALPHABET_SIZE];
     //MARK_FOR_64_ENHANCEMENT ---
-    
+
     pos = start + step * i;
     len -= ( minError - errorInserted - 1 ) * ( minError > errorInserted + 1 );
 
@@ -848,30 +871,34 @@ unsigned long long BWTExactModelAnyDirection3 ( SRAQueryInput * qInput, int i, i
         BWTAllOccValue ( bwt, rev_l, oL );
         BWTAllOccValue ( bwt, rev_r + 1, oR );
         oCount[ALPHABET_SIZE - 1] = 0;
-        branchCount = (oR[ALPHABET_SIZE-1]>oL[ALPHABET_SIZE-1]);
-        branchChar = (ALPHABET_SIZE-1) *  branchCount;
+        branchCount = ( oR[ALPHABET_SIZE - 1] > oL[ALPHABET_SIZE - 1] );
+        branchChar = ( ALPHABET_SIZE - 1 ) *  branchCount;
 
         for ( k = ALPHABET_SIZE - 2; k >= 0; k-- )
         {
             oCount[k] = oCount[k + 1] + oR[k + 1] - oL[k + 1];
-            branchCount += (oR[k]>oL[k]);
-            branchChar |= k * (oR[k]>oL[k]);
+            branchCount += ( oR[k] > oL[k] );
+            branchChar |= k * ( oR[k] > oL[k] );
         }
 
 
         // Non-branching Mismatch Handler
-        if ( oL[c] + 1 > oR[c] && branchCount == 1 && nbMismatch < qSetting->MaxNBMismatch) {
+        if ( oL[c] + 1 > oR[c] && branchCount == 1 && nbMismatch < qSetting->MaxNBMismatch )
+        {
             rev_l = bwt->cumulativeFreq[branchChar] + oL[branchChar] + 1;
             rev_r = bwt->cumulativeFreq[branchChar] + oR[branchChar];
             r = r - oCount[branchChar];
-            l = r - (rev_r-rev_l);
+            l = r - ( rev_r - rev_l );
             nbMismatch++;
-        } else {
+        }
+        else
+        {
             rev_l = bwt->cumulativeFreq[c] + oL[c] + 1;
             rev_r = bwt->cumulativeFreq[c] + oR[c];
             r = r - oCount[c];
             l = r - ( rev_r - rev_l );
         }
+
         i += 1;
         pos += step;
     }
@@ -956,14 +983,14 @@ unsigned long long BWTMismatchModelAnyDirection3 ( SRAQueryInput * qInput, int i
         BWTAllOccValue ( bwt, rev_l, oL );
         BWTAllOccValue ( bwt, rev_r + 1, oR );
         oCount[ALPHABET_SIZE - 1] = 0;
-        branchCount = (oR[ALPHABET_SIZE-1]>oL[ALPHABET_SIZE-1]);
-        branchChar = (ALPHABET_SIZE-1) *  branchCount;
+        branchCount = ( oR[ALPHABET_SIZE - 1] > oL[ALPHABET_SIZE - 1] );
+        branchChar = ( ALPHABET_SIZE - 1 ) *  branchCount;
 
         for ( k = ALPHABET_SIZE - 2; k >= 0; k-- )
         {
             oCount[k] = oCount[k + 1] + oR[k + 1] - oL[k + 1];
-            branchCount += (oR[k]>oL[k]);
-            branchChar |= k * (oR[k]>oL[k]);
+            branchCount += ( oR[k] > oL[k] );
+            branchChar |= k * ( oR[k] > oL[k] );
         }
 
         //if (mismatchInserted<maxMismatch) {
@@ -994,18 +1021,22 @@ unsigned long long BWTMismatchModelAnyDirection3 ( SRAQueryInput * qInput, int i
 
         //}
         // Non-branching Mismatch Handler
-        if ( oL[c] + 1 > oR[c] && branchCount == 1 && nbMismatch < qSetting->MaxNBMismatch) {
+        if ( oL[c] + 1 > oR[c] && branchCount == 1 && nbMismatch < qSetting->MaxNBMismatch )
+        {
             rev_l = bwt->cumulativeFreq[branchChar] + oL[branchChar] + 1;
             rev_r = bwt->cumulativeFreq[branchChar] + oR[branchChar];
             r = r - oCount[branchChar];
-            l = r - (rev_r-rev_l);
+            l = r - ( rev_r - rev_l );
             nbMismatch++;
-        } else {
+        }
+        else
+        {
             rev_l = bwt->cumulativeFreq[c] + oL[c] + 1;
             rev_r = bwt->cumulativeFreq[c] + oR[c];
             r = r - oCount[c];
             l = r - ( rev_r - rev_l );
         }
+
         i += 1;
         pos += step;
     }
@@ -1062,7 +1093,7 @@ unsigned long long BWTMismatchModelBackward3 ( SRAQueryInput * qInput, int i, in
     //MARK_FOR_64_ENHANCEMENT ---
     int branchCount = 0;
     char branchChar = 0;
-    
+
     pos = start + step * i;
     len -= ( minMismatch - mismatchInserted - 1 ) * ( minMismatch > ( mismatchInserted + 1 ) );
 
@@ -1085,6 +1116,7 @@ unsigned long long BWTMismatchModelBackward3 ( SRAQueryInput * qInput, int i, in
         //if (mismatchInserted<maxMismatch) {
         branchCount = 0;
         branchChar = 0;
+
         for ( k = 0; k < ALPHABET_SIZE; k++ )
         {
             if ( k != c )
@@ -1101,20 +1133,25 @@ unsigned long long BWTMismatchModelBackward3 ( SRAQueryInput * qInput, int i, in
                     if ( rOutput->IsClosed == 1 ) { return saCount; }
                 }
             }
-            branchCount += (oR[k]>oL[k]);
-            branchChar |= k * (oR[k]>oL[k]);
+
+            branchCount += ( oR[k] > oL[k] );
+            branchChar |= k * ( oR[k] > oL[k] );
         }
 
         //}
         // Non-branching Mismatch Handler
-        if ( oL[c] + 1 > oR[c] && branchCount == 1 && nbMismatch < qSetting->MaxNBMismatch) {
+        if ( oL[c] + 1 > oR[c] && branchCount == 1 && nbMismatch < qSetting->MaxNBMismatch )
+        {
             l = bwt->cumulativeFreq[branchChar] + oL[branchChar] + 1;
             r = bwt->cumulativeFreq[branchChar] + oR[branchChar];
             nbMismatch++;
-        } else {
+        }
+        else
+        {
             l = bwt->cumulativeFreq[c] + oL[c] + 1;
             r = bwt->cumulativeFreq[c] + oR[c];
         }
+
         i += 1;
         pos += step;
     }

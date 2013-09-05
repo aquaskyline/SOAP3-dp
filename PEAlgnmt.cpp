@@ -53,7 +53,7 @@ inline int PEIsPairOutOfRange ( PEInput * peInput, SRAOccurrence * occ_1, SRAOcc
 
 void PEPairListInitialise ( PEPairList * pePairList );
 void PEOutputInitialise ( PEOutput * peOutput );
-PEPairList * PEPairListConstruct();
+PEPairList * PEPairListConstruct ();
 void PEPairListFree ( PEPairList * pePairList );
 
 /////////////////////////////////////////////////////
@@ -77,7 +77,7 @@ unsigned int SRAEnrichSARanges(BWT * bwt, HSP * hsp,
 /////////////////////////////////////////////////////
 inline unsigned int PERetrievePositionFromSAIndex ( BWT * bwt, unsigned int saIndex )
 {
-    unsigned int ambPosition = (*bwt->_bwtSaValue) ( bwt, saIndex );
+    unsigned int ambPosition = ( *bwt->_bwtSaValue ) ( bwt, saIndex );
     return ambPosition;
 }
 
@@ -616,7 +616,7 @@ void PEReportPairResult ( PEOutput * peOutput, SRAOccurrence * occ_1, SRAOccurre
     {
         if ( pePairList->next == NULL )
         {
-            pePairList->next = PEPairListConstruct();
+            pePairList->next = PEPairListConstruct ();
         }
 
         pePairList = pePairList->next;
@@ -678,7 +678,7 @@ void PEOutputInitialise ( PEOutput * peOutput )
     peOutput->flag = PE_ALIGNMENT_INITIALISED;
 }
 
-PEPairList * PEPairListConstruct()
+PEPairList * PEPairListConstruct ()
 {
     PEPairList * pePairList = ( PEPairList * ) malloc ( sizeof ( PEPairList ) );
     pePairList->pairsCount = 0;
@@ -686,10 +686,10 @@ PEPairList * PEPairListConstruct()
     return pePairList;
 }
 
-PEOutput * PEOutputConstruct()
+PEOutput * PEOutputConstruct ()
 {
     PEOutput * peOutput = ( PEOutput * ) malloc ( sizeof ( PEOutput ) );
-    peOutput->root = PEPairListConstruct();
+    peOutput->root = PEPairListConstruct ();
     peOutput->tail = peOutput->root;
     return peOutput;
 }
@@ -785,43 +785,49 @@ unsigned int PEStatsPEPairList ( PEPairList * pairList, PEPairs ** optimal, PEPa
     uint8_t iOptimal_MismatchDiff = 255;
     uint8_t iSubOptimal_MismatchCount = 255;
     uint8_t iSubOptimal_MismatchDiff = 255;
-    
+
     while ( pairList != NULL && pairList->pairsCount > 0 )
     {
         count += pairList->pairsCount;
-        
+
         for ( i = 0; i < pairList->pairsCount; i++ )
         {
             PEPairs * pePair = & ( pairList->pairs[i] );
             int numMismatchOnPE = pePair->totalMismatchCount;
             mismatchStats[numMismatchOnPE]++;
-            
+
             int diffMismatch = pePair->mismatch_1 - pePair->mismatch_2;
-            if ( pePair->mismatch_2 > pePair->mismatch_1 ) {
+
+            if ( pePair->mismatch_2 > pePair->mismatch_1 )
+            {
                 diffMismatch = -diffMismatch;
             }
-            
-            if ( numMismatchOnPE < iOptimal_MismatchCount ) {
+
+            if ( numMismatchOnPE < iOptimal_MismatchCount )
+            {
                 iSubOptimal_MismatchCount = iOptimal_MismatchCount;
                 iSubOptimal_MismatchDiff = iOptimal_MismatchDiff;
                 iSubOptimal = iOptimal;
                 iOptimal = pePair;
                 iOptimal_MismatchCount = numMismatchOnPE;
                 iOptimal_MismatchDiff = diffMismatch;
-            } else if ( numMismatchOnPE == iOptimal_MismatchCount &&
-                 diffMismatch < iOptimal_MismatchDiff ) {
+            }
+            else if ( numMismatchOnPE == iOptimal_MismatchCount &&
+                      diffMismatch < iOptimal_MismatchDiff )
+            {
                 iOptimal = pePair;
                 iOptimal_MismatchCount = numMismatchOnPE;
                 iOptimal_MismatchDiff = diffMismatch;
             }
-            
+
         }
+
         pairList = pairList->next;
     }
-    
-    (*optimal) = iOptimal;
-    (*suboptimal) = iSubOptimal;
-    
+
+    ( *optimal ) = iOptimal;
+    ( *suboptimal ) = iSubOptimal;
+
     return count;
 }
 
@@ -941,7 +947,7 @@ void addToReadInputForDP ( ReadInputForDP * readInput, unsigned int readid, PESR
     }
 }
 
-DynamicUint8Array * DynamicUint8ArrayConstruct()
+DynamicUint8Array * DynamicUint8ArrayConstruct ()
 {
     DynamicUint8Array * newuint8Array = ( DynamicUint8Array * ) malloc ( sizeof ( DynamicUint8Array ) );
     newuint8Array->charStr = ( uint8_t * ) malloc ( sizeof ( uint8_t ) * INITIAL_SIZE_CHAR_ARRAY );
@@ -984,7 +990,7 @@ void appendStringToUint8Array ( DynamicUint8Array * uint8Array, char * charStrin
 // To hold a set of single-end alignment results
 // ================================================
 
-AllHits * constructAllHits()
+AllHits * constructAllHits ()
 {
     AllHits * newAllHits = ( AllHits * ) malloc ( sizeof ( AllHits ) );
     newAllHits->hitArray = ( Algnmt * ) malloc ( sizeof ( Algnmt ) * SIZE_1_M );
@@ -1237,7 +1243,7 @@ void inputSoap3AnsToArray ( AllHits * allHits, unsigned int readID, HSPAux * hsp
                 {
                     allHits->hitArray[allHits->hitNum].cigarString = ( char * ) malloc ( strlen ( cigar ) + 1 );
                     strcpy ( allHits->hitArray[allHits->hitNum].cigarString, cigar );
-                    allHits->hitArray[allHits->hitNum].algnmt = (*bwt->_bwtSaValue) ( bwt, k );
+                    allHits->hitArray[allHits->hitNum].algnmt = ( *bwt->_bwtSaValue ) ( bwt, k );
                     allHits->hitArray[allHits->hitNum].strand = strand;
                     allHits->hitArray[allHits->hitNum].score = readLength * hspaux->dpMatchScore - num_mis * hspaux->dpMisMatchScore;
                     allHits->hitArray[allHits->hitNum].editdist = num_mis;

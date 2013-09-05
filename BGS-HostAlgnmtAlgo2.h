@@ -67,7 +67,7 @@ unsigned long long BWTExactModelBackward_Lookup2 ( SRAQueryInput * qInput,
 unsigned long long BWTExactModelBackwardAnyDirection_Lookup2 ( SRAQueryInput * qInput,
         SRACase * alignmentCase, int stepInCase,
         unsigned long long * saRanges, SingleAlgnResult * algnResult );
-        
+
 // BWTExactModelBackward matches pattern on text without using any other aux, e.g. lookup table.
 unsigned long long BWTExactModelBackward2 ( SRAQueryInput * qInput, int i, int errorInserted,
         SRACase * alignmentCase, int stepInCase,

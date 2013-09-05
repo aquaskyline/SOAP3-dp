@@ -48,12 +48,12 @@ typedef struct Soap3Index
     //CPU Index
     MMPool * mmPool;
     unsigned char * charMap;
-    
+
     //GPU Index
     uint gpu_numOfOccValue;
     uint * gpu_occValue;
     uint * gpu_revOccValue;
-    
+
     SRAIndex * sraIndex;
 
 } Soap3Index;
@@ -85,7 +85,7 @@ typedef struct IndexFileNames
 
 } IndexFileNames;
 
-void INDEXFillCharMap(unsigned char charMap[255]);
+void INDEXFillCharMap ( unsigned char charMap[255] );
 
 // process index file name
 void INDEXProcessFilenames ( IndexFileNames * index, char * indexName, IniParams * ini_params );
