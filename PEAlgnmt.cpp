@@ -1245,7 +1245,7 @@ void inputSoap3AnsToArray ( AllHits * allHits, unsigned int readID, HSPAux * hsp
                     strcpy ( allHits->hitArray[allHits->hitNum].cigarString, cigar );
                     allHits->hitArray[allHits->hitNum].algnmt = ( *bwt->_bwtSaValue ) ( bwt, k );
                     allHits->hitArray[allHits->hitNum].strand = strand;
-                    allHits->hitArray[allHits->hitNum].score = readLength * hspaux->dpMatchScore - num_mis * hspaux->dpMisMatchScore;
+                    allHits->hitArray[allHits->hitNum].score = readLength * hspaux->dpMatchScore + num_mis * hspaux->dpMisMatchScore;
                     allHits->hitArray[allHits->hitNum].editdist = num_mis;
                     allHits->hitArray[allHits->hitNum].num_sameScore = 0;
                     allHits->hitArray[allHits->hitNum].isFromDP = 0;
@@ -1280,7 +1280,7 @@ void inputSoap3AnsToArray ( AllHits * allHits, unsigned int readID, HSPAux * hsp
             strcpy ( allHits->hitArray[allHits->hitNum].cigarString, cigar );
             allHits->hitArray[allHits->hitNum].algnmt = ans->occ_list[i].ambPosition;
             allHits->hitArray[allHits->hitNum].strand = ans->occ_list[i].strand;
-            allHits->hitArray[allHits->hitNum].score = readLength * hspaux->dpMatchScore - ans->occ_list[i].mismatchCount * hspaux->dpMisMatchScore;
+            allHits->hitArray[allHits->hitNum].score = readLength * hspaux->dpMatchScore + ans->occ_list[i].mismatchCount * hspaux->dpMisMatchScore;
             allHits->hitArray[allHits->hitNum].editdist = ans->occ_list[i].mismatchCount;
             allHits->hitArray[allHits->hitNum].num_sameScore = 0;
             allHits->hitArray[allHits->hitNum].isFromDP = 0;
