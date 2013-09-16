@@ -1766,7 +1766,9 @@ unsigned int getChrAndPos ( SRAQueryInput * qInput, unsigned long long ambPos,
     ( *tp ) = correctPosition;
     ( *chr_id ) = occTranslate[approxValue].chrID;
 
-    return occTranslate[approxValue + 1].startPos - 1;
+    return approxValue < hsp->numOfRemovedSegment - 1 ?
+      occTranslate[approxValue + 1].startPos - 1 : hsp->dnaLength;
+
     //    printf("[getChrAndPos] %u %u %u\n", ambPos, occTranslate[approxValue].startPos, occTranslate[approxValue+1].startPos );
 }
 
