@@ -219,6 +219,11 @@
 // default sample name
 #define DEFAULT_SAMPLE_NAME "default"
 
+// Dynamics Programming Parameters..
+#define PERFORM_NEW_DEFAULT_DP_FOR_SEMI_ALIGNED_PAIR
+#define PERFORM_DEFAULT_DP_FOR_SEMI_ALIGNED_PAIR
+#define PERFORM_DEEP_DP_FOR_UNALIGN_PAIR
+
 // uncomment the below to perform deep-dp for unaligned paired-end reads
 #define PERFORM_DEEP_DP_FOR_UNALIGN_READS
 #define MAX_UNALIGN_READS_NUM_FOR_DEEP_DP 2097152 // 2M

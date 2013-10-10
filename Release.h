@@ -26,7 +26,7 @@
 
 #define PROJECT_MAJOR     2
 #define PROJECT_MINOR     3
-#define PROJECT_REV       169
+#define PROJECT_REV       175
 #define PROJECT_SPECIAL   "build"
 
 #define PROJECT_NAME      "SOAP3-DP"

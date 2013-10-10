@@ -2032,7 +2032,7 @@ void soap3_dp_pair_align ( uint * queries, uint * readLengths, uint numMismatch,
         numDPAlignment = 0;
         // Parameters for DP
         getParameterForAllDP ( dpParameters, input_options, ini_params );
-#ifndef SKIP_DEFAULT_DP
+        
         numDPAlignedPair = 0;
         numDPAlignment = 0;
 
@@ -2040,6 +2040,7 @@ void soap3_dp_pair_align ( uint * queries, uint * readLengths, uint numMismatch,
         // PERFORM NEW SEMI-GLOBAL DP IF NECESSARY                    //
         ////////////////////////////////////////////////////////////
 
+#ifdef PERFORM_NEW_DEFAULT_DP_FOR_SEMI_ALIGNED_PAIR
         if ( input_options.enableDP == 1 && input_options.readType == PAIR_END_READ )
         {
             // DP Parameters for half-aligned reads
@@ -2140,6 +2141,7 @@ void soap3_dp_pair_align ( uint * queries, uint * readLengths, uint numMismatch,
                 printf ( "\n" );
             }
         }
+#endif
 
         numDPAlignedPair = 0;
         numDPAlignment = 0;
@@ -2149,6 +2151,7 @@ void soap3_dp_pair_align ( uint * queries, uint * readLengths, uint numMismatch,
     // PERFORM SEMI-GLOBAL DP IF NECESSARY                    //
     ////////////////////////////////////////////////////////////
 
+#ifdef PERFORM_DEFAULT_DP_FOR_SEMI_ALIGNED_PAIR
     if ( input_options.enableDP == 1 && input_options.readType == PAIR_END_READ )
     {
         // DP Parameters for half-aligned reads
@@ -2248,6 +2251,7 @@ void soap3_dp_pair_align ( uint * queries, uint * readLengths, uint numMismatch,
     numDPAlignedPair = 0;
     numDPAlignment = 0;
 
+#ifdef PERFORM_DEEP_DP_FOR_UNALIGN_PAIR
     if ( input_options.enableDP == 1 && input_options.readType == PAIR_END_READ )
     {
         // DP Parameters for Deep DP
@@ -2338,6 +2342,7 @@ void soap3_dp_pair_align ( uint * queries, uint * readLengths, uint numMismatch,
             printf ( "\n" );
         }
     }
+#endif
 
     ////////////////////////////////////////////////////////////
     // TO PERFORM SINGLE DEEP-DP FOR UNALIGNED READS          //
