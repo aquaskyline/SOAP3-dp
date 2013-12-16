@@ -47,6 +47,8 @@ __forceinline__ __device__ short _LOW_THRESHOLD ( int x )
     return ( short ) max ( x, -32000 );
 }
 
+texture <uint> texPatterns;
+texture <uint> texSequences;
 #define DP_SCORE_NEG_INFINITY -32000
 #define dist(x,y) (x==y ? MatchScore : MismatchScore)
 #define GapInit (GapOpenScore - GapExtendScore)
@@ -54,7 +56,7 @@ __forceinline__ __device__ short _LOW_THRESHOLD ( int x )
 
 #define MC_ScoreAddr(X,j,i) *(X + ((j)*LPARA + (((i)>>1)<<6) + TPARA + ((i)&0x1)))
 #define MC_DnaUnpack(X,i) ((X[dnaTPARA + (((i)>>4)<<5)] >> ((15-((i)&0xF))<<1)) & 3)
-#define MC_ReadUnpack(X,i) ((X[readTPARA + (((i)>>4)<<5)] >> ((15-((i)&0xF))<<1)) & 3)
+#define MC_ReadUnpack(X,i) ((tex1Dfetch(texPatterns, readTPARA + (((i)>>4)<<5)) >> ((15-((i)&0xF))<<1)) & 3)
 
 __device__ void DPScoreNHitPos ( uint * packedDNASequence, uint DNALength, uint maxDNALength, uint maxDPTableLength,
                                  uint * readSequence, uint readLength, uint maxReadLength,
@@ -658,6 +660,10 @@ void SemiGlobalAligner::init (
     DP_HANDLE_ERROR ( cudaMalloc ( ( void ** ) &_pattern, batchSize * PatternLength () * sizeof ( uchar ) ) );
     DP_HANDLE_ERROR ( cudaMalloc ( ( void ** ) &_maxScoreCounts, batchSize * sizeof ( uint ) ) );
     //      showGPUMemInfo("alloc");
+    cudaBindTexture(NULL, texPatterns, _packedReadSequence,
+            batchSize * MC_CeilDivide16 ( maxReadLength ) * sizeof ( uint ));
+    cudaBindTexture(NULL, texSequences, _packedDNASequence,
+            batchSize * MC_CeilDivide16 ( maxDNALength ) * sizeof ( uint ));
 }
 
 void SemiGlobalAligner::performAlignment (
