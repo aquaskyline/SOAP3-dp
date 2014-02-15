@@ -4319,9 +4319,9 @@ void pairDeepDPOutputSAMAPI ( SRAQueryInput * qInput, DeepDPAlignResult * algnRe
         if ( best_insert > 0 )
         {
             if ( tp_1 > tp_2 )
-            { samAlgnmt->core.isize = - ( tp_2 + r2 - tp_1 ); }
+            { samAlgnmt->core.isize = - ( tp_1 + r1 - tp_2 ); }
             else
-            { samAlgnmt->core.isize = tp_1 + r1 - tp_2; }
+            { samAlgnmt->core.isize = tp_2 + r2 - tp_1; }
         }
         else
         {
@@ -4447,9 +4447,9 @@ void pairDeepDPOutputSAMAPI ( SRAQueryInput * qInput, DeepDPAlignResult * algnRe
         if ( best_insert > 0 )
         {
             if ( tp_2 > tp_1 )
-            { samAlgnmt->core.isize = - ( tp_1 + r1 - tp_2 ); }
+            { samAlgnmt->core.isize = - ( tp_2 + r2 - tp_1 ); }
             else
-            { samAlgnmt->core.isize = tp_2 + r2 - tp_1; }
+            { samAlgnmt->core.isize = tp_1 + r1 - tp_2; }
         }
         else
         {
