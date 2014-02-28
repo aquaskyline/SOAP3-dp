@@ -709,6 +709,11 @@ bool parseInputArgs ( int argc, char ** argv, InputOptions & input_options )
             // print MD string and NM tag
             input_options.isPrintMDNM = true;
         }
+        else 
+        {
+            fprintf ( stderr, "Unknown option \"%s\". Please refer to Usage.\n", argv[i]);
+            return false;
+        }
     }
 
     if ( input_options.readType == PAIR_END_READ )

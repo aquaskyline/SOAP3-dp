@@ -831,7 +831,6 @@ int main ( int argc, char ** argv )
         // ======================================================================================
         // | SHOW THE COMMAND FOR MERGING THE OUTPUT FILES INTO ONE                             |
         // ======================================================================================
-        show_merge_file_command2 ( input_options, input_options.outputPrefix, ini_params.Ini_NumOfCpuThreads );
 
         // update the output files
         switch ( input_options.outputFormat )
