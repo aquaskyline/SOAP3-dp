@@ -234,6 +234,7 @@ void addReadIDToBothUnalignedPairs ( BothUnalignedPairs * bothUnalignedPairs, un
         memcpy ( new_readIDs, bothUnalignedPairs->readIDs, sizeof ( unsigned int ) *bothUnalignedPairs->totalNum );
         free ( bothUnalignedPairs->readIDs );
         bothUnalignedPairs->readIDs = new_readIDs;
+        bothUnalignedPairs->size = new_size;
     }
 
     bothUnalignedPairs->readIDs[bothUnalignedPairs->totalNum] = readID;
