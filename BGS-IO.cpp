@@ -87,7 +87,7 @@ unsigned int OCCWriteOutputHeader ( HSP * hsp, FILE * outFilePtr,
                                     unsigned int numOfReads,
                                     int outputFormat )
 {
-    unsigned short * ambiguityMap = hsp->ambiguityMap;
+    unsigned int * ambiguityMap = hsp->ambiguityMap;
     Translate * translate = hsp->translate;
     unsigned int tp, approxIndex, approxValue;
     unsigned int outputVersion = OCC_OUTPUT_FORMAT;
@@ -204,7 +204,7 @@ void OCCFlushCachePlain ( OCC * occ, HSP * hsp, FILE * outFilePtr, SRAQueryInput
 {
     char strandStr[4] = "?+-";
     Translate * occTranslate = hsp->translate;
-    unsigned short * occAmbiguityMap = hsp->ambiguityMap;
+    unsigned int * occAmbiguityMap = hsp->ambiguityMap;
     OCCPositionCache lastDelimEntry;
 
     if ( occ->occPositionCacheCount > 0 )
@@ -287,7 +287,7 @@ void OCCFlushCachePlainDP ( OCC * occ, HSP * hsp, FILE * outFilePtr )
 {
     char strandStr[4] = "?+-";
     Translate * occTranslate = hsp->translate;
-    unsigned short * occAmbiguityMap = hsp->ambiguityMap;
+    unsigned int * occAmbiguityMap = hsp->ambiguityMap;
     OCCPositionCache lastDelimEntry;
 
     if ( occ->occPositionCacheCount > 0 )
@@ -412,7 +412,7 @@ void OCCFlushCachePlainDP ( OCC * occ, HSP * hsp, FILE * outFilePtr )
 void OCCFlushCacheDefault ( OCC * occ, HSP * hsp, FILE * outFilePtr )
 {
     Translate * occTranslate = hsp->translate;
-    unsigned short * occAmbiguityMap = hsp->ambiguityMap;
+    unsigned int * occAmbiguityMap = hsp->ambiguityMap;
 
     if ( occ->occPositionCacheCount > 0 )
     {
@@ -499,7 +499,7 @@ void OCCDirectWritePairUnmapSAM ( SRAQueryInput * qInput, SRAOccurrence * sraOcc
    SRAIndex * aIndex = qInput->AlgnmtIndex;
    HSP * hsp = aIndex->hsp;
    Translate * occTranslate = hsp->translate;
-   unsigned short * occAmbiguityMap = hsp->ambiguityMap;
+   unsigned int * occAmbiguityMap = hsp->ambiguityMap;
    // unsigned long long j=0, k=0;
    unsigned long long ambPosition;
    unsigned long long tp;
@@ -574,7 +574,7 @@ void OCCDirectWritePairOccSAM ( SRAQueryInput * qInput, PEPairs * pePair )
    FILE * outFilePtr = qSetting->OutFilePtr;
    HSP * hsp = aIndex->hsp;
    Translate * occTranslate = hsp->translate;
-   unsigned short * occAmbiguityMap = hsp->ambiguityMap;
+   unsigned int * occAmbiguityMap = hsp->ambiguityMap;
    // unsigned long long j=0, k=0;
    unsigned long long ambPosition;
    unsigned long long tp_1, tp_2;
@@ -677,7 +677,7 @@ void OCCFlushCacheSAM ( SRAQueryInput * qInput )
     OCC * occ = qSetting->occ;
     HSP * hsp = aIndex->hsp;
     Translate * occTranslate = hsp->translate;
-    unsigned short * occAmbiguityMap = hsp->ambiguityMap;
+    unsigned int * occAmbiguityMap = hsp->ambiguityMap;
     unsigned long long j = 0, k = 0;
     unsigned long long ambPosition;
     unsigned long long tp;
@@ -787,7 +787,7 @@ void OCCFlushCacheSAMAPI ( SRAQueryInput * qInput )
     OCC * occ = qSetting->occ;
     HSP * hsp = aIndex->hsp;
     Translate * occTranslate = hsp->translate;
-    unsigned short * occAmbiguityMap = hsp->ambiguityMap;
+    unsigned int * occAmbiguityMap = hsp->ambiguityMap;
     samfile_t * samFilePtr = qSetting->SAMOutFilePtr;
     bam1_t * samAlgnmt = & ( occ->SAMOutBuffer );
     unsigned long long i = 0, j = 0, k = 0;
@@ -907,7 +907,7 @@ void OCCFlushCacheSAMAPIDP ( SRAQueryInput * qInput )
     OCC * occ = qSetting->occ;
     HSP * hsp = aIndex->hsp;
     Translate * occTranslate = hsp->translate;
-    unsigned short * occAmbiguityMap = hsp->ambiguityMap;
+    unsigned int * occAmbiguityMap = hsp->ambiguityMap;
     samfile_t * samFilePtr = qSetting->SAMOutFilePtr;
     bam1_t * samAlgnmt = & ( occ->SAMOutBuffer );
     unsigned long long i = 0, j = 0, k = 0;
@@ -1066,7 +1066,7 @@ void OCCDirectWritePairOccSAMAPI ( SRAQueryInput * qInput, PEPairs * pePair, int
     OCC * occ = qSetting->occ;
     HSP * hsp = aIndex->hsp;
     Translate * occTranslate = hsp->translate;
-    unsigned short * occAmbiguityMap = hsp->ambiguityMap;
+    unsigned int * occAmbiguityMap = hsp->ambiguityMap;
     samfile_t * samFilePtr = qSetting->SAMOutFilePtr;
     bam1_t * samAlgnmt = & ( occ->SAMOutBuffer );
     unsigned long long i = 0; //, j=0, k=0;
@@ -1237,7 +1237,7 @@ void OCCDirectWritePairOccSAMAPI2 ( SRAQueryInput * qInput, PEPairs * pePair, in
     OCC * occ = qSetting->occ;
     HSP * hsp = aIndex->hsp;
     Translate * occTranslate = hsp->translate;
-    unsigned short * occAmbiguityMap = hsp->ambiguityMap;
+    unsigned int * occAmbiguityMap = hsp->ambiguityMap;
     samfile_t * samFilePtr = qSetting->SAMOutFilePtr;
     bam1_t * samAlgnmt = & ( occ->SAMOutBuffer );
     unsigned long long i = 0; //, j=0, k=0;
@@ -1408,7 +1408,7 @@ void OCCDirectWritePairOccSAMAPIwCIGAR ( SRAQueryInput * qInput, PEPairs * pePai
     OCC * occ = qSetting->occ;
     HSP * hsp = aIndex->hsp;
     Translate * occTranslate = hsp->translate;
-    unsigned short * occAmbiguityMap = hsp->ambiguityMap;
+    unsigned int * occAmbiguityMap = hsp->ambiguityMap;
     samfile_t * samFilePtr = qSetting->SAMOutFilePtr;
     bam1_t * samAlgnmt = & ( occ->SAMOutBuffer );
     unsigned long long i = 0; //, j=0, k=0;
@@ -1581,7 +1581,7 @@ void OCCDirectWritePairOccSAMAPI2wCIGAR ( SRAQueryInput * qInput, PEPairs * pePa
     OCC * occ = qSetting->occ;
     HSP * hsp = aIndex->hsp;
     Translate * occTranslate = hsp->translate;
-    unsigned short * occAmbiguityMap = hsp->ambiguityMap;
+    unsigned int * occAmbiguityMap = hsp->ambiguityMap;
     samfile_t * samFilePtr = qSetting->SAMOutFilePtr;
     bam1_t * samAlgnmt = & ( occ->SAMOutBuffer );
     unsigned long long i = 0; //, j=0; //, k=0;
@@ -1749,14 +1749,17 @@ unsigned int getChrAndPos ( SRAQueryInput * qInput, unsigned long long ambPos,
     SRAIndex * aIndex = qInput->AlgnmtIndex;
     // get the chromosome and the position for the position on the packed sequence
     HSP * hsp = aIndex->hsp;
-    unsigned short * occAmbiguityMap = hsp->ambiguityMap;
+    unsigned int * occAmbiguityMap = hsp->ambiguityMap;
     Translate * occTranslate = hsp->translate;
     unsigned int correctPosition;
     unsigned int approxIndex, approxValue;
     correctPosition = ambPos;
     approxIndex = ambPos >> GRID_SAMPLING_FACTOR_2_POWER;
     approxValue = occAmbiguityMap[approxIndex];
-
+    // printf ( "delay no more!\n");
+    // printf ( "%u %u\n", approxIndex, approxValue );
+    //for ( int i=0;i<approxIndex; ++i ) 
+    //   {  printf ( "%u\n", occAmbiguityMap[i] ); }
     while ( occTranslate[approxValue].startPos > ambPos )
     {
         approxValue--;
@@ -1783,7 +1786,7 @@ int BoundaryCheck ( unsigned int pacPos, int chrID, unsigned int chrEndPos, int 
     int actualAlignedLength = segmentEndPos - pacPos + 1;
 
     if ( newCIGAR ) { *newCIGAR = ( char * ) malloc ( 15 * sizeof ( char ) ); }
-
+    // printf ( "%d %u %u %u\n", actualAlignedLength, segmentEndPos, pacPos, chrEndPos );
     if ( actualAlignedLength >= ( readLength + 1 ) / 2 )
     {
         if ( newCIGAR ) { sprintf ( *newCIGAR, "%dM%dS", actualAlignedLength, readLength - actualAlignedLength ); }
@@ -1979,6 +1982,7 @@ int getChrAndPosWithBoundaryCheck ( SRAQueryInput * qInput, unsigned long long a
                                     unsigned long long * tp, unsigned short * chr_id, char ** buffer )
 {
     unsigned int segmentEndPos = getChrAndPos ( qInput, ambPos, tp, chr_id );
+
     HSP * hsp = qInput->AlgnmtIndex->hsp;
     unsigned int chrEndPos = hsp->seqOffset[ *chr_id - 1 ].endPos;
     unsigned long long readLength = qInput->QueryInfo->ReadLength;
@@ -5645,6 +5649,7 @@ void OCCOutputSAMAPI ( SRAQueryInput * qInput, OCCList * occ_list,
             }
 
             boundTrim = getChrAndPosWithBoundaryCheck ( qInput, occ_list->occ[bestOccIndex].ambPosition, &bestTP, &bestChr, &newCIGAR );
+            printf ( "NewCIGAR %x, ambPosition: %u", occ_list->occ[bestOccIndex].ambPosition, newCIGAR);
         } // end CROSS-CHROMO handling
 
     }
@@ -5762,7 +5767,7 @@ void OCCOutputSAMAPI ( SRAQueryInput * qInput, OCCList * occ_list,
         // ---------------------->  |
     }
 
-    if ( newCIGAR ) { free ( newCIGAR ); }
+    if ( newCIGAR ) { free ( newCIGAR ); printf ( "Free: %x\n", newCIGAR ); }
 }
 
 void SingleAnsOutputSAMAPI ( SRAQueryInput * qInput,
@@ -6122,7 +6127,7 @@ void OCCDirectWritePairUnmapSAMAPI ( SRAQueryInput * qInput, SRAOccurrence * sra
     OCC * occ = qSetting->occ;
     HSP * hsp = aIndex->hsp;
     Translate * occTranslate = hsp->translate;
-    unsigned short * occAmbiguityMap = hsp->ambiguityMap;
+    unsigned int * occAmbiguityMap = hsp->ambiguityMap;
     samfile_t * samFilePtr = qSetting->SAMOutFilePtr;
     bam1_t * samAlgnmt = & ( occ->SAMOutBuffer );
     unsigned long long i = 0; // j=0;//, k=0;

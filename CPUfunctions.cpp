@@ -1942,6 +1942,7 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                     }
                     else
                     {
+                        printf ("diudiu\n");
                         // long read mode and succint
                         for ( i = 0; i < curr_occ_list->curr_size; i++ )
                         {

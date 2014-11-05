@@ -81,7 +81,7 @@ int SAMIUint8ConcatString ( uint8_t * data, int * curSize,
 
 void SAMOutputHeaderConstruct ( bam_header_t * sheader, HSP * hsp, HSPAux * hspaux, int maxReadLength )
 {
-    unsigned short * ambiguityMap = hsp->ambiguityMap;
+    unsigned int * ambiguityMap = hsp->ambiguityMap;
     Translate * translate = hsp->translate;
     unsigned int tp, approxIndex, approxValue;
     int i, j;

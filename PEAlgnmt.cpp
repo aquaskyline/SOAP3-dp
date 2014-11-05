@@ -91,7 +91,7 @@ void PERetrieveChromoPositioning ( BWT * bwt,
                                    unsigned int ambPosition,
                                    int * sequenceId, unsigned int * offset )
 {
-    unsigned short * ambiguityMap = hsp->ambiguityMap;
+    unsigned int * ambiguityMap = hsp->ambiguityMap;
     Translate * translate = hsp->translate;
     unsigned int approxIndex = ambPosition >> GRID_SAMPLING_FACTOR_2_POWER;
     unsigned int approxValue = ambiguityMap[approxIndex];
