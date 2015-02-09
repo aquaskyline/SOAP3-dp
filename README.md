@@ -150,6 +150,8 @@ Options:
  	 
 -R [read group option]	                            Assign the read group option
  	                                                default: this option is not enabled;
+
+-p                                                  Output MD string and NM tag.
  	 
 -s [max # of mismatches]	                        any integer from 0 to 4,
  	                                                disable dynamic programming and
@@ -214,13 +216,15 @@ Options:
 -R [read group option]								Assign the read group option
  													default: this option is not enabled;
  	 
+-p                                                  Output MD string and NM tag.
+
 -s [max # of mismatches]							any integer from 0 to 4,
  													disable dynamic programming and
  													perform alignment with mismatches only.
- 	If max # of mismatches is not specified,
- 	default number is 3 for reads of length >= 50;
- 	or 2 otherwise.
- 	This option is not recommended.
+                                                    If max # of mismatches is not specified,
+                                                 	default number is 3 for reads of length >= 50;
+                                                 	or 2 otherwise.
+                                                 	This option is not recommended.
 ```
 
 ### <a name="list"></a>3. Multiple sets of paired-end reads in FASTA, FASTQ or GZIP format.
@@ -274,6 +278,8 @@ Options:
 -R [read group option]								Assign the read group option
  													default: this option is not enabled;
  	 
+-p                                                  Output MD string and NM tag.
+
 -s [max # of mismatches]							any integer from 0 to 4,
  													disable dynamic programming and
  													perform alignment with mismatches only.
@@ -283,8 +289,6 @@ Options:
  													This option is not recommended.
 
 ```
-
-Click to see the option details
 
 ### <a name="list-bam"></a>4. Multiple sets of paired-end reads in BAM format.
 
@@ -336,6 +340,8 @@ Options:
 -R [read group option]								Assign the read group option
  													default: this option is not enabled;
  	 
+-p                                                  Output MD string and NM tag.
+
 -s [max # of mismatches]							any integer from 0 to 4,
  													disable dynamic programming and
  													perform alignment with mismatches only.
@@ -391,6 +397,8 @@ Options:
 -R [read group option]								Assign the read group option
  													default: this option is not enabled;
  	 
+-p                                                  Output MD string and NM tag.
+
 -s [max # of mismatches]							any integer from 0 to 4,
  													disable dynamic programming and
  													perform alignment with mismatches only.
@@ -469,7 +477,9 @@ Options:
  	 
 -R [read group option]								Assign the read group option
  													default: this option is not enabled;
- 	 
+
+-p                                                  Output MD string and NM tag.
+
 -s [max # of mismatches]							any integer from 0 to 4,
  													disable dynamic programming and
  													perform alignment with mismatches only.

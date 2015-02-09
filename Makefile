@@ -30,22 +30,19 @@
 #
 ####################################################################
 
-#CC = g++
-CC = /opt/centos/devtoolset-1.1/root/usr/bin/g++
+CC = g++
+#CC = /opt/centos/devtoolset-1.1/root/usr/bin/g++
 NVCC = /usr/local/cuda/bin/nvcc
 CUDAFLAG = -cuda -arch=sm_20 --ptxas-options=-v
 LIBFLAG = -L/usr/local/cuda/lib64/ -lcuda -lcudart
-#CFLAGS = -O3 -pthread -funroll-loops -march=core2 -fomit-frame-pointer -maccumulate-outgoing-args -Wno-unused-result -lm -static-libgcc -mpopcnt
 #CFLAGS = -O0 -g -funroll-loops -march=core2 -fomit-frame-pointer -maccumulate-outgoing-args -Wno-unused-result -lm -mpopcnt -lz -fopenmp -static-libstdc++
 CFLAGS = -O3 -funroll-loops -march=core2 -fomit-frame-pointer -maccumulate-outgoing-args -Wno-unused-result -lm -mpopcnt -lz -fopenmp -static-libstdc++
 
 
 BWTLIB = 2bwt-lib
 BWTOBJLIBS = $(BWTLIB)/BWT.o $(BWTLIB)/dictionary.o $(BWTLIB)/DNACount.o $(BWTLIB)/HSP.o $(BWTLIB)/HSPstatistic.o $(BWTLIB)/iniparser.o $(BWTLIB)/inistrlib.o $(BWTLIB)/karlin.o $(BWTLIB)/MemManager.o $(BWTLIB)/MiscUtilities.o $(BWTLIB)/QSufSort.o $(BWTLIB)/r250.o $(BWTLIB)/TextConverter.o $(BWTLIB)/Timing.o $(BWTLIB)/Socket.o
-#BWTOBJLIBS = $(BWTLIB)/BWT.o $(BWTLIB)/dictionary.o $(BWTLIB)/DNACount.o $(BWTLIB)/HSP.o $(BWTLIB)/HSPstatistic.o $(BWTLIB)/iniparser.o $(BWTLIB)/inistrlib.o $(BWTLIB)/MemManager.o $(BWTLIB)/MiscUtilities.o $(BWTLIB)/r250.o $(BWTLIB)/TextConverter.o $(BWTLIB)/Timing.o
 
 SAMLIB = samtools-0.1.18
-#SAMOBJLIBS = $(SAMLIB)/sam.c $(SAMLIB)/bam.c $(SAMLIB)/bgzf.c $(SAMLIB)/kstring.c $(SAMLIB)/bam_import.c $(SAMLIB)/faidx.c $(SAMLIB)/bam_pileup.c $(SAMLIB)/bam_aux.c $(SAMLIB)/sam_header.c $(SAMLIB)/razf.c
 SAMOBJLIBS = $(SAMLIB)/sam.o $(SAMLIB)/bam.o $(SAMLIB)/bgzf.o $(SAMLIB)/kstring.o $(SAMLIB)/bam_import.o $(SAMLIB)/faidx.o $(SAMLIB)/bam_pileup.o $(SAMLIB)/bam_aux.o $(SAMLIB)/sam_header.o $(SAMLIB)/razf.o
 
 CPULIB = 2bwt-flex
