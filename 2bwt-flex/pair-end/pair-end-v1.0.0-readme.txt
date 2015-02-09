@@ -1,0 +1,9 @@
+PE-Library v1.0.0 (7th August 2011)
+-----------------------------------
+PE Library is the Pair-End Alignment library for SOAP3-CPU/GPU.
+
+The library is recommended to be used under this structure.
+.           this is where the user code should be kept.
+./2bwt-lib  this is the 2BWT library, no access unless necessary
+./pair-end  this is the PE library, no access unless necessary
+

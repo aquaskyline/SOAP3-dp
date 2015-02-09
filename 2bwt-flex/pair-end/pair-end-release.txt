@@ -1,0 +1,4 @@
+2011-08-07 Rec63
+----------------
+- First release of Pair-End Alignment Library.
+- The package can be compiled by gcc/g++.
