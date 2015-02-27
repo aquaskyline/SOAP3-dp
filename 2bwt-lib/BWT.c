@@ -31,8 +31,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef _ARCH_PPC
+#include <altivec.h>
+#else
 #include <emmintrin.h>
 #include <mmintrin.h>
+#endif
 #include <sys/mman.h>
 #include <unistd.h>
 #include "BWT.h"
@@ -44,6 +48,11 @@
 #include "r250.h"
 #include "HSP.h"
 #include "HSPstatistic.h"
+
+#ifdef _ARCH_PPC
+#define my_vec_sr(a,b) vec_and(vec_sr(a,(vector unsigned int)vec_splats(b)),(vector unsigned int)vec_cmplt(vec_splats(b),vec_splats(32u)))
+#define my_vec_sl(a,b) vec_and(vec_sl(a,(vector unsigned int)vec_splats(b)),(vector unsigned int)vec_cmplt(vec_splats(b),vec_splats(32u)))
+#endif
 
 // static functions
 static INLINE unsigned int BWTOccValueExplicit(const BWT *bwt, const unsigned int occIndexExplicit, const unsigned int character);
@@ -450,7 +459,141 @@ void BWTGenerateSaValueOnBoundary(MMPool *mmPool, BWT *bwt) {
 // index1 and index2 can be on the same aligned 128 bit region or can be on adjacant aligned 128 bit region
 // If index1 and index2 are in the same aligned 128 bit region, one of them must be on the boundary
 // These requirements are to reduce the no. of branches in the program flow
+#ifdef _ARCH_PPC
 
+unsigned int BWTDecode(const BWT *bwt, const unsigned int index1, const unsigned int index2, const unsigned int character) {
+
+    unsigned int numChar1, numChar2, minIndex, maxIndex, minIndex128, maxIndex128;
+    unsigned int r;
+
+    const static vector unsigned int partitionOne1  = { 47, 31, 15, 0 };
+    const static vector unsigned int partitionOne2  = { 0, 15, 31, 47 };
+    const static vector unsigned int partitionZero1  = { 63, 47, 31, 15 };
+    const static vector unsigned int partitionZero2  = { 15, 31, 47, 63 };
+
+    // vector registers
+    vector unsigned int r1e, r2e;
+    vector unsigned int mcl;
+    vector unsigned int m0, m1;
+    vector unsigned int r1a, r1b, r1c;
+    vector unsigned int r2a, r2b, r2c;
+
+    vector unsigned char sadC,sadD,sadE;
+    vector unsigned int sadF;
+    vector signed int sadG;
+
+    // Sort index1 and index2
+    r = (index1 - index2) & -(index1 < index2);
+    minIndex = index2 + r;
+    maxIndex = index1 - r;
+
+    // Locate 128 bit boundary
+    minIndex128 = lastAlignedBoundary(minIndex, CHAR_PER_128);
+    maxIndex128 = lastAlignedBoundary(maxIndex - (maxIndex - minIndex > CHAR_PER_128), CHAR_PER_128);
+
+    // Determine no.of characters to count
+    numChar1 = maxIndex128 - minIndex;
+    numChar2 = maxIndex - maxIndex128;
+
+    // Load encoding into register here in the hope of hiding some memory latency
+    r1e = *(vector unsigned int *)(bwt->bwtCode + minIndex128 / CHAR_PER_WORD);    // Load encoding into register
+    r2e = *(vector unsigned int *)(bwt->bwtCode + maxIndex128 / CHAR_PER_WORD);    // Load encoding into register
+
+    // Set character extraction masks 
+    m0 = vec_splats(0xFFFFFFFFu + (character & 1));                     // Character selection mask for even bits
+    m1 = vec_splats(0xFFFFFFFFu + (character >> 1));                    // Character selection mask for odd bits
+    mcl = vec_splats(0x55555555u);                                      // Set bit-clearing mask to 0x55555555....(alternate 1-bit)
+
+    // Set counting mask for 2 x 128 bits
+
+    r1a = vec_splats((unsigned int)numChar1);        // Load number of characters into register
+    r2a = vec_splats((unsigned int)numChar2);        // Load number of characters into register
+
+    r1b = partitionOne1;    // Load partition into register
+    r2b = partitionOne2;    // Load partition into register
+
+    r1c = partitionZero1;    // Load partition into register
+    r2c = partitionZero2;    // Load partition into register
+
+    r1b = (vector unsigned int)vec_cmpgt(r1a,r1b);                // Compare to generate 4x32 bit mask; the word with counting boundary is all ones
+    r2b = (vector unsigned int)vec_cmpgt(r2a,r2b);                // Compare to generate 4x32 bit mask; the word with counting boundary is all ones
+                
+    r1c = (vector unsigned int)vec_cmpgt(r1a,r1c);                // Compare to generate 4x32 bit mask; the word with counting boundary is all zeros
+    r2c = (vector unsigned int)vec_cmpgt(r2a,r2c);                // Compare to generate 4x32 bit mask; the word with counting boundary is all zeros
+
+    r1b = my_vec_sr(r1b,(16u - numChar1 % 16) * 2);    // Shift bits so that all word comform to the requirement of counting the word with counting boundary 
+    r2b = my_vec_sl(r2b,(16u - numChar2 % 16) * 2);    // Shift bits so that all word comform to the requirement of counting the word with counting boundary
+
+    r1c = vec_or(r1b,r1c);    // Combine two masks
+    r2c = vec_or(r2b,r2c);    // Combine two masks
+
+    r1c = vec_and(r1c, mcl);    // Combine with bit-clearing mask (now = 0x55555555....)
+    r2c = vec_and(r2c, mcl);    // Combine with bit-clearing mask (now = 0x55555555....)
+
+    // Start counting; encoding has been loaded into register earlier
+
+    r1b = vec_sr(r1e, vec_splats(1u));    // Shift encoding to right by 1 bit
+    r2b = vec_sr(r2e, vec_splats(1u));    // Shift encoding to right by 1 bit
+
+    r1a = vec_xor(r1e, m0);    // Check even-bits with mask
+    r2a = vec_xor(r2e, m0);    // Check even-bits with mask
+
+    r1b = vec_xor(r1b, m1);    // Check odd-bits with mask
+    r2b = vec_xor(r2b, m1);    // Check odd-bits with mask
+
+    r1a = vec_and(r1a, r1b);    // Combine even and odd bits
+    r2a = vec_and(r2a, r2b);    // Combine even and odd bits
+
+    r1a = vec_and(r1a, r1c);    // Combine with counting mask, which has been combined with bit-clearing mask of 0x55555555.... 
+    r2a = vec_and(r2a, r2c);    // Combine with counting mask, which has been combined with bit-clearing mask of 0x55555555.... 
+
+
+    // Combine 2 x 128 bits and continue counting
+
+#ifdef _ARCH_PPC7
+
+    r1a = vec_add(r1a, r2a);        // Combine 2 x 128 bits by adding them together
+
+    mcl = vec_splats(0x33333333u);    // Set bit-clearing mask to 0x33333333....(alternate 2-bits)
+
+    r1b = vec_sr(r1a, vec_splats(2u));        // Shift intermediate result to right by 2 bit
+    r1a = vec_and(r1a, mcl);        // Clear alternate 2-bits of intermediate result by combining with bit-clearing mask (now = 0x33333333....)
+    r1b = vec_and(r1b, mcl);        // Clear alternate 2-bits of shifted intermediate result by combining with bit-clearing mask (now = 0x33333333....)
+    r1a = vec_add(r1a, r1b);        // Combine shifted and non-shifted intermediate results by adding them together
+
+    mcl = vec_splats(0x0F0F0F0Fu);    // Set bit-clearing mask to 0x0F0F0F0F....(alternate 4-bits)
+    m0 = vec_xor(m0,m0);                // Set an all-zero mask
+
+    r1b = vec_sr(r1a, vec_splats(4u));        // Shift intermediate result to right by 4 bit
+    r1a = vec_add(r1a, r1b);        // Combine shifted and non-shifted intermediate results by adding them together
+    r1a = vec_and(r1a, mcl);        // Clear alternate 4-bits of intermediate result by combining with bit-clearing mask (now = 0xOFOFOFOF....)
+
+    sadC = vec_min((vector unsigned char)r1a,(vector unsigned char)m0);
+    sadD = vec_max((vector unsigned char)r1a,(vector unsigned char)m0);
+    sadE = vec_sub(sadD,sadC);
+    sadF = vec_splats(0u);
+    sadG = vec_splats(0);
+    sadF = vec_sum4s(sadE,sadF);
+    sadG = vec_sums((vector signed int)sadF,sadG);
+
+    return ((signed int*)&sadG)[3];
+#endif
+
+#ifdef _ARCH_PWR8
+#ifdef __GNUC__
+	vector unsigned int a=vec_add(vec_vpopcntw(r1a),vec_vpopcntw(r2a));
+#else
+	vector unsigned int a=vec_add(vec_popcnt(r1a),vec_popcnt(r2a));
+#endif
+    return a[0]+a[1]+a[2]+a[3];
+#endif
+
+}
+#endif
+
+
+
+#ifdef __x86_64
 unsigned int BWTDecode(const BWT *bwt, const unsigned int index1, const unsigned int index2, const unsigned int character) {
 
     unsigned int numChar1, numChar2, minIndex, maxIndex, minIndex128, maxIndex128;
@@ -601,12 +744,209 @@ unsigned int BWTDecode(const BWT *bwt, const unsigned int index1, const unsigned
     return _mm_extract_epi16(r1a, 0) + _mm_extract_epi16(r1a, 4);    // Extract and return result from register
 
 }
+#endif
 
 // Ordering of index1 and index2 is not important; this module will handle the ordering
 // index1 and index2 can be on the same aligned 128 bit region or can be on adjacant aligned 128 bit region
 // If index1 and index2 are in the same aligned 128 bit region, one of them must be on the boundary
 // These requirements are to reduce the no. of branches in the program flow
+#ifdef _ARCH_PPC
 
+void BWTDecodeAll(const BWT *bwt, const unsigned int index1, const unsigned int index2, unsigned int* __restrict occValue) {
+
+    unsigned int numChar1, numChar2, minIndex, maxIndex, minIndex128, maxIndex128;
+    unsigned int r;
+
+    const static vector unsigned int partitionOne1  = { 47, 31, 15, 0 };
+    const static vector unsigned int partitionOne2  = { 0, 15, 31, 47 };
+    const static vector unsigned int partitionZero1  = { 63, 47, 31, 15 };
+    const static vector unsigned int partitionZero2  = { 15, 31, 47, 63 };
+
+    // vector registers
+    vector unsigned int r1e, r2e;
+    vector unsigned int mcl;
+    vector unsigned int rc, rg, rt;
+    vector unsigned int ra1, ra2;
+    vector unsigned int rc1, rc2;
+    vector unsigned int rg1, rg2;
+    vector unsigned int rt1, rt2;
+    vector unsigned char sadC,sadD,sadE;
+    vector unsigned int sadF;
+    vector signed int sadG;
+
+
+    // Sort index1 and index2
+    r = (index1 - index2) & -(index1 < index2);
+    minIndex = index2 + r;
+    maxIndex = index1 - r;
+
+    // Locate 128 bit boundary
+    minIndex128 = lastAlignedBoundary(minIndex, CHAR_PER_128);
+    maxIndex128 = lastAlignedBoundary(maxIndex - (maxIndex - minIndex > CHAR_PER_128), CHAR_PER_128);
+
+    // Determine no.of characters to count
+    numChar1 = maxIndex128 - minIndex;
+    numChar2 = maxIndex - maxIndex128;
+
+    // Load encoding into register here in the hope of hiding some memory latency
+    r1e = *(vector unsigned int*)(bwt->bwtCode + minIndex128 / CHAR_PER_WORD);    // Load encoding into register
+    r2e = *(vector unsigned int*)(bwt->bwtCode + maxIndex128 / CHAR_PER_WORD);    // Load encoding into register
+
+    // Set character extraction masks 
+    mcl = vec_splats(0x55555555u);                        // Set bit-clearing mask to 0x55555555....(alternate 1-bit)
+
+    // Set counting mask for 2 x 128 bits
+
+    ra1 = vec_splats(numChar1);        // Load number of characters into register
+    ra2 = vec_splats(numChar2);        // Load number of characters into register
+
+    rc1 = partitionOne1;    // Load partition into register
+    rc2 = partitionOne2;    // Load partition into register
+
+    rg1 = partitionZero1;    // Load partition into register
+    rg2 = partitionZero2;    // Load partition into register
+
+    rc1 = (vector unsigned int)vec_cmpgt(ra1,rc1);  // Compare to generate 4x32 bit mask; the word with counting boundary is all ones
+    rc2 = (vector unsigned int)vec_cmpgt(ra2,rc2);  // Compare to generate 4x32 bit mask; the word with counting boundary is all ones
+
+    rg1 = (vector unsigned int)vec_cmpgt(ra1,rg1);  // Compare to generate 4x32 bit mask; the word with counting boundary is all ones
+    rg2 = (vector unsigned int)vec_cmpgt(ra2,rg2);  // Compare to generate 4x32 bit mask; the word with counting boundary is all ones
+
+    rc1 = my_vec_sr(rc1,(16u - numChar1 % 16) * 2);    // Shift bits so that all word comform to the requirement of counting the word with counting boundary 
+    rc2 = my_vec_sl(rc2,(16u - numChar2 % 16) * 2);    // Shift bits so that all word comform to the requirement of counting the word with counting boundary
+
+    ra1 = vec_or(rc1, rg1);    // Combine two masks
+    ra2 = vec_or(rc2, rg2);    // Combine two masks
+
+    // Start counting; encoding has been loaded into register earlier
+    r1e = vec_and(r1e, ra1);    // Combine encoding with counting mask
+    r2e = vec_and(r2e, ra2);    // Combine encoding with counting mask
+
+    // ra1, ra2, rc1, rc2, rg1, rg2, rt1, rt2 all retired
+
+    // Shift and combine with character selection mask
+
+    ra1 = vec_sr(r1e, vec_splats(1u));    // Shift encoding to right by 1 bit
+    ra2 = vec_sr(r2e, vec_splats(1u));    // Shift encoding to right by 1 bit
+
+    rt1 = vec_and(r1e, mcl);    // Check even-bits = '1'
+    rt2 = vec_and(r2e, mcl);    // Check even-bits = '1'
+
+    rg1 = vec_and(ra1, mcl);    // Check odd-bits = '1'
+    rg2 = vec_and(ra2, mcl);    // Check odd-bits = '1'
+
+    rc1 = vec_andc(mcl, r1e);    // Check even-bits = '0'
+    rc2 = vec_andc(mcl, r2e);    // Check even-bits = '0'
+
+    ra1 = vec_andc(mcl, ra1);    // Check odd-bits = '0'
+    ra2 = vec_andc(mcl, ra2);    // Check odd-bits = '0'
+
+    // r1e, r2e retired
+
+    // Count for 'c' 'g' 't'
+
+    r1e = vec_and(ra1, rt1);        // Combine even and odd bits
+    r2e = vec_and(ra2, rt2);        // Combine even and odd bits
+    ra1 = vec_and(rg1, rc1);        // Combine even and odd bits
+    ra2 = vec_and(rg2, rc2);        // Combine even and odd bits
+    rc1 = vec_and(rg1, rt1);        // Combine even and odd bits
+    rc2 = vec_and(rg2, rt2);        // Combine even and odd bits
+
+#ifndef _ARCH_PWR8
+    rc = vec_add(r1e, r2e);        // Combine 2 x 128 bits by adding them together
+    rg = vec_add(ra1, ra2);        // Combine 2 x 128 bits by adding them together
+    rt = vec_add(rc1, rc2);        // Combine 2 x 128 bits by adding them together
+
+    // All except rc, rg, rt retired
+
+    // Continue counting rc, rg, rt
+
+    mcl = vec_splats(0x33333333u);    // Set bit-clearing mask to 0x33333333....(alternate 2-bits)
+
+    rc1 = vec_sr(rc, vec_splats(2u));        // Shift intermediate result to right by 2 bit
+    rg1 = vec_sr(rg, vec_splats(2u));        // Shift intermediate result to right by 2 bit
+    rt1 = vec_sr(rt, vec_splats(2u));        // Shift intermediate result to right by 2 bit
+
+    rc2 = vec_and(rc, mcl);        // Clear alternate 2-bits of intermediate result by combining with bit-clearing mask (now = 0x33333333....)
+    rg2 = vec_and(rg, mcl);        // Clear alternate 2-bits of intermediate result by combining with bit-clearing mask (now = 0x33333333....)
+    rt2 = vec_and(rt, mcl);        // Clear alternate 2-bits of intermediate result by combining with bit-clearing mask (now = 0x33333333....)
+
+    rc1 = vec_and(rc1, mcl);        // Clear alternate 2-bits of shifted intermediate result by combining with bit-clearing mask (now = 0x33333333....)
+    rg1 = vec_and(rg1, mcl);        // Clear alternate 2-bits of shifted intermediate result by combining with bit-clearing mask (now = 0x33333333....)
+    rt1 = vec_and(rt1, mcl);        // Clear alternate 2-bits of shifted intermediate result by combining with bit-clearing mask (now = 0x33333333....)
+
+    rc = vec_add(rc1, rc2);        // Combine shifted and non-shifted intermediate results by adding them together
+    rg = vec_add(rg1, rg2);        // Combine shifted and non-shifted intermediate results by adding them together
+    rt = vec_add(rt1, rt2);        // Combine shifted and non-shifted intermediate results by adding them together
+
+    mcl = vec_splats(0x0F0F0F0Fu);    // Set bit-clearing mask to 0x0F0F0F0F....(alternate 4-bits)
+    r1e = vec_xor(r1e,r1e);            // Set an all-zero mask
+
+    rc1 = vec_sr(rc, vec_splats(4u));        // Shift intermediate result to right by 4 bit
+    rg1 = vec_sr(rg, vec_splats(4u));        // Shift intermediate result to right by 4 bit
+    rt1 = vec_sr(rt, vec_splats(4u));        // Shift intermediate result to right by 4 bit
+
+    rc2 = vec_add(rc, rc1);        // Combine shifted and non-shifted intermediate results by adding them together
+    rg2 = vec_add(rg, rg1);        // Combine shifted and non-shifted intermediate results by adding them together
+    rt2 = vec_add(rt, rt1);        // Combine shifted and non-shifted intermediate results by adding them together
+
+    rc = vec_and(rc2, mcl);        // Clear alternate 4-bits of intermediate result by combining with bit-clearing mask (now = 0xOFOFOFOF....)
+    rg = vec_and(rg2, mcl);        // Clear alternate 4-bits of intermediate result by combining with bit-clearing mask (now = 0xOFOFOFOF....)
+    rt = vec_and(rt2, mcl);        // Clear alternate 4-bits of intermediate result by combining with bit-clearing mask (now = 0xOFOFOFOF....)
+
+    sadC = vec_min((vector unsigned char)rc,(vector unsigned char)r1e);
+    sadD = vec_max((vector unsigned char)rc,(vector unsigned char)r1e);
+    sadE = vec_sub(sadD,sadC);
+    sadF = vec_splats(0u);
+    sadG = vec_splats(0);
+    sadF = vec_sum4s(sadE,sadF);
+    sadG = vec_sums((vector signed int)sadF,sadG);
+    occValue[1] = ((signed int*)&sadG)[3];
+
+    sadC = vec_min((vector unsigned char)rg,(vector unsigned char)r1e);
+    sadD = vec_max((vector unsigned char)rg,(vector unsigned char)r1e);
+    sadE = vec_sub(sadD,sadC);
+    sadF = vec_splats(0u);
+    sadG = vec_splats(0);
+    sadF = vec_sum4s(sadE,sadF);
+    sadG = vec_sums((vector signed int)sadF,sadG);
+    occValue[2] = ((signed int*)&sadG)[3];
+
+    sadC = vec_min((vector unsigned char)rt,(vector unsigned char)r1e);
+    sadD = vec_max((vector unsigned char)rt,(vector unsigned char)r1e);
+    sadE = vec_sub(sadD,sadC);
+    sadF = vec_splats(0u);
+    sadG = vec_splats(0);
+    sadF = vec_sum4s(sadE,sadF);
+    sadG = vec_sums((vector signed int)sadF,sadG);
+    occValue[3] = ((signed int*)&sadG)[3];
+#endif
+#ifdef _ARCH_PWR8
+    vector unsigned long long a;
+#ifdef __GNUC__
+    a=vec_add(vec_vpopcntd((vector unsigned long long)r1e),vec_vpopcntd((vector unsigned long long)r2e));
+    occValue[1]=a[0]+a[1];
+    a=vec_add(vec_vpopcntd((vector unsigned long long)ra1),vec_vpopcntd((vector unsigned long long)ra2));
+    occValue[2]=a[0]+a[1];
+    a=vec_add(vec_vpopcntd((vector unsigned long long)rc1),vec_vpopcntd((vector unsigned long long)rc2));
+    occValue[3]=a[0]+a[1];
+#else
+    a=vec_add(vec_popcnt((vector unsigned long long)r1e),vec_popcnt((vector unsigned long long)r2e));
+    occValue[1]=a[0]+a[1];
+    a=vec_add(vec_popcnt((vector unsigned long long)ra1),vec_popcnt((vector unsigned long long)ra2));
+    occValue[2]=a[0]+a[1];
+    a=vec_add(vec_popcnt((vector unsigned long long)rc1),vec_popcnt((vector unsigned long long)rc2));
+    occValue[3]=a[0]+a[1];
+#endif
+#endif
+
+    occValue[0] = maxIndex - minIndex - occValue[1] - occValue[2] - occValue[3];
+    printf("%08x %08x %08x %08x\n", occValue[0], occValue[1], occValue[2], occValue[3]);
+}
+#endif
+
+
+#ifdef __x86_64
 void BWTDecodeAll(const BWT *bwt, const unsigned int index1, const unsigned int index2, unsigned int* __restrict occValue) {
 
     unsigned int numChar1, numChar2, minIndex, maxIndex, minIndex128, maxIndex128;
@@ -755,6 +1095,7 @@ void BWTDecodeAll(const BWT *bwt, const unsigned int index1, const unsigned int 
     occValue[0] = maxIndex - minIndex - occValue[1] - occValue[2] - occValue[3];
 
 }
+#endif
 
 
 unsigned int BWTOccValue(const BWT *bwt, unsigned int index, const unsigned int character) {
@@ -874,8 +1215,13 @@ void BWTAllOccValue(const BWT *bwt, unsigned int index, unsigned int* __restrict
     unsigned int ALIGN_16 tempOccValue[ALPHABET_SIZE];
     unsigned int r;
 
-    // SSE registers
+    // vector registers
+#ifdef __x86_64
     __m128i rtov, rov, rc, t1, t2;
+#endif
+#ifdef _ARCH_PPC
+    vector unsigned int rtov, rov, rc, t1, t2;
+#endif
 
     // $ is supposed to be positioned at inverseSa0 but it is not encoded
     // therefore index is subtracted by 1 for adjustment
@@ -893,12 +1239,15 @@ void BWTAllOccValue(const BWT *bwt, unsigned int index, unsigned int* __restrict
 
     BWTAllOccValueExplicit(bwt, occExplicitIndex, occValue);
 
-    if (occIndex != index) {
+    int nowork=(occIndex == index);
+
+    if (__builtin_expect(nowork,1)) return;
 
         BWTDecodeAll(bwt, occIndex, index, tempOccValue);
 
         // The following code add tempOccvalue to occValue if index > occIndex and subtract tempOccValue from occValue if occIndex > index
         r = -(occIndex > index);
+#ifdef __x86_64
         rc = _mm_set1_epi32(r);                // Set rc = r r r r
         rtov = _mm_load_si128((__m128i*)tempOccValue);
         rov = _mm_load_si128((__m128i*)occValue);
@@ -907,11 +1256,18 @@ void BWTAllOccValue(const BWT *bwt, unsigned int index, unsigned int* __restrict
         rov = _mm_add_epi32(rov, t1);
         rov = _mm_sub_epi32(rov, t2);
         _mm_store_si128((__m128i*)occValue, rov);
-
-    } else {
-        return;
-    }
-
+#endif
+#ifdef _ARCH_PPC
+        rc = vec_splats(r);                // Set rc = r r r r
+        rtov = *(vector unsigned int*)tempOccValue;
+        rov = *(vector unsigned int*)occValue;
+        t1 = vec_andc(rtov, rc);
+        t2 = vec_and(rc, rtov);
+        rov = vec_add(rov, t1);
+        rov = vec_sub(rov, t2);
+	*(vector unsigned int*)occValue=rov;
+#endif
+	printf("%s: %08x %08x %08x %08x\n", __func__, occValue[0],occValue[1],occValue[2],occValue[3]);
 }
 
 void BWTAllOccValueTwoIndex(const BWT *bwt, unsigned int index1, unsigned int index2, unsigned int* __restrict occValue1, unsigned int* __restrict occValue2) {
@@ -922,8 +1278,13 @@ void BWTAllOccValueTwoIndex(const BWT *bwt, unsigned int index1, unsigned int in
     unsigned int ALIGN_16 tempOccValue2[ALPHABET_SIZE];
     unsigned int r;
 
-    // SSE registers
+    // vector registers
+#ifdef __x86_64
     __m128i rtov, rc, t1, t2, o1, o2;
+#endif
+#ifdef _ARCH_PPC
+    vector unsigned int rtov, rc, t1, t2, o1, o2;
+#endif
 
     // $ is supposed to be positioned at inverseSa0 but it is not encoded
     // therefore index is subtracted by 1 for adjustment
@@ -960,13 +1321,27 @@ void BWTAllOccValueTwoIndex(const BWT *bwt, unsigned int index1, unsigned int in
 
         // The following code add tempOccvalue to occValue if index > occIndex and subtract tempOccValue from occValue if occIndex > index
         r = -(occIndex1 > index1);
+#ifdef __x86_64
         rtov = _mm_load_si128((__m128i*)tempOccValue1);
         rc = _mm_set1_epi32(r);                // Set rc = r r r r
         t1 = _mm_andnot_si128(rc, rtov);
         t2 = _mm_and_si128(rc, rtov);
         o1 = _mm_sub_epi32(t1, t2);
+#endif
+#ifdef _ARCH_PPC
+        rtov = *(vector unsigned int*)tempOccValue1;
+        rc = vec_splats(r);                // Set rc = r r r r
+        t1 = vec_andc(rtov, rc);
+        t2 = vec_and(rc, rtov);
+        o1 = vec_sub(t1, t2);
+#endif
     } else {
+#ifdef __x86_64
         o1 = _mm_setzero_si128();
+#endif
+#ifdef _ARCH_PPC
+        o1 = vec_xor(o1,o1);
+#endif
     }
 
     if (occIndex2 != index2) {
@@ -975,19 +1350,34 @@ void BWTAllOccValueTwoIndex(const BWT *bwt, unsigned int index1, unsigned int in
 
         // The following code add tempOccvalue to occValue if index > occIndex and subtract tempOccValue from occValue if occIndex > index
         r = -(occIndex2 > index2);
+#ifdef __x86_64
         rc = _mm_set1_epi32(r);                // Set rc = r r r r
         rtov = _mm_load_si128((__m128i*)tempOccValue2);
         t1 = _mm_andnot_si128(rc, rtov);
         t2 = _mm_and_si128(rc, rtov);
         o2 = _mm_sub_epi32(t1, t2);
+#endif
+#ifdef _ARCH_PPC
+        rc = vec_splats(r);                // Set rc = r r r r
+        rtov = *(vector unsigned int*)tempOccValue2;
+        t1 = vec_andc(rtov, rc);
+        t2 = vec_and(rc, rtov);
+        o2 = vec_sub(t1, t2);
 
+#endif
     } else {
+#ifdef __x86_64
         o2 = _mm_setzero_si128();
+#endif
+#ifdef _ARCH_PPC
+        o2 = vec_xor(o2,o2);
+#endif
     }
 
     BWTAllOccValueExplicit(bwt, occExplicitIndex1, occValue1);
     BWTAllOccValueExplicit(bwt, occExplicitIndex2, occValue2);
 
+#ifdef __x86_64
     t1 = _mm_load_si128((__m128i*)occValue1);
     t2 = _mm_load_si128((__m128i*)occValue2);
 
@@ -996,7 +1386,17 @@ void BWTAllOccValueTwoIndex(const BWT *bwt, unsigned int index1, unsigned int in
 
     _mm_store_si128((__m128i*)occValue1, t1);
     _mm_store_si128((__m128i*)occValue2, t2);
+#endif
+#ifdef _ARCH_PPC
+    t1 = *(vector unsigned int*)occValue1;
+    t2 = *(vector unsigned int*)occValue2;
 
+    t1 = vec_add(t1, o1);
+    t2 = vec_add(t2, o2);
+
+    *(vector unsigned int*)occValue1 = t1;
+    *(vector unsigned int*)occValue2 = t2;
+#endif
 }
 
 unsigned int BWTOccValueOnSpot(const BWT *bwt, unsigned int index, unsigned int* __restrict character) {
@@ -1114,7 +1514,12 @@ static INLINE void BWTAllOccValueExplicit(const BWT *bwt, const unsigned int occ
     unsigned int occIndexMajor;
     unsigned int compareMask, shift, mask;
 
+#ifdef __x86_64
     __m128i v1, v2, m;
+#endif
+#ifdef _ARCH_PPC
+    vector unsigned int v1, v2, m;
+#endif
 
     occIndexMajor = occIndexExplicit * OCC_INTERVAL / OCC_INTERVAL_MAJOR;
 
@@ -1122,6 +1527,7 @@ static INLINE void BWTAllOccValueExplicit(const BWT *bwt, const unsigned int occ
     shift = 16 & compareMask;
     mask = 0x0000FFFF | compareMask;
 
+#ifdef __x86_64
     v2 = _mm_load_si128((__m128i *)(bwt->occValue + occIndexExplicit / OCC_VALUE_PER_WORD * ALPHABET_SIZE));
     v1 = _mm_load_si128((__m128i *)(bwt->occValueMajor + occIndexMajor * ALPHABET_SIZE));
 
@@ -1133,7 +1539,20 @@ static INLINE void BWTAllOccValueExplicit(const BWT *bwt, const unsigned int occ
     v1 = _mm_add_epi32(v1, v2);
 
     _mm_store_si128((__m128i*)occValueExplicit, v1);
+#endif
+#ifdef _ARCH_PPC
+    v2 = *(vector unsigned int*)(bwt->occValue + occIndexExplicit / OCC_VALUE_PER_WORD * ALPHABET_SIZE);
+    v1 = *(vector unsigned int*)(bwt->occValueMajor + occIndexMajor * ALPHABET_SIZE);
 
+    m = vec_splats(mask);
+
+    v2 = my_vec_sr(v2, shift);
+    v2 = vec_and(v2, m);
+
+    v1 = vec_add(v1, v2);
+
+    *(vector unsigned int*)occValueExplicit = v1;
+#endif
 }
 
 static INLINE void BWTPrefetchOccValueExplicit(const BWT *bwt, const unsigned int occIndexExplicit) {
@@ -1142,14 +1561,18 @@ static INLINE void BWTPrefetchOccValueExplicit(const BWT *bwt, const unsigned in
 
     occIndexMajor = occIndexExplicit * OCC_INTERVAL / OCC_INTERVAL_MAJOR;
 
+#ifdef __x86_64
     _mm_prefetch((char*)(bwt->occValue + occIndexExplicit / OCC_VALUE_PER_WORD * ALPHABET_SIZE), _MM_HINT_T0);
     _mm_prefetch((char*)(bwt->occValueMajor + occIndexMajor * ALPHABET_SIZE), _MM_HINT_T0);
+#endif
 
 }
 
 static INLINE void BWTPrefetchBWT(const BWT *bwt, const unsigned int index) {
 
+#ifdef __x86_64
     _mm_prefetch((char*)(bwt->bwtCode + index / CHAR_PER_WORD), _MM_HINT_NTA);
+#endif
 
 }
 

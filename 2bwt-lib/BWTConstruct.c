@@ -25,8 +25,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef __x86_64
 #include <emmintrin.h>
 #include <mmintrin.h>
+#endif
+#ifdef _ARCH_PPC
+#include <altivec.h>
+#endif
 #include "BWTConstruct.h"
 #include "MiscUtilities.h"
 #include "DNACount.h"
@@ -389,7 +394,12 @@ static void BWTIncPutPackedTextToRank(const unsigned int *packedText, unsigned i
 
     unsigned char ALIGN_16 temp[CHAR_PER_WORD];
 
+#ifdef __x86_64
     __m128i p1, p2, mask;
+#endif
+#ifdef _ARCH_PPC
+    vector unsigned int p1, p2, mask;
+#endif
 
     lastWord = (numChar - 1) / CHAR_PER_WORD;
     numCharInLastWord = numChar - lastWord * CHAR_PER_WORD;
@@ -398,6 +408,7 @@ static void BWTIncPutPackedTextToRank(const unsigned int *packedText, unsigned i
     packedMask = ALL_ONE_MASK >> (BITS_IN_WORD - BIT_PER_CHAR);
     rankIndex = numChar - 1;
     // Unpack word-packed text; temp[0] will be character in the least significant 2 bits
+#ifdef __x86_64
     p1 = _mm_cvtsi32_si128(packedText[lastWord]);
     p2 = _mm_srli_epi32(p1, 4);
     p1 = _mm_unpacklo_epi8(p1, p2);
@@ -409,6 +420,20 @@ static void BWTIncPutPackedTextToRank(const unsigned int *packedText, unsigned i
 
     p1 = _mm_and_si128(p1, mask);
     _mm_store_si128((__m128i*)temp, p1);
+#endif
+#ifdef _ARCH_PPC
+    p1 = (vector unsigned int){0,0,0,packedText[lastWord]};
+    p2 = vec_sr(p1, vec_splats(4u));
+    p1 = (vector unsigned int)vec_mergel((vector unsigned char)p1, (vector unsigned char)p2);
+
+    mask = vec_splats(0x03030303u);
+
+    p2 = vec_sr(p1, vec_splats(2u));
+    p1 = (vector unsigned int)vec_mergel((vector unsigned char)p1, (vector unsigned char)p2);
+
+    p1 = vec_and(p1, mask);
+    *(vector unsigned int*)temp = p1;
+#endif
 
     for (i=CHAR_PER_WORD - numCharInLastWord; i<CHAR_PER_WORD; i++) {
     //DEBUG     printf("N temp[%u]=%u\n",i,temp[i]);
@@ -420,6 +445,7 @@ static void BWTIncPutPackedTextToRank(const unsigned int *packedText, unsigned i
     for (i=lastWord; i--;) {    // loop from lastWord - 1 to 0
 
         // Unpack word-packed text; temp[0] will be character in the least significant 2 bits
+#ifdef __x86_64
         p1 = _mm_cvtsi32_si128(packedText[i]);
         p2 = _mm_srli_epi32(p1, 4);
         p1 = _mm_unpacklo_epi8(p1, p2);
@@ -431,6 +457,20 @@ static void BWTIncPutPackedTextToRank(const unsigned int *packedText, unsigned i
 
         p1 = _mm_and_si128(p1, mask);
         _mm_store_si128((__m128i*)temp, p1);
+#endif
+#ifdef _ARCH_PPC
+        p1 = (vector unsigned int){0,0,0,packedText[lastWord]};
+        p2 = vec_sr(p1, vec_splats(4u));
+        p1 = (vector unsigned int)vec_mergel((vector unsigned char)p1, (vector unsigned char)p2);
+
+        mask = vec_splats(0x03030303u);
+
+        p2 = vec_sr(p1, vec_splats(2u));
+        p1 = (vector unsigned int)vec_mergel((vector unsigned char)p1, (vector unsigned char)p2);
+
+        p1 = vec_and(p1, mask);
+        *(vector unsigned int*)temp= p1;
+#endif
 
         for (j=0; j<CHAR_PER_WORD; j++) {
         //DEBUG     printf("temp[%u]=%u\n",j,temp[j]);
@@ -1495,7 +1535,12 @@ void BWTGenerateCachedSaIndex(const BWT *bwt, const unsigned int numOfChar, cons
                               0x00FFFFFF, 0x03FFFFFF, 0x0FFFFFFF, 0x3FFFFFFF };
 
     unsigned int *cachedSaIndex;
+#ifdef __x86_64
     __m128i r1, r2, cf, cfp1; 
+#endif
+#ifdef _ARCH_PPC
+    vector unsigned int r1, r2, cf, cfp1; 
+#endif
 
     FILE * cachedSaIndexFile;
 
@@ -1523,9 +1568,16 @@ void BWTGenerateCachedSaIndex(const BWT *bwt, const unsigned int numOfChar, cons
     generatedPattern[pos] = (unsigned char)-1;
     saRangeIndex = (unsigned int)-1;
 
+#ifdef __x86_64
     cf = _mm_load_si128((__m128i*)bwt->cumulativeFreq);    // Load cumulative freq into register
     r1 = _mm_set1_epi32(1);
     cfp1 = _mm_add_epi32(cf, r1);
+#endif
+#ifdef _ARCH_PPC
+    cf = *(vector unsigned int*)bwt->cumulativeFreq;    // Load cumulative freq into register
+    r1 = vec_splats(1u);
+    cfp1 = vec_add(cf, r1);
+#endif
 
     saIndexLeft[pos * 4 + 0] = 1 + bwt->cumulativeFreq[0];
     saIndexLeft[pos * 4 + 1] = 1 + bwt->cumulativeFreq[1];
@@ -1556,12 +1608,22 @@ void BWTGenerateCachedSaIndex(const BWT *bwt, const unsigned int numOfChar, cons
             BWTAllOccValueTwoIndex(bwt, saIndexLeft[(pos+1) * 4 + generatedPattern[pos+1]], saIndexRight[(pos+1) * 4 + generatedPattern[pos+1]] + 1,
                                         saIndexLeft + pos * 4, saIndexRight + pos * 4);
             // Add cumulative frequency
+#ifdef __x86_64
             r1 = _mm_load_si128((__m128i*)(saIndexLeft + pos * 4));
             r2 = _mm_load_si128((__m128i*)(saIndexRight + pos * 4));
             r1 = _mm_add_epi32(r1, cfp1);
             r2 = _mm_add_epi32(r2, cf);
             _mm_store_si128((__m128i*)(saIndexLeft + pos * 4), r1);
             _mm_store_si128((__m128i*)(saIndexRight + pos * 4), r2);
+#endif
+#ifdef _ARCH_PPC
+            r1 = *(vector unsigned int*)(saIndexLeft + pos * 4);
+            r2 = *(vector unsigned int*)(saIndexRight + pos * 4);
+            r1 = vec_add(r1, cfp1);
+            r2 = vec_add(r2, cf);
+            *(vector unsigned int*)(saIndexLeft + pos * 4) = r1;
+            *(vector unsigned int*)(saIndexRight + pos * 4) = r2;
+#endif
         }
 
         if (saIndexLeft[pos * 4 + generatedPattern[pos]] <= saIndexRight[pos * 4 + generatedPattern[pos]]) {

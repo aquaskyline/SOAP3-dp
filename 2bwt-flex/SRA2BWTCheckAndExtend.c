@@ -127,7 +127,7 @@ int CEPackedMismatchMatching(unsigned long long * packedKey, int packedKeyLength
         packedSeqExtract <<= seqShift * BIT_PER_CHAR;
         packedSeqExtract |= packedDNA[seqIndex+2] >> ((CHAR_PER_WORD-seqShift)*BIT_PER_CHAR);
     }
-    packedSeqExtract >>= SRA_CE_BIT_PER_64 - ((len % CHAR_PER_64) * BIT_PER_CHAR);
+    packedSeqExtract >>= ( SRA_CE_BIT_PER_64 - ((len % CHAR_PER_64) * BIT_PER_CHAR) ) % SRA_CE_BIT_PER_64;
     diffBitVector = packedSeqExtract ^ packedKey[i];
     diffBitVector = (diffBitVector | (diffBitVector >> 1)) & SRA_CE_BIT_MASK;
     mismatchInserted += __builtin_popcountll(diffBitVector);
@@ -204,7 +204,7 @@ int CEPackedMismatchMatchingWithQuality(unsigned long long * packedKey, int pack
         packedSeqExtract <<= seqShift * BIT_PER_CHAR;
         packedSeqExtract |= packedDNA[seqIndex+2] >> ((CHAR_PER_WORD-seqShift)*BIT_PER_CHAR);
     }
-    packedSeqExtract >>= SRA_CE_BIT_PER_64 - ((len % CHAR_PER_64) * BIT_PER_CHAR);
+    packedSeqExtract >>= ( SRA_CE_BIT_PER_64 - ((len % CHAR_PER_64) * BIT_PER_CHAR) ) % SRA_CE_BIT_PER_64;
 
     //CEDebugPrintPackedSequence(&packedSeqExtract,CHAR_PER_64);
     //CEDebugPrintPackedSequence(&(packedKey[i]),CHAR_PER_64);
