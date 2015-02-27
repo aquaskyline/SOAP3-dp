@@ -24,7 +24,7 @@ SOAP3-dp was developed under the 64-bit linux platform and the CUDA Driver versi
 \* See Section 4 for how to change the default with the INI file soap3-dp.ini.
 
 
-# <a name="Section2">2. Usage
+# <a name="Section2"></a>2. Usage
 
 SOAP3-dp consists of 3 parts: (i) Index (2BWT and GPU-2BWT) builder and (ii) Aligner. There is an auxiliary program to merge the output files.
 
