@@ -27,8 +27,8 @@
 #include <string.h>
 #include <math.h>
 #include <stdint.h>
-#include <emmintrin.h>
-#include <mmintrin.h>
+//#include <emmintrin.h>
+//#include <mmintrin.h>
 #include "TextConverter.h"
 #include "MiscUtilities.h"
 #include "Socket.h"

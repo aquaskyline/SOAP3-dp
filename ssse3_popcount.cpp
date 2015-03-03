@@ -28,6 +28,7 @@
 #include <strings.h>
 #include <time.h>
 
+#ifdef __x86_64
 //#define ALIGN_DATA
 #ifdef ALIGN_DATA
 #   define __aligned__ __attribute__((aligned(16)))
@@ -225,4 +226,4 @@ uint32_t ssse3_popcount3 ( uint8_t * buffer, int chunks16 )
     );
     return result;
 }
-
+#endif

@@ -26,7 +26,7 @@
 #include <stdlib.h>
 #include <string.h>
 #ifndef _WIN32
-#include <mm_malloc.h>
+#include "mm_malloc.h"
 #endif
 #include "MiscUtilities.h"
 #include "MemManager.h"
