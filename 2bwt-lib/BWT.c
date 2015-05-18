@@ -941,7 +941,6 @@ void BWTDecodeAll(const BWT *bwt, const unsigned int index1, const unsigned int 
 #endif
 
     occValue[0] = maxIndex - minIndex - occValue[1] - occValue[2] - occValue[3];
-    printf("%08x %08x %08x %08x\n", occValue[0], occValue[1], occValue[2], occValue[3]);
 }
 #endif
 
@@ -1267,7 +1266,6 @@ void BWTAllOccValue(const BWT *bwt, unsigned int index, unsigned int* __restrict
         rov = vec_sub(rov, t2);
 	*(vector unsigned int*)occValue=rov;
 #endif
-	printf("%s: %08x %08x %08x %08x\n", __func__, occValue[0],occValue[1],occValue[2],occValue[3]);
 }
 
 void BWTAllOccValueTwoIndex(const BWT *bwt, unsigned int index1, unsigned int index2, unsigned int* __restrict occValue1, unsigned int* __restrict occValue2) {
