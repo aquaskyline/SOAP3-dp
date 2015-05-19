@@ -441,8 +441,8 @@ void backward1Mismatch ( uint * query, uint start, uint len,
                          uint maxSARangesAllowed,
                          uint strand, uint accumMismatches )
 {
-    uint occCountPStart[ALPHABET_SIZE];
-    uint occCountPEnd[ALPHABET_SIZE];
+    uint __align__(16) occCountPStart[ALPHABET_SIZE];
+    uint __align__(16) occCountPEnd[ALPHABET_SIZE];
     unsigned char c;
     unsigned char ec;
     uint i;
@@ -485,8 +485,8 @@ void backward1MismatchAndExact ( uint * query, uint start, uint len,
                                  uint maxSARangesAllowed,
                                  uint strand, uint accumMismatches )
 {
-    uint occCountPStart[ALPHABET_SIZE];
-    uint occCountPEnd[ALPHABET_SIZE];
+    uint __align__(16) occCountPStart[ALPHABET_SIZE];
+    uint __align__(16) occCountPEnd[ALPHABET_SIZE];
     unsigned char c;
     unsigned char ec;
     uint i;
@@ -558,8 +558,8 @@ void backward2Mismatch ( uint * query, uint start, uint len,
                          uint maxSARangesAllowed,
                          uint strand, uint accumMismatches )
 {
-    uint occCountPStart[ALPHABET_SIZE];
-    uint occCountPEnd[ALPHABET_SIZE];
+    uint __align__(16) occCountPStart[ALPHABET_SIZE];
+    uint __align__(16) occCountPEnd[ALPHABET_SIZE];
     unsigned char c;
     unsigned char ec;
     uint i;
@@ -602,8 +602,8 @@ void backward2MismatchAnd1Mismatch ( uint * query, uint start, uint len,
                                      uint maxSARangesAllowed,
                                      uint strand, uint accumMismatches )
 {
-    uint occCountPStart[ALPHABET_SIZE];
-    uint occCountPEnd[ALPHABET_SIZE];
+    uint __align__(16) occCountPStart[ALPHABET_SIZE];
+    uint __align__(16) occCountPEnd[ALPHABET_SIZE];
     unsigned char c;
     unsigned char ec;
     uint i;
@@ -650,8 +650,8 @@ void backward2MismatchAnd1MismatchAndExact ( uint * query, uint start, uint len,
         uint maxSARangesAllowed,
         uint strand, uint accumMismatches )
 {
-    uint occCountPStart[ALPHABET_SIZE];
-    uint occCountPEnd[ALPHABET_SIZE];
+    uint __align__(16) occCountPStart[ALPHABET_SIZE];
+    uint __align__(16) occCountPEnd[ALPHABET_SIZE];
     unsigned char c;
     unsigned char ec;
     uint i;
@@ -724,8 +724,8 @@ void backward3Mismatch ( uint * query, uint start, uint len,
                          uint maxSARangesAllowed,
                          uint strand, uint accumMismatches )
 {
-    uint occCountPStart[ALPHABET_SIZE];
-    uint occCountPEnd[ALPHABET_SIZE];
+    uint __align__(16) occCountPStart[ALPHABET_SIZE];
+    uint __align__(16) occCountPEnd[ALPHABET_SIZE];
     unsigned char c;
     unsigned char ec;
     uint i;
@@ -768,8 +768,8 @@ void backward3MismatchAnd2Mismatch ( uint * query, uint start, uint len,
                                      uint maxSARangesAllowed,
                                      uint strand, uint accumMismatches )
 {
-    uint occCountPStart[ALPHABET_SIZE];
-    uint occCountPEnd[ALPHABET_SIZE];
+    uint __align__(16) occCountPStart[ALPHABET_SIZE];
+    uint __align__(16) occCountPEnd[ALPHABET_SIZE];
     unsigned char c;
     unsigned char ec;
     uint i;
@@ -816,8 +816,8 @@ void backward3MismatchAnd2MismatchAnd1MismatchAndExact ( uint * query, uint star
         uint maxSARangesAllowed,
         uint strand, uint accumMismatches )
 {
-    uint occCountPStart[ALPHABET_SIZE];
-    uint occCountPEnd[ALPHABET_SIZE];
+    uint __align__(16) occCountPStart[ALPHABET_SIZE];
+    uint __align__(16) occCountPEnd[ALPHABET_SIZE];
     unsigned char c;
     unsigned char ec;
     uint i;
@@ -891,8 +891,8 @@ void backward4MismatchAnd3MismatchAnd2MismatchAnd1MismatchAndExact ( uint * quer
         uint maxSARangesAllowed,
         uint strand, uint accumMismatches )
 {
-    uint occCountPStart[ALPHABET_SIZE];
-    uint occCountPEnd[ALPHABET_SIZE];
+    uint __align__(16) occCountPStart[ALPHABET_SIZE];
+    uint __align__(16) occCountPEnd[ALPHABET_SIZE];
     unsigned char c;
     unsigned char ec;
     uint i;
@@ -964,9 +964,9 @@ void revForward1Mismatch ( uint * query, uint start, uint len,
                            uint strand, uint accumMismatches )
 {
     uint mkL, mkR, revMkL, revMkR;
-    uint occCountPStart[ALPHABET_SIZE];
-    uint occCountPEnd[ALPHABET_SIZE];
-    uint occCountP[ALPHABET_SIZE];
+    uint __align__(16) occCountPStart[ALPHABET_SIZE];
+    uint __align__(16) occCountPEnd[ALPHABET_SIZE];
+    uint __align__(16) occCountP[ALPHABET_SIZE];
     unsigned char c;
     unsigned char ec;
     uint i;
@@ -1024,9 +1024,9 @@ void revForward1MismatchAndExact ( uint * query, uint start, uint len,
                                    uint strand, uint accumMismatches )
 {
     uint mkL, mkR, revMkL, revMkR;
-    uint occCountPStart[ALPHABET_SIZE];
-    uint occCountPEnd[ALPHABET_SIZE];
-    uint occCountP[ALPHABET_SIZE];
+    uint __align__(16) occCountPStart[ALPHABET_SIZE];
+    uint __align__(16) occCountPEnd[ALPHABET_SIZE];
+    uint __align__(16) occCountP[ALPHABET_SIZE];
     unsigned char c;
     unsigned char ec;
     uint i;
@@ -1110,9 +1110,9 @@ void revForward2Mismatch ( uint * query, uint start, uint len,
                            uint strand, uint accumMismatches )
 {
     uint mkL, mkR, revMkL, revMkR;
-    uint occCountPStart[ALPHABET_SIZE];
-    uint occCountPEnd[ALPHABET_SIZE];
-    uint occCountP[ALPHABET_SIZE];
+    uint __align__(16) occCountPStart[ALPHABET_SIZE];
+    uint __align__(16) occCountPEnd[ALPHABET_SIZE];
+    uint __align__(16) occCountP[ALPHABET_SIZE];
     unsigned char c;
     unsigned char ec;
     uint i;
@@ -1170,9 +1170,9 @@ void revForward2MismatchAnd1Mismatch ( uint * query, uint start, uint len,
                                        uint strand, uint accumMismatches )
 {
     uint mkL, mkR, revMkL, revMkR;
-    uint occCountPStart[ALPHABET_SIZE];
-    uint occCountPEnd[ALPHABET_SIZE];
-    uint occCountP[ALPHABET_SIZE];
+    uint __align__(16) occCountPStart[ALPHABET_SIZE];
+    uint __align__(16) occCountPEnd[ALPHABET_SIZE];
+    uint __align__(16) occCountP[ALPHABET_SIZE];
     unsigned char c;
     unsigned char ec;
     uint i;
@@ -1230,9 +1230,9 @@ void revForward2MismatchAnd1MismatchAndExact ( uint * query, uint start, uint le
         uint strand, uint accumMismatches )
 {
     uint mkL, mkR, revMkL, revMkR;
-    uint occCountPStart[ALPHABET_SIZE];
-    uint occCountPEnd[ALPHABET_SIZE];
-    uint occCountP[ALPHABET_SIZE];
+    uint __align__(16) occCountPStart[ALPHABET_SIZE];
+    uint __align__(16) occCountPEnd[ALPHABET_SIZE];
+    uint __align__(16) occCountP[ALPHABET_SIZE];
     unsigned char c;
     unsigned char ec;
     uint i;
@@ -1314,9 +1314,9 @@ void revForward3MismatchAnd2MismatchAnd1Mismatch ( uint * query, uint start, uin
         uint maxSARangesAllowed, uint strand, uint accumMismatches )
 {
     uint mkL, mkR, revMkL, revMkR;
-    uint occCountPStart[ALPHABET_SIZE];
-    uint occCountPEnd[ALPHABET_SIZE];
-    uint occCountP[ALPHABET_SIZE];
+    uint __align__(16) occCountPStart[ALPHABET_SIZE];
+    uint __align__(16) occCountPEnd[ALPHABET_SIZE];
+    uint __align__(16) occCountP[ALPHABET_SIZE];
     unsigned char c;
     unsigned char ec;
     uint i;
@@ -1372,9 +1372,9 @@ void revForward3MismatchAnd2MismatchAnd1MismatchAndExact ( uint * query, uint st
         uint maxSARangesAllowed, uint strand, uint accumMismatches )
 {
     uint mkL, mkR, revMkL, revMkR;
-    uint occCountPStart[ALPHABET_SIZE];
-    uint occCountPEnd[ALPHABET_SIZE];
-    uint occCountP[ALPHABET_SIZE];
+    uint __align__(16) occCountPStart[ALPHABET_SIZE];
+    uint __align__(16) occCountPEnd[ALPHABET_SIZE];
+    uint __align__(16) occCountP[ALPHABET_SIZE];
     unsigned char c;
     unsigned char ec;
     uint i;
@@ -1457,9 +1457,9 @@ void revForward4MismatchAnd3MismatchAnd2MismatchAnd1Mismatch ( uint * query, uin
         uint maxSARangesAllowed, uint strand, uint accumMismatches )
 {
     uint mkL, mkR, revMkL, revMkR;
-    uint occCountPStart[ALPHABET_SIZE];
-    uint occCountPEnd[ALPHABET_SIZE];
-    uint occCountP[ALPHABET_SIZE];
+    uint __align__(16) occCountPStart[ALPHABET_SIZE];
+    uint __align__(16) occCountPEnd[ALPHABET_SIZE];
+    uint __align__(16) occCountP[ALPHABET_SIZE];
     unsigned char c;
     unsigned char ec;
     uint i;
@@ -1665,9 +1665,9 @@ void revForward1MismatchAndBackward1Mismatch ( uint * query, uint start, uint le
         uint maxSARangesAllowed, uint strand, uint accumMismatches )
 {
     uint mkL, mkR, revMkL, revMkR;
-    uint occCountPStart[ALPHABET_SIZE];
-    uint occCountPEnd[ALPHABET_SIZE];
-    uint occCountP[ALPHABET_SIZE];
+    uint __align__(16) occCountPStart[ALPHABET_SIZE];
+    uint __align__(16) occCountPEnd[ALPHABET_SIZE];
+    uint __align__(16) occCountP[ALPHABET_SIZE];
     unsigned char c;
     unsigned char ec;
     uint i;
@@ -1726,9 +1726,9 @@ void revForward1MismatchAndForward1Mismatch ( uint * query, uint start, uint len
         uint maxSARangesAllowed, uint strand, uint accumMismatches )
 {
     uint mkL, mkR, revMkL, revMkR;
-    uint occCountPStart[ALPHABET_SIZE];
-    uint occCountPEnd[ALPHABET_SIZE];
-    uint occCountP[ALPHABET_SIZE];
+    uint __align__(16) occCountPStart[ALPHABET_SIZE];
+    uint __align__(16) occCountPEnd[ALPHABET_SIZE];
+    uint __align__(16) occCountP[ALPHABET_SIZE];
     unsigned char c;
     unsigned char ec;
     uint i;
@@ -1823,9 +1823,9 @@ void revForward1MismatchAndBackward2MismatchAnd1Mismatch ( uint * query, uint st
         uint maxSARangesAllowed, uint strand, uint accumMismatches )
 {
     uint mkL, mkR, revMkL, revMkR;
-    uint occCountPStart[ALPHABET_SIZE];
-    uint occCountPEnd[ALPHABET_SIZE];
-    uint occCountP[ALPHABET_SIZE];
+    uint __align__(16) occCountPStart[ALPHABET_SIZE];
+    uint __align__(16) occCountPEnd[ALPHABET_SIZE];
+    uint __align__(16) occCountP[ALPHABET_SIZE];
     unsigned char c;
     unsigned char ec;
     uint i;
@@ -1914,8 +1914,8 @@ void backward1MismatchAndBackward2MismatchAnd1Mismatch ( uint * query, uint star
         uint & saCount, uint * output,
         uint maxSARangesAllowed, uint strand, uint accumMismatches )
 {
-    uint occCountPStart[ALPHABET_SIZE];
-    uint occCountPEnd[ALPHABET_SIZE];
+    uint __align__(16) occCountPStart[ALPHABET_SIZE];
+    uint __align__(16) occCountPEnd[ALPHABET_SIZE];
     unsigned char c;
     unsigned char ec;
     uint i;
@@ -2006,9 +2006,9 @@ void backward1MismatchAndForward2Mismatch ( uint * query, uint start, uint len,
         uint maxSARangesAllowed, uint strand, uint accumMismatches )
 {
     uint mkL, mkR, revMkL, revMkR;
-    uint occCountPStart[ALPHABET_SIZE];
-    uint occCountPEnd[ALPHABET_SIZE];
-    uint occCountP[ALPHABET_SIZE];
+    uint __align__(16) occCountPStart[ALPHABET_SIZE];
+    uint __align__(16) occCountPEnd[ALPHABET_SIZE];
+    uint __align__(16) occCountP[ALPHABET_SIZE];
     unsigned char c;
     unsigned char ec;
     uint i;
@@ -2176,9 +2176,9 @@ void revForward1MismatchAndBackward3Mismatch ( uint * query, uint start, uint le
         uint maxSARangesAllowed, uint strand, uint accumMismatches )
 {
     uint mkL, mkR, revMkL, revMkR;
-    uint occCountPStart[ALPHABET_SIZE];
-    uint occCountPEnd[ALPHABET_SIZE];
-    uint occCountP[ALPHABET_SIZE];
+    uint __align__(16) occCountPStart[ALPHABET_SIZE];
+    uint __align__(16) occCountPEnd[ALPHABET_SIZE];
+    uint __align__(16) occCountP[ALPHABET_SIZE];
     unsigned char c;
     unsigned char ec;
     uint i;
@@ -2237,9 +2237,9 @@ void revForward1MismatchAndForward2Mismatch ( uint * query, uint start, uint len
         uint maxSARangesAllowed, uint strand, uint accumMismatches )
 {
     uint mkL, mkR, revMkL, revMkR;
-    uint occCountPStart[ALPHABET_SIZE];
-    uint occCountPEnd[ALPHABET_SIZE];
-    uint occCountP[ALPHABET_SIZE];
+    uint __align__(16) occCountPStart[ALPHABET_SIZE];
+    uint __align__(16) occCountPEnd[ALPHABET_SIZE];
+    uint __align__(16) occCountP[ALPHABET_SIZE];
     unsigned char c;
     unsigned char ec;
     uint i;
@@ -2297,9 +2297,9 @@ void revForward1MismatchAndForward2MismatchAnd1Mismatch ( uint * query, uint sta
         uint maxSARangesAllowed, uint strand, uint accumMismatches )
 {
     uint mkL, mkR, revMkL, revMkR;
-    uint occCountPStart[ALPHABET_SIZE];
-    uint occCountPEnd[ALPHABET_SIZE];
-    uint occCountP[ALPHABET_SIZE];
+    uint __align__(16) occCountPStart[ALPHABET_SIZE];
+    uint __align__(16) occCountPEnd[ALPHABET_SIZE];
+    uint __align__(16) occCountP[ALPHABET_SIZE];
     unsigned char c;
     unsigned char ec;
     uint i;
@@ -2356,9 +2356,9 @@ void revForward1MismatchAndForward3MismatchAnd2MismatchAnd1Mismatch ( uint * que
         uint maxSARangesAllowed, uint strand, uint accumMismatches )
 {
     uint mkL, mkR, revMkL, revMkR;
-    uint occCountPStart[ALPHABET_SIZE];
-    uint occCountPEnd[ALPHABET_SIZE];
-    uint occCountP[ALPHABET_SIZE];
+    uint __align__(16) occCountPStart[ALPHABET_SIZE];
+    uint __align__(16) occCountPEnd[ALPHABET_SIZE];
+    uint __align__(16) occCountP[ALPHABET_SIZE];
     unsigned char c;
     unsigned char ec;
     uint i;
@@ -2415,9 +2415,9 @@ void revForward2MismatchAndForward2MismatchAnd1Mismatch ( uint * query, uint sta
         uint maxSARangesAllowed, uint strand, uint accumMismatches )
 {
     uint mkL, mkR, revMkL, revMkR;
-    uint occCountPStart[ALPHABET_SIZE];
-    uint occCountPEnd[ALPHABET_SIZE];
-    uint occCountP[ALPHABET_SIZE];
+    uint __align__(16) occCountPStart[ALPHABET_SIZE];
+    uint __align__(16) occCountPEnd[ALPHABET_SIZE];
+    uint __align__(16) occCountP[ALPHABET_SIZE];
     unsigned char c;
     unsigned char ec;
     uint i;
@@ -2513,9 +2513,9 @@ void backward1MismatchAndForward2MismatchAnd1Mismatch ( uint * query, uint start
         uint maxSARangesAllowed, uint strand, uint accumMismatches )
 {
     uint mkL, mkR, revMkL, revMkR;
-    uint occCountPStart[ALPHABET_SIZE];
-    uint occCountPEnd[ALPHABET_SIZE];
-    uint occCountP[ALPHABET_SIZE];
+    uint __align__(16) occCountPStart[ALPHABET_SIZE];
+    uint __align__(16) occCountPEnd[ALPHABET_SIZE];
+    uint __align__(16) occCountP[ALPHABET_SIZE];
     unsigned char c;
     unsigned char ec;
     uint i;
@@ -2657,9 +2657,9 @@ void backward1MismatchAndForward1MismatchAndForward2MismatchAnd1Mismatch ( uint 
         uint maxSARangesAllowed, uint strand, uint accumMismatches )
 {
     uint mkL, mkR, revMkL, revMkR;
-    uint occCountPStart[ALPHABET_SIZE];
-    uint occCountPEnd[ALPHABET_SIZE];
-    uint occCountP[ALPHABET_SIZE];
+    uint __align__(16) occCountPStart[ALPHABET_SIZE];
+    uint __align__(16) occCountPEnd[ALPHABET_SIZE];
+    uint __align__(16) occCountP[ALPHABET_SIZE];
     unsigned char c;
     unsigned char ec;
     uint i;
@@ -2725,9 +2725,9 @@ void backward1MismatchAndBackward1MismatchAndForward2MismatchAnd1Mismatch ( uint
         uint maxSARangesAllowed, uint strand, uint accumMismatches )
 {
     uint mkL, mkR, revMkL, revMkR;
-    uint occCountPStart[ALPHABET_SIZE];
-    uint occCountPEnd[ALPHABET_SIZE];
-    uint occCountP[ALPHABET_SIZE];
+    uint __align__(16) occCountPStart[ALPHABET_SIZE];
+    uint __align__(16) occCountPEnd[ALPHABET_SIZE];
+    uint __align__(16) occCountP[ALPHABET_SIZE];
     unsigned char c;
     unsigned char ec;
     uint i;
@@ -2790,9 +2790,9 @@ void revForward1MismatchAndBackward3MismatchAnd2Mismatch ( uint * query, uint st
         uint maxSARangesAllowed, uint strand, uint accumMismatches )
 {
     uint mkL, mkR, revMkL, revMkR;
-    uint occCountPStart[ALPHABET_SIZE];
-    uint occCountPEnd[ALPHABET_SIZE];
-    uint occCountP[ALPHABET_SIZE];
+    uint __align__(16) occCountPStart[ALPHABET_SIZE];
+    uint __align__(16) occCountPEnd[ALPHABET_SIZE];
+    uint __align__(16) occCountP[ALPHABET_SIZE];
     unsigned char c;
     unsigned char ec;
     uint i;
@@ -2878,8 +2878,8 @@ void backward1MismatchAndBackward3Mismatch ( uint * query, uint start, uint len,
         uint & saCount, uint * output,
         uint maxSARangesAllowed, uint strand, uint accumMismatches )
 {
-    uint occCountPStart[ALPHABET_SIZE];
-    uint occCountPEnd[ALPHABET_SIZE];
+    uint __align__(16) occCountPStart[ALPHABET_SIZE];
+    uint __align__(16) occCountPEnd[ALPHABET_SIZE];
     unsigned char c;
     unsigned char ec;
     uint i;
@@ -2967,9 +2967,9 @@ void backward2MismatchAndForward2MismatchAnd1Mismatch ( uint * query, uint start
         uint maxSARangesAllowed, uint strand, uint accumMismatches )
 {
     uint mkL, mkR, revMkL, revMkR;
-    uint occCountPStart[ALPHABET_SIZE];
-    uint occCountPEnd[ALPHABET_SIZE];
-    uint occCountP[ALPHABET_SIZE];
+    uint __align__(16) occCountPStart[ALPHABET_SIZE];
+    uint __align__(16) occCountPEnd[ALPHABET_SIZE];
+    uint __align__(16) occCountP[ALPHABET_SIZE];
     unsigned char c;
     unsigned char ec;
     uint i;
@@ -3031,9 +3031,9 @@ void backward1MismatchAndForward3MismatchAnd2MismatchAnd1Mismatch ( uint * query
         uint maxSARangesAllowed, uint strand, uint accumMismatches )
 {
     uint mkL, mkR, revMkL, revMkR;
-    uint occCountPStart[ALPHABET_SIZE];
-    uint occCountPEnd[ALPHABET_SIZE];
-    uint occCountP[ALPHABET_SIZE];
+    uint __align__(16) occCountPStart[ALPHABET_SIZE];
+    uint __align__(16) occCountPEnd[ALPHABET_SIZE];
+    uint __align__(16) occCountP[ALPHABET_SIZE];
     unsigned char c;
     unsigned char ec;
     uint i;
