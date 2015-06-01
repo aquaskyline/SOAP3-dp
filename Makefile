@@ -33,30 +33,21 @@
 ARCH := $(shell uname -p)
 
 CC = g++
+NVCC = /usr/local/cuda/bin/nvcc
+CFLAGS=-O3 -funroll-loops -Wno-unused-result -fopenmp
+CUDAFLAG = -cuda --ptxas-options=-v
+LIBFLAG = -L/usr/local/cuda/lib64/ -lcuda -lcudart -lpthread -lm -lz
 ifeq ($(ARCH), x86_64)
-	NVCC = /usr/local/cuda/bin/nvcc
-	CUDAFLAG = -cuda -arch=sm_20 --ptxas-options=-v
-	LIBFLAG = -L/usr/local/cuda/lib64/ -lcuda -lcudart
-	CFLAGS = -O3 -funroll-loops -march=core2 -fomit-frame-pointer -maccumulate-outgoing-args -Wno-unused-result -lm -mpopcnt -lz -fopenmp
+	CUDAFLAG += -arch=sm_35
+	CFLAGS += -march=core2 -maccumulate-outgoing-args -mpopcnt -fomit-frame-pointer
 else
-	NVCC = nvcc
-	CUDAFLAG = -cuda -arch=sm_35 --ptxas-options=-v -lineinfo $(VPROFINC)
-	LIBFLAG = -L/usr/local/cuda/lib64/ -lcuda -lcudart -lpthread -lz $(HUGETLBFLAGS)
-	CFLAGS = -D__STDC_LIMIT_MACROS -O3 -funroll-loops -mcpu=power8 -mtune=power8 -maltivec -fsigned-char -I$(EMMINTRIN_POWER) -Wno-write-strings -Wno-unused-result
-	EMMINTRIN_POWER=/gpfs/home/tmaurer/src/emmintrin-power/1.0-tmaurer
+	CUDAFLAG += -arch=sm_35
+	CFLAGS += -D__STDC_LIMIT_MACROS -mcpu=power8 -mtune=power8 -maltivec -fsigned-char
 
 	ifeq ($(USEHUGETLB),yes)
-	HUGETLBFLAGS = -B/opt/libhugetlbfs/share/libhugetlbfs -Wl,--hugetlbfs-align
-	endif
-
-	ifeq ($(USEVPROF),yes)
-	VPROFPATH = /opt/vprof
-	VPROFLIB  = $(VPROFPATH)/vprof.o
-	VPROFINC  = -DUSEVPROF -I$(VPROFPATH)
-	CFLAGS += -g
+	LIBFLAG += -B/opt/libhugetlbfs/share/libhugetlbfs -Wl,--hugetlbfs-align
 	endif
 endif
-
 
 BWTLIB = 2bwt-lib
 BWTOBJLIBS = $(BWTLIB)/BWT.o $(BWTLIB)/dictionary.o $(BWTLIB)/DNACount.o $(BWTLIB)/HSP.o $(BWTLIB)/HSPstatistic.o $(BWTLIB)/iniparser.o $(BWTLIB)/inistrlib.o $(BWTLIB)/karlin.o $(BWTLIB)/MemManager.o $(BWTLIB)/MiscUtilities.o $(BWTLIB)/QSufSort.o $(BWTLIB)/r250.o $(BWTLIB)/TextConverter.o $(BWTLIB)/Timing.o $(BWTLIB)/Socket.o
@@ -127,7 +118,7 @@ BGS-Build: BGS-Build.cpp $(BWTOBJLIBS) Makefile
 
 cleanALL:
 	echo "Cleaning up all object codes, including 2BWT-LIB, SAM and all other library compiled."
-	rm -f .*.cpp *.o $(SAMOBJLIBS) $(BWTOBJLIBS) $(CPUOBJLIB)
+	rm -f .*.cpp *.o $(SAMOBJLIBS) $(BWTOBJLIBS) $(CPUOBJLIB) $(BWTLIB)/BWTConstruct.o
 
 clean:
 	echo "Cleaning up all SOAP3 object code includes CPU and CUDA compiled."
