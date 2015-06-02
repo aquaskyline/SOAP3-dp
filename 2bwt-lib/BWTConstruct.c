@@ -459,7 +459,7 @@ static void BWTIncPutPackedTextToRank(const unsigned int *packedText, unsigned i
         _mm_store_si128((__m128i*)temp, p1);
 #endif
 #ifdef _ARCH_PPC
-        p1 = (vector unsigned int){0,0,0,packedText[lastWord]};
+        p1 = (vector unsigned int){0,0,0,packedText[i]};
         p2 = vec_sr(p1, vec_splats(4u));
         p1 = (vector unsigned int)vec_mergel((vector unsigned char)p1, (vector unsigned char)p2);
 
