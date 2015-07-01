@@ -1978,14 +1978,13 @@ int BoundaryCheckDP ( unsigned int pacPos, int chrID, unsigned int chrEndPos, in
 }
 
 // returns trimmed amount (bp). +ve indicates trimming on left side, -ve indicates right side.
-int getChrAndPosWithBoundaryCheck ( SRAQueryInput * qInput, unsigned long long ambPos,
+int getChrAndPosWithBoundaryCheck ( SRAQueryInput * qInput, unsigned int readLength, unsigned long long ambPos,
                                     unsigned long long * tp, unsigned short * chr_id, char ** buffer )
 {
     unsigned int segmentEndPos = getChrAndPos ( qInput, ambPos, tp, chr_id );
 
     HSP * hsp = qInput->AlgnmtIndex->hsp;
     unsigned int chrEndPos = hsp->seqOffset[ *chr_id - 1 ].endPos;
-    unsigned long long readLength = qInput->QueryInfo->ReadLength;
     unsigned int correctedPac;
     int ret;
 
@@ -2007,13 +2006,12 @@ int getChrAndPosWithBoundaryCheck ( SRAQueryInput * qInput, unsigned long long a
 }
 
 // returns trimmed amount (bp). +ve indicates trimming on left side, -ve indicates right side.
-int getChrAndPosWithBoundaryCheckDP ( SRAQueryInput * qInput, unsigned long long ambPos, char * cigar,
+int getChrAndPosWithBoundaryCheckDP ( SRAQueryInput * qInput, unsigned int readLength, unsigned long long ambPos, char * cigar,
                                       unsigned long long * tp, unsigned short * chr_id, char ** buffer )
 {
     unsigned int segmentEndPos = getChrAndPos ( qInput, ambPos, tp, chr_id );
     HSP * hsp = qInput->AlgnmtIndex->hsp;
     unsigned int chrEndPos = hsp->seqOffset[ *chr_id - 1 ].endPos;
-    unsigned long long readLength = qInput->QueryInfo->ReadLength;
     unsigned int correctedPac;
     int ret;
 
@@ -3109,7 +3107,7 @@ void unproperlypairDPOutputSAMAPI ( SRAQueryInput * qInput, Algnmt * algn_list1,
 
         if ( bestAlgn1->isFromDP == 1 )
         {
-            boundTrim1 = getChrAndPosWithBoundaryCheckDP ( qInput, bestAlgn1->algnmt, bestAlgn1->cigarString, &tp_1, &chr_1, &newCigar1 );
+            boundTrim1 = getChrAndPosWithBoundaryCheckDP ( qInput, readlen1, bestAlgn1->algnmt, bestAlgn1->cigarString, &tp_1, &chr_1, &newCigar1 );
             // to convert the the best special_cigar into normal cigar string
             cigarStrLen1 = boundTrim1 ? convertToCigarStr ( newCigar1, cigarStr1 ) : convertToCigarStr ( bestAlgn1->cigarString, cigarStr1, &deletedEnd1 );
             // to collect the mismatch information including MD string and # of mismatches
@@ -3119,7 +3117,7 @@ void unproperlypairDPOutputSAMAPI ( SRAQueryInput * qInput, Algnmt * algn_list1,
         }
         else
         {
-            boundTrim1 = getChrAndPosWithBoundaryCheck ( qInput, bestAlgn1->algnmt, &tp_1, &chr_1, &newCigar1 );
+            boundTrim1 = getChrAndPosWithBoundaryCheck ( qInput, readlen1, bestAlgn1->algnmt, &tp_1, &chr_1, &newCigar1 );
             // to get the md str
             mdStrLen1 = getMdStr ( hsp, query1, qualities1, readlen1, bestAlgn1->algnmt, bestAlgn1->strand, bestAlgn1->editdist, mdStr1, &avg_mismatch_qual1, boundTrim1 );
             bestMismatchNum1 = 0;
@@ -3158,7 +3156,7 @@ void unproperlypairDPOutputSAMAPI ( SRAQueryInput * qInput, Algnmt * algn_list1,
 
         if ( bestAlgn2->isFromDP == 1 )
         {
-            boundTrim2 = getChrAndPosWithBoundaryCheckDP ( qInput, bestAlgn2->algnmt, bestAlgn2->cigarString, &tp_2, &chr_2, &newCigar2 );
+            boundTrim2 = getChrAndPosWithBoundaryCheckDP ( qInput, readlen2, bestAlgn2->algnmt, bestAlgn2->cigarString, &tp_2, &chr_2, &newCigar2 );
             // to convert the the best special_cigar into normal cigar string
             cigarStrLen2 = boundTrim2 ? convertToCigarStr ( newCigar2, cigarStr2 ) : convertToCigarStr ( bestAlgn2->cigarString, cigarStr2, &deletedEnd2 );
             // to collect the mismatch information including MD string and # of mismatches
@@ -3169,7 +3167,7 @@ void unproperlypairDPOutputSAMAPI ( SRAQueryInput * qInput, Algnmt * algn_list1,
         }
         else
         {
-            boundTrim2 = getChrAndPosWithBoundaryCheck ( qInput, bestAlgn2->algnmt, &tp_2, &chr_2, &newCigar2 );
+            boundTrim2 = getChrAndPosWithBoundaryCheck ( qInput, readlen2, bestAlgn2->algnmt, &tp_2, &chr_2, &newCigar2 );
             // to get the md str
             mdStrLen2 = getMdStr ( hsp, query2, qualities2, readlen2, bestAlgn2->algnmt, bestAlgn2->strand, bestAlgn2->editdist, mdStr2, &avg_mismatch_qual2, boundTrim2 );
             bestMismatchNum2 = 0;
@@ -3522,8 +3520,8 @@ void pairOutputSAMAPI ( SRAQueryInput * qInput, PEOutput * pe_out, PEPairs * bes
     if ( bestPair != NULL )
     {
 
-        boundTrim1 = getChrAndPosWithBoundaryCheck ( qInput, bestPair->algnmt_1, &tp_1, &chr_1, &newCigar1 );
-        boundTrim2 = getChrAndPosWithBoundaryCheck ( qInput, bestPair->algnmt_2, &tp_2, &chr_2, &newCigar2 );
+        boundTrim1 = getChrAndPosWithBoundaryCheck ( qInput, readlen1, bestPair->algnmt_1, &tp_1, &chr_1, &newCigar1 );
+        boundTrim2 = getChrAndPosWithBoundaryCheck ( qInput, readlen2, bestPair->algnmt_2, &tp_2, &chr_2, &newCigar2 );
 
         /*      if ((bestPair->strand_1 == QUERY_POS_STRAND &&
              (bestPair->algnmt_1 > bestPair->algnmt_2 || bestPair->algnmt_1 + readlen1 > bestPair->algnmt_2 + readlen2)) ||
@@ -3922,7 +3920,7 @@ void pairDeepDPOutputSAMAPI ( SRAQueryInput * qInput, DeepDPAlignResult * algnRe
         // and the average quality values in the mismatch positions
         if ( bestResult->algnmt_1 != 0xFFFFFFFF )
         {
-            boundTrim1 = getChrAndPosWithBoundaryCheckDP ( qInput, bestResult->algnmt_1, bestResult->cigarString_1, &tp_1, &chr_1, &newCigar1 );
+            boundTrim1 = getChrAndPosWithBoundaryCheckDP ( qInput, readlen1, bestResult->algnmt_1, bestResult->cigarString_1, &tp_1, &chr_1, &newCigar1 );
             // to convert the the best special_cigar into normal cigar string
             cigarStrLen1 = boundTrim1 ? convertToCigarStr ( newCigar1, cigarStr1 ) : convertToCigarStr ( bestResult->cigarString_1, cigarStr1 );
             // to collect the mismatch information including MD string and # of mismatches
@@ -3932,7 +3930,7 @@ void pairDeepDPOutputSAMAPI ( SRAQueryInput * qInput, DeepDPAlignResult * algnRe
 
         if ( bestResult->algnmt_2 != 0xFFFFFFFF )
         {
-            boundTrim2 = getChrAndPosWithBoundaryCheckDP ( qInput, bestResult->algnmt_2, bestResult->cigarString_2, &tp_2, &chr_2, &newCigar2 );
+            boundTrim2 = getChrAndPosWithBoundaryCheckDP ( qInput, readlen2, bestResult->algnmt_2, bestResult->cigarString_2, &tp_2, &chr_2, &newCigar2 );
             // to convert the the best special_cigar into normal cigar string
             cigarStrLen2 = boundTrim2 ? convertToCigarStr ( newCigar2, cigarStr2 ) : convertToCigarStr ( bestResult->cigarString_2, cigarStr2 );
             // to collect the mismatch information including MD string and # of mismatches
@@ -4601,7 +4599,7 @@ void pairDPOutputSAMAPI ( SRAQueryInput * qInput, AlgnmtDPResult * algnResult,
             {
                 // to convert the the best special_cigar into normal cigar string
                 char * tempCigar = NULL;
-                boundTrim1 = getChrAndPosWithBoundaryCheckDP ( qInput, bestResult->algnmt_1, best_cigar1, &tp_1, &chr_1, &tempCigar );
+                boundTrim1 = getChrAndPosWithBoundaryCheckDP ( qInput, readlen1, bestResult->algnmt_1, best_cigar1, &tp_1, &chr_1, &tempCigar );
                 cigarStrLen1 = boundTrim1 ? convertToCigarStr ( tempCigar, cigarStr1 ) : convertToCigarStr ( best_cigar1, cigarStr1 );
                 r1 = readLengthWithCigar ( best_cigar1 );
                 // to collect the mismatch information including MD string and # of mismatches
@@ -4616,7 +4614,7 @@ void pairDPOutputSAMAPI ( SRAQueryInput * qInput, AlgnmtDPResult * algnResult,
             }
             else
             {
-                boundTrim1 = getChrAndPosWithBoundaryCheck ( qInput, bestResult->algnmt_1, &tp_1, &chr_1, &newCigar1 );
+                boundTrim1 = getChrAndPosWithBoundaryCheck ( qInput, readlen1, bestResult->algnmt_1, &tp_1, &chr_1, &newCigar1 );
                 // get the MD string
                 mdStrLen1 = getMdStr ( hsp, query1, qualities1, readlen1, bestResult->algnmt_1, best_strand1,
                                        bestResult->score_1, mdStr1, &avg_mismatch_qual1, boundTrim1 );
@@ -4640,7 +4638,7 @@ void pairDPOutputSAMAPI ( SRAQueryInput * qInput, AlgnmtDPResult * algnResult,
             {
                 // to convert the the best special_cigar into normal cigar string
                 char * tempCigar = NULL;
-                boundTrim2 = getChrAndPosWithBoundaryCheckDP ( qInput, bestResult->algnmt_2, best_cigar2, &tp_2, &chr_2, &tempCigar );
+                boundTrim2 = getChrAndPosWithBoundaryCheckDP ( qInput, readlen2, bestResult->algnmt_2, best_cigar2, &tp_2, &chr_2, &tempCigar );
                 cigarStrLen2 = boundTrim2 ? convertToCigarStr ( tempCigar, cigarStr2 ) : convertToCigarStr ( best_cigar2, cigarStr2 );
                 r2 = readLengthWithCigar ( best_cigar2 );
                 // to collect the mismatch information including MD string and # of mismatches
@@ -4655,7 +4653,7 @@ void pairDPOutputSAMAPI ( SRAQueryInput * qInput, AlgnmtDPResult * algnResult,
             }
             else
             {
-                boundTrim2 = getChrAndPosWithBoundaryCheck ( qInput, bestResult->algnmt_2, &tp_2, &chr_2, &newCigar2 );
+                boundTrim2 = getChrAndPosWithBoundaryCheck ( qInput, readlen2, bestResult->algnmt_2, &tp_2, &chr_2, &newCigar2 );
                 // get the MD string
                 mdStrLen2 = getMdStr ( hsp, query2, qualities2, readlen2, bestResult->algnmt_2, best_strand2,
                                        bestResult->score_2, mdStr2, &avg_mismatch_qual2, boundTrim2 );
@@ -5613,7 +5611,7 @@ void OCCOutputSAMAPI ( SRAQueryInput * qInput, OCCList * occ_list,
 
         bestStrand = occ_list->occ[bestOccIndex].strand;
 
-        boundTrim = getChrAndPosWithBoundaryCheck ( qInput, occ_list->occ[bestOccIndex].ambPosition, &bestTP, &bestChr, NULL ); // check good or not
+        boundTrim = getChrAndPosWithBoundaryCheck ( qInput, readlen, occ_list->occ[bestOccIndex].ambPosition, &bestTP, &bestChr, NULL ); // check good or not
 
         if ( boundTrim ) // FOR CROSS-CHROMO BUG. the best alignment sucks... we try to find the best "good" alignment instead
         {
@@ -5625,7 +5623,7 @@ void OCCOutputSAMAPI ( SRAQueryInput * qInput, OCCList * occ_list,
             for ( k = 0; k < occ_list->curr_size; k++ )
             {
                 // check whether it's good
-                boundTrim = getChrAndPosWithBoundaryCheck ( qInput, occ_list->occ[k].ambPosition, &bestTP, &bestChr, NULL );
+                boundTrim = getChrAndPosWithBoundaryCheck ( qInput, readlen, occ_list->occ[k].ambPosition, &bestTP, &bestChr, NULL );
 
                 if ( ! boundTrim )   // good alignment
                 {
@@ -5648,7 +5646,7 @@ void OCCOutputSAMAPI ( SRAQueryInput * qInput, OCCList * occ_list,
                 bestHitNum = 1;
             }
 
-            boundTrim = getChrAndPosWithBoundaryCheck ( qInput, occ_list->occ[bestOccIndex].ambPosition, &bestTP, &bestChr, &newCIGAR );
+            boundTrim = getChrAndPosWithBoundaryCheck ( qInput, readlen, occ_list->occ[bestOccIndex].ambPosition, &bestTP, &bestChr, &newCIGAR );
             printf ( "NewCIGAR %x, ambPosition: %u", occ_list->occ[bestOccIndex].ambPosition, newCIGAR);
         } // end CROSS-CHROMO handling
 
@@ -5674,7 +5672,7 @@ void OCCOutputSAMAPI ( SRAQueryInput * qInput, OCCList * occ_list,
 
             currNumMisMatch = occ_list->occ[k].mismatchCount;
             currStrand = occ_list->occ[k].strand;
-            int boundTrimTemp = getChrAndPosWithBoundaryCheck ( qInput, occ_list->occ[k].ambPosition, &currTP, &currChr, NULL );
+            int boundTrimTemp = getChrAndPosWithBoundaryCheck ( qInput, readlen, occ_list->occ[k].ambPosition, &currTP, &currChr, NULL );
 
             if ( boundTrimTemp ) { continue; } // don't allow cross-chromo alignments
 
@@ -5899,6 +5897,7 @@ void SingleDPOutputSAMAPI ( SRAQueryInput * qInput, SingleAlgnmtResult * algnRes
     int x1_t1 = 0; // # of suboptimals whose score >= 0.7 * bestDPScore
     int x1_t2 = 0; // # of suboptimals whose score < 0.7 * bestDPScore
 
+    int readlen = qInfo->ReadLength;
     int boundTrim = 0;
 
     if ( !isUnaligned )
@@ -5947,7 +5946,7 @@ void SingleDPOutputSAMAPI ( SRAQueryInput * qInput, SingleAlgnmtResult * algnRes
         }
 
         // HANDLE CROSS-CHROMO BUG.
-        boundTrim = getChrAndPosWithBoundaryCheckDP ( qInput, bestResult->algnmt, bestResult->cigarString, &bestTP, &bestChr, NULL ); // check good or not
+        boundTrim = getChrAndPosWithBoundaryCheckDP ( qInput, readlen, bestResult->algnmt, bestResult->cigarString, &bestTP, &bestChr, NULL ); // check good or not
 
         if ( boundTrim )
         {
@@ -5959,7 +5958,7 @@ void SingleDPOutputSAMAPI ( SRAQueryInput * qInput, SingleAlgnmtResult * algnRes
             for ( k = 0; k < numResult; k++ )
             {
                 currAmbPos = algnResult[startIndex + k].algnmt;
-                boundTrim = getChrAndPosWithBoundaryCheckDP ( qInput, currAmbPos, algnResult[startIndex + k].cigarString, &bestTP, &bestChr, NULL );
+                boundTrim = getChrAndPosWithBoundaryCheckDP ( qInput, readlen, currAmbPos, algnResult[startIndex + k].cigarString, &bestTP, &bestChr, NULL );
 
                 if ( !boundTrim ) // good alignment
                 {
@@ -5981,7 +5980,7 @@ void SingleDPOutputSAMAPI ( SRAQueryInput * qInput, SingleAlgnmtResult * algnRes
                 secBestScore = 0;
             }
 
-            boundTrim = getChrAndPosWithBoundaryCheckDP ( qInput, bestResult->algnmt, bestResult->cigarString, &bestTP, &bestChr, NULL ); // check good or not
+            boundTrim = getChrAndPosWithBoundaryCheckDP ( qInput, readlen, bestResult->algnmt, bestResult->cigarString, &bestTP, &bestChr, NULL ); // check good or not
         }
 
         // obtain x1_t1 and x1_t2
@@ -6010,7 +6009,7 @@ void SingleDPOutputSAMAPI ( SRAQueryInput * qInput, SingleAlgnmtResult * algnRes
                 currEditDist = algnResult[startIndex + k].editdist;
                 currAmbPos = algnResult[startIndex + k].algnmt;
 
-                if ( getChrAndPosWithBoundaryCheckDP ( qInput, algnResult[startIndex + k].algnmt, currSpCigar, &currTP, &currChr, NULL ) ) { continue; }
+                if ( getChrAndPosWithBoundaryCheckDP ( qInput, readlen, algnResult[startIndex + k].algnmt, currSpCigar, &currTP, &currChr, NULL ) ) { continue; }
 
                 char * chr_name = samFilePtr->header->target_name[currChr - 1]; // chromosome name
                 memcpy ( currOccStr, chr_name, strlen ( chr_name ) );
@@ -6044,7 +6043,7 @@ void SingleDPOutputSAMAPI ( SRAQueryInput * qInput, SingleAlgnmtResult * algnRes
 
         // to convert the the best special_cigar into normal cigar string
         char * newSpCigar = NULL;
-        boundTrim = getChrAndPosWithBoundaryCheckDP ( qInput, bestAmbPos, bestSpCigar, &bestTP, &bestChr, &newSpCigar );
+        boundTrim = getChrAndPosWithBoundaryCheckDP ( qInput, readlen, bestAmbPos, bestSpCigar, &bestTP, &bestChr, &newSpCigar );
         cigarStrLen = convertToCigarStr ( boundTrim ? newSpCigar : bestSpCigar, cigarStr );
         // to collect the mismatch information including MD string and # of mismatches
         mdStrLen = getMisInfoForDP ( hsp, qInfo->ReadCode, qInfo->ReadQuality, qInfo->ReadLength, bestAmbPos, bestStrand,
