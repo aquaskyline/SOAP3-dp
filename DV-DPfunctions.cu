@@ -62,8 +62,8 @@ __device__ void DPScoreNHitPos ( uint * packedDNASequence, uint DNALength, uint 
                                  uint * readSequence, uint readLength, uint maxReadLength,
                                  int MatchScore, int MismatchScore,
                                  int GapOpenScore, int GapExtendScore,
-                                 uint clipLtCheckLoc, uint clipRtCheckLoc,
-                                 uint anchorLeftLoc, uint anchorRightLoc,
+                                 int clipLtCheckLoc, int clipRtCheckLoc,
+                                 int anchorLeftLoc, int anchorRightLoc,
                                  int & maxScore, uint & hitPos,
                                  void * DPTable, uint threadId )
 {
@@ -73,7 +73,7 @@ __device__ void DPScoreNHitPos ( uint * packedDNASequence, uint DNALength, uint 
     uint TPARA = ( threadId & 0x1F ) << 1;
     uint readTPARA = ( threadId >> 5 ) * ( MC_CeilDivide16 ( maxReadLength ) << 5 ) + ( threadId & 0x1F );
     uint dnaTPARA = ( threadId >> 5 ) * ( MC_CeilDivide16 ( maxDNALength ) << 5 ) + ( threadId & 0x1F );
-    uint i, j;
+    int i, j;
     maxScore = DP_SCORE_NEG_INFINITY;
     //Initialize the first column
     MC_ScoreAddr ( score, 0, 0 ) = _LOW_THRESHOLD ( 0 );
@@ -147,8 +147,8 @@ __device__ void GenerateDPTable ( uint * packedDNASequence, uint DNALength, uint
                                   uint * readSequence, uint readLength, uint maxReadLength,
                                   int MatchScore, int MismatchScore,
                                   int GapOpenScore, int GapExtendScore,
-                                  uint clipLtCheckLoc, uint clipRtCheckLoc,
-                                  uint anchorLeftLoc, uint anchorRightLoc,
+                                  int clipLtCheckLoc, int clipRtCheckLoc,
+                                  int anchorLeftLoc, int anchorRightLoc,
                                   uint refOffset, int & maxScore, uint & hitPos, uint & scRight,
                                   uint & maxScoreCount,
                                   void * DPTable, uint threadId )
@@ -159,7 +159,7 @@ __device__ void GenerateDPTable ( uint * packedDNASequence, uint DNALength, uint
     uint TPARA = ( threadId & 0x1F ) << 1;
     uint readTPARA = ( threadId >> 5 ) * ( MC_CeilDivide16 ( maxReadLength ) << 5 ) + ( threadId & 0x1F );
     uint dnaTPARA = ( threadId >> 5 ) * ( MC_CeilDivide16 ( maxDNALength ) << 5 ) + ( threadId & 0x1F );
-    uint i, j;
+    int i, j;
     maxScore = DP_SCORE_NEG_INFINITY;
     maxScoreCount = 0;
     //Initialize the first column
@@ -2359,6 +2359,7 @@ void DP_Space::algnmtCPUThread ( int threadId, void *& empty )
 
         if ( batch->scores[id] >= engine->dpPara->paramRead[1 - alignedIsReadOrMate].cutoffThreshold )
         {
+//fprintf ( stderr, "%u %u %u\n", alignedID, batch->scores[id], canInfo[id].refer.strand );
             CigarStringEncoder<void> encoder;
             uchar lastType = 'N';
 

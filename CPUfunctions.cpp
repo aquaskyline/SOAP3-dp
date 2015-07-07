@@ -1942,7 +1942,6 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                     }
                     else
                     {
-                        printf ("diudiu\n");
                         // long read mode and succint
                         for ( i = 0; i < curr_occ_list->curr_size; i++ )
                         {
@@ -2075,7 +2074,6 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                                         previousTotalOccurrences < qSetting->MaxOutputPerRead &&
                                         currNumMismatch < 4;
 
-
                     if ( need_handle_first )
                     {
                         // need to perform (mismatch+1) alignment on the first read
@@ -2128,7 +2126,7 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                         OCCListReset ( occ_list2 );
                         qInfo_Positive.ReadCode = thisQuery;
                         qInfo_Positive.ReadLength = readLength;
-                        ProcessOneMoreMismatchAllCases ( charMap, &qInput_Positive, &qInput_Negative, SRAMismatchModel2[readLength], SRAMismatchModel2_neg[preReadLength], sa_list2, occ_list2, numCases2 );
+                        ProcessOneMoreMismatchAllCases ( charMap, &qInput_Positive, &qInput_Negative, SRAMismatchModel2[readLength], SRAMismatchModel2_neg[readLength], sa_list2, occ_list2, numCases2 );
 
                         //Store mismatch statistics and total number of occurrences for later process
                         currentTotalOccurrences = rOutput->TotalOccurrences;
@@ -2151,7 +2149,6 @@ inline uint hostKernel ( char * upkdQualities, char * upkdQueryNames, unsigned i
                 // X1: the number of second best hits
                 // and record down the x0, x1 and minmismatch
             }
-
 
             if ( needProceedDP )
             {
