@@ -3809,10 +3809,10 @@ void DeepDP_Space::DP2CPUAlgnThread ( int threadId, void *& empty )
 
             if ( result.algnmt_1 < result.algnmt_2 )
                 result.insertSize = result.algnmt_2 - result.algnmt_1 +
-                                    batch->lengths[i] + DIS[1];
+                                    batch->lengths[i] + DIS[mateSide];
             else
                 result.insertSize = result.algnmt_1 - result.algnmt_2 +
-                                    batch->lengths[i] + DIS[1];
+                                    batch->lengths[i] + DIS[readSide];
 
             result.num_sameScore_1 = batch->maxScoreCounts[readSide][i]; //TODO
             result.num_sameScore_2 = batch->maxScoreCounts[mateSide][i];
