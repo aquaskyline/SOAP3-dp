@@ -1744,7 +1744,7 @@ void OCCDirectWritePairOccSAMAPI2wCIGAR ( SRAQueryInput * qInput, PEPairs * pePa
 
 
 unsigned int getChrAndPos ( SRAQueryInput * qInput, unsigned long long ambPos,
-                            unsigned long long * tp, unsigned short * chr_id )
+                            unsigned long long * tp, unsigned int * chr_id )
 {
     SRAIndex * aIndex = qInput->AlgnmtIndex;
     // get the chromosome and the position for the position on the packed sequence
@@ -1979,7 +1979,7 @@ int BoundaryCheckDP ( unsigned int pacPos, int chrID, unsigned int chrEndPos, in
 
 // returns trimmed amount (bp). +ve indicates trimming on left side, -ve indicates right side.
 int getChrAndPosWithBoundaryCheck ( SRAQueryInput * qInput, unsigned int readLength, unsigned long long ambPos,
-                                    unsigned long long * tp, unsigned short * chr_id, char ** buffer )
+                                    unsigned long long * tp, unsigned int * chr_id, char ** buffer )
 {
     unsigned int segmentEndPos = getChrAndPos ( qInput, ambPos, tp, chr_id );
 
@@ -2007,7 +2007,7 @@ int getChrAndPosWithBoundaryCheck ( SRAQueryInput * qInput, unsigned int readLen
 
 // returns trimmed amount (bp). +ve indicates trimming on left side, -ve indicates right side.
 int getChrAndPosWithBoundaryCheckDP ( SRAQueryInput * qInput, unsigned int readLength, unsigned long long ambPos, char * cigar,
-                                      unsigned long long * tp, unsigned short * chr_id, char ** buffer )
+                                      unsigned long long * tp, unsigned int * chr_id, char ** buffer )
 {
     unsigned int segmentEndPos = getChrAndPos ( qInput, ambPos, tp, chr_id );
     HSP * hsp = qInput->AlgnmtIndex->hsp;
@@ -2602,9 +2602,9 @@ void unproperlypairOutputSAMAPI ( SRAQueryInput * qInput, OCCList * occ_list1, O
     unsigned long long tp_1 = 0;
     unsigned long long tp_2 = 0;
     unsigned long long curr_tp = 0;
-    unsigned short chr_1 = 0;
-    unsigned short chr_2 = 0;
-    unsigned short curr_chr = 0;
+    unsigned int chr_1 = 0;
+    unsigned int chr_2 = 0;
+    unsigned int curr_chr = 0;
     unsigned int samFlag;
     unsigned int i;
     char curr_strand;
@@ -2951,13 +2951,13 @@ void unproperlypairDPOutputSAMAPI ( SRAQueryInput * qInput, Algnmt * algn_list1,
     bam1_t * samAlgnmt = & ( occ->SAMOutBuffer );
     unsigned long long tp_1 = 0;
     unsigned long long tp_2 = 0;
-    unsigned short chr_1 = 0;
-    unsigned short chr_2 = 0;
+    unsigned int chr_1 = 0;
+    unsigned int chr_2 = 0;
     unsigned int samFlag;
     unsigned int i;
     unsigned int currAmbPos;
     unsigned long long currTP = 0;
-    unsigned short currChr = 0;
+    unsigned int currChr = 0;
     char currStrand;
     int currStrLen = 0;
     unsigned int currScore;
@@ -3499,7 +3499,7 @@ void pairOutputSAMAPI ( SRAQueryInput * qInput, PEOutput * pe_out, PEPairs * bes
     samfile_t * samFilePtr = qSetting->SAMOutFilePtr;
     bam1_t * samAlgnmt = & ( occ->SAMOutBuffer );
     unsigned long long tp_1, tp_2, curr_tp;
-    unsigned short chr_1, chr_2, curr_chr;
+    unsigned int chr_1, chr_2, curr_chr;
     unsigned int samFlag;
     unsigned int i;
     char curr_strand;
@@ -3843,9 +3843,9 @@ void pairDeepDPOutputSAMAPI ( SRAQueryInput * qInput, DeepDPAlignResult * algnRe
     unsigned long long tp_1 = 0;
     unsigned long long tp_2 = 0;
     unsigned long long curr_tp = 0;
-    unsigned short chr_1 = 0;
-    unsigned short chr_2 = 0;
-    unsigned short curr_chr = 0;
+    unsigned int chr_1 = 0;
+    unsigned int chr_2 = 0;
+    unsigned int curr_chr = 0;
     unsigned int samFlag;
     unsigned int i;
     char curr_strand;
@@ -4521,9 +4521,9 @@ void pairDPOutputSAMAPI ( SRAQueryInput * qInput, AlgnmtDPResult * algnResult,
     unsigned long long tp_1 = 0;
     unsigned long long tp_2 = 0;
     unsigned long long curr_tp = 0;
-    unsigned short chr_1 = 0;
-    unsigned short chr_2 = 0;
-    unsigned short curr_chr = 0;
+    unsigned int chr_1 = 0;
+    unsigned int chr_2 = 0;
+    unsigned int curr_chr = 0;
     unsigned int samFlag;
     unsigned int i;
     char curr_strand;
@@ -5571,7 +5571,7 @@ void OCCOutputSAMAPI ( SRAQueryInput * qInput, OCCList * occ_list,
     unsigned long long k = 0;
     unsigned int bestNumMisMatch, currNumMisMatch;
     unsigned long long bestTP, currTP;
-    unsigned short bestChr, currChr;
+    unsigned int bestChr, currChr;
     char bestOccStr[500], currOccStr[500];
     char bestStrand = QUERY_POS_STRAND;
     char currStrand;
@@ -5784,7 +5784,7 @@ void SingleAnsOutputSAMAPI ( SRAQueryInput * qInput,
     HSPAux * hspaux = aIndex->hspaux;
     char mdStr[MAX_READ_LENGTH * 2 + 1];
     unsigned long long TP;
-    unsigned short chr;
+    unsigned int chr;
     int avg_mismatch_qual;
     int map_qual_score = 0;
     getChrAndPos ( qInput, ambPosition,
@@ -5873,7 +5873,7 @@ void SingleDPOutputSAMAPI ( SRAQueryInput * qInput, SingleAlgnmtResult * algnRes
     unsigned int bestAmbPos, currAmbPos;
     unsigned int bestScore, currScore, secBestScore; // higher score is better
     unsigned long long bestTP, currTP;
-    unsigned short bestChr, currChr;
+    unsigned int bestChr, currChr;
     char bestOccStr[500], currOccStr[500];
     char bestStrand = QUERY_POS_STRAND;
     char currStrand;

@@ -35,7 +35,7 @@
 
 typedef struct OCCPositionCache
 {
-	unsigned short ChromId;
+	unsigned int ChromId;
 	unsigned char ReadStrand;
 	unsigned long long tp;
 	int occMismatch;

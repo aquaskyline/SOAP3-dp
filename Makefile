@@ -38,7 +38,7 @@ CFLAGS=-O3 -funroll-loops -Wno-unused-result -fopenmp
 CUDAFLAG = -cuda --ptxas-options=-v
 LIBFLAG = -L/usr/local/cuda/lib64/ -lcuda -lcudart -lpthread -lm -lz
 ifeq ($(ARCH), x86_64)
-	CUDAFLAG += -arch=sm_35
+	CUDAFLAG += -arch=sm_30
 	CFLAGS += -march=core2 -maccumulate-outgoing-args -mpopcnt -fomit-frame-pointer
 else
 	CUDAFLAG += -arch=sm_35

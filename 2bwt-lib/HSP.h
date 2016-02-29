@@ -72,7 +72,7 @@
 
 typedef struct Translate{
     unsigned int startPos;
-    unsigned short chrID;
+    unsigned int chrID;
     unsigned int correction;
 } Translate;
 
@@ -239,7 +239,7 @@ typedef struct Histogram {
 } Histogram;
 
 
-#define MAX_SEQ_NAME_LENGTH                256
+#define MAX_SEQ_NAME_LENGTH                1024
 
 #define MAX_HISTO_SIZE                    256
 

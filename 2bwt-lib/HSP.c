@@ -468,7 +468,7 @@ HSP *HSPLoad(MMPool *mmPool, const char *PackedDNAFileName, const char *Annotati
         
         j=0;
         while (!feof(translateFile) && j<hsp->numOfSeq+removedSegmentCount) {
-            fscanf(translateFile, "%u %hu %u\n", &hsp->translate[j].startPos, &hsp->translate[j].chrID, &hsp->translate[j].correction);
+            fscanf(translateFile, "%u %u %u\n", &hsp->translate[j].startPos, &hsp->translate[j].chrID, &hsp->translate[j].correction);
             j++;
         }
         if (j < hsp->numOfSeq+removedSegmentCount) {

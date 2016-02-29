@@ -84,20 +84,20 @@ void SAMOutputHeaderConstruct ( bam_header_t * sheader, HSP * hsp, HSPAux * hspa
     unsigned int * ambiguityMap = hsp->ambiguityMap;
     Translate * translate = hsp->translate;
     unsigned int tp, approxIndex, approxValue;
-    int i, j;
+    int i, j, k, l = 0;
     //Number of sequences
     sheader->n_targets = hsp->numOfSeq;
     sheader->target_name = ( char ** ) malloc ( sizeof ( char * ) * hsp->numOfSeq );
     sheader->target_len = ( uint32_t * ) malloc ( sizeof ( uint32_t ) * hsp->numOfSeq );
 
-    char * snTags = ( char * ) malloc ( MAX_CHROMOSOME_NUM * MAX_SEQ_NAME_LENGTH * 2 ); // maximum chromosomes * (number of chars max each*2)
-    memset ( snTags, '\0', MAX_CHROMOSOME_NUM * MAX_SEQ_NAME_LENGTH * 2 );
+    char * snTags = ( char * ) malloc ( hsp->numOfSeq * MAX_SEQ_NAME_LENGTH * 2 ); // maximum chromosomes * (number of chars max each*2)
+    memset ( snTags, '\0', hsp->numOfSeq * MAX_SEQ_NAME_LENGTH * 2 );
     char * snTagsTmp = ( char * ) malloc ( MAX_SEQ_NAME_LENGTH * 2 );
     memset ( snTagsTmp, '\0', MAX_SEQ_NAME_LENGTH * 2 );
 
     for ( i = 0; i < hsp->numOfSeq; i++ )
     {
-        for ( j = 0; j < 255; j++ )
+        for ( j = 0; j < MAX_SEQ_NAME_LENGTH-1; j++ )
         {
             if ( hsp->annotation[i].text[j] == '\0' ||
                     hsp->annotation[i].text[j] == ' ' ||
@@ -114,8 +114,12 @@ void SAMOutputHeaderConstruct ( bam_header_t * sheader, HSP * hsp, HSPAux * hspa
         sheader->target_name[i] = hsp->annotation[i].text;
         sheader->target_len[i] = hsp->seqActualOffset[i].endPos - hsp->seqActualOffset[i].startPos;
         sprintf ( snTagsTmp, "@SQ\tSN:%s\tLN:%u\n", hsp->annotation[i].text, hsp->seqActualOffset[i].endPos - hsp->seqActualOffset[i].startPos );
-        strcat ( snTags, snTagsTmp );
+		int tmpL = strlen(snTagsTmp);
+		for ( k=0;k<tmpL;++k )
+			snTags[l++] = snTagsTmp[k];
+        // strcat ( snTags, snTagsTmp );
     }
+	snTags[l++] = '\0';	
 
     char programInfo[1024];
     sprintf ( programInfo, "@PG\tID:%s\tPN:%s\tVN:v%d.%d.%d (%s)\n", PROJECT_NAME, PROJECT_NAME, PROJECT_MAJOR, PROJECT_MINOR, PROJECT_REV, PROJECT_SPECIAL );
