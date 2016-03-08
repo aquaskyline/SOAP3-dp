@@ -27,6 +27,7 @@
 #include <string.h>
 #include <math.h>
 #include <stdint.h>
+#include <ctype.h>
 //#include <emmintrin.h>
 //#include <mmintrin.h>
 #include "TextConverter.h"
@@ -687,6 +688,7 @@ unsigned int HSPParseFASTAToPacked(const char* FASTAFileName, const char* annota
     
     char c;
     int i;
+    int fastaComment = 0;
     int numAmbiguity;
     unsigned int lastAmbiguityPos;
     unsigned int numChar, numCharInBuffer, totalNumChar, totalActualNumChar;
@@ -747,7 +749,7 @@ unsigned int HSPParseFASTAToPacked(const char* FASTAFileName, const char* annota
     seqActualOffset = (SeqActualOffset*) MMUnitAllocate(sizeof(SeqActualOffset) * annotationAllocated);
 
     while (!feof(FASTAFile)) {
-
+        fastaComment = 0;
         numChar = 0;
         if (numSeq >= annotationAllocated) {
             annotation = (Annotation*) MMUnitReallocate(annotation, sizeof(Annotation) * annotationAllocated * 2, sizeof(Annotation) * annotationAllocated);
@@ -760,19 +762,24 @@ unsigned int HSPParseFASTAToPacked(const char* FASTAFileName, const char* annota
 
         c = (char)getc(FASTAFile);
         while (!feof(FASTAFile) && c != '\n') {
-            if (numChar < MAX_SEQ_NAME_LENGTH) {
+            if (!fastaComment && isspace(c)) {
+                fastaComment = 1;
+            }
+
+            if (!fastaComment && numChar < MAX_SEQ_NAME_LENGTH) {
                 annotation[numSeq].text[numChar] = c;
                 numChar++;
             }
-            if (numChar == 3 && annotation[numSeq].text[0] == 'g' 
-                             && annotation[numSeq].text[1] == 'i' 
-                             && annotation[numSeq].text[2] == '|') {
-                fscanf(FASTAFile, "%u|", &(annotation[numSeq].gi));
-                numChar = 0;
-            }
             c = (char)getc(FASTAFile);
         }
+
         annotation[numSeq].text[numChar] = '\0';
+
+        if (numChar > 3 && annotation[numSeq].text[0] == 'g'
+                             && annotation[numSeq].text[1] == 'i'
+                             && annotation[numSeq].text[2] == '|') {
+            sscanf(annotation[numSeq].text + 3, "%u", &(annotation[numSeq].gi));
+        }
 
         // Set random seed for the sequence
         sequenceRandomSeed = FASTARandomSeed;
@@ -4614,7 +4621,7 @@ int GappedHitListEnclosedScoreOrder(const void *gappedHitList, const int index1,
             } else {
                 return -1;
             }
-        } else {
+         } else {
             if (((GappedHitList*)gappedHitList + index1)->posQuery != ((GappedHitList*)gappedHitList + index2)->posQuery) {
                 if (((GappedHitList*)gappedHitList + index1)->posQuery > ((GappedHitList*)gappedHitList + index2)->posQuery) {
                     return 1;
