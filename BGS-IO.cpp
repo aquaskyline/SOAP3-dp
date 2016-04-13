@@ -5647,7 +5647,7 @@ void OCCOutputSAMAPI ( SRAQueryInput * qInput, OCCList * occ_list,
             }
 
             boundTrim = getChrAndPosWithBoundaryCheck ( qInput, readlen, occ_list->occ[bestOccIndex].ambPosition, &bestTP, &bestChr, &newCIGAR );
-            printf ( "NewCIGAR %x, ambPosition: %u", occ_list->occ[bestOccIndex].ambPosition, newCIGAR);
+            // printf ( "NewCIGAR %x, ambPosition: %u", occ_list->occ[bestOccIndex].ambPosition, newCIGAR);
         } // end CROSS-CHROMO handling
 
     }
@@ -5765,7 +5765,10 @@ void OCCOutputSAMAPI ( SRAQueryInput * qInput, OCCList * occ_list,
         // ---------------------->  |
     }
 
-    if ( newCIGAR ) { free ( newCIGAR ); printf ( "Free: %x\n", newCIGAR ); }
+    if ( newCIGAR ) {
+        free ( newCIGAR );
+        // printf ( "Free: %x\n", newCIGAR );
+    }
 }
 
 void SingleAnsOutputSAMAPI ( SRAQueryInput * qInput,
