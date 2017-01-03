@@ -34,7 +34,7 @@ ARCH := $(shell uname -p)
 
 CC = g++
 NVCC = /usr/local/cuda/bin/nvcc
-CFLAGS=-O3 -funroll-loops -Wno-unused-result -fopenmp
+CFLAGS=-O3 -funroll-loops -w -fopenmp
 CUDAFLAG = -cuda --ptxas-options=-v
 LIBFLAG = -L/usr/local/cuda/lib64/ -lcuda -lcudart -lpthread -lm -lz
 ifeq ($(ARCH), x86_64)
