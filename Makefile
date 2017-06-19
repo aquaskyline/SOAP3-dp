@@ -30,24 +30,12 @@
 #
 ####################################################################
 
-ARCH := $(shell uname -p)
 
 CC = g++
 NVCC = /usr/local/cuda/bin/nvcc
-CFLAGS=-O3 -funroll-loops -w -fopenmp
-CUDAFLAG = -cuda --ptxas-options=-v
-LIBFLAG = -L/usr/local/cuda/lib64/ -lcuda -lcudart -lpthread -lm -lz
-ifeq ($(ARCH), x86_64)
-	CUDAFLAG += -arch=sm_30
-	CFLAGS += -march=core2 -maccumulate-outgoing-args -mpopcnt -fomit-frame-pointer
-else
-	CUDAFLAG += -arch=sm_35
-	CFLAGS += -D__STDC_LIMIT_MACROS -mcpu=power8 -mtune=power8 -maltivec -fsigned-char
-
-	ifeq ($(USEHUGETLB),yes)
-	LIBFLAG += -B/opt/libhugetlbfs/share/libhugetlbfs -Wl,--hugetlbfs-align
-	endif
-endif
+CUDAFLAG = -cuda -arch=sm_20 --ptxas-options=-v
+LIBFLAG = -L/usr/local/cuda/lib64/ -lcuda -lcudart
+CFLAGS = -O3 -funroll-loops -fomit-frame-pointer -Wno-unused-result -lm -mpopcnt -lz -fopenmp
 
 BWTLIB = 2bwt-lib
 BWTOBJLIBS = $(BWTLIB)/BWT.o $(BWTLIB)/dictionary.o $(BWTLIB)/DNACount.o $(BWTLIB)/HSP.o $(BWTLIB)/HSPstatistic.o $(BWTLIB)/iniparser.o $(BWTLIB)/inistrlib.o $(BWTLIB)/karlin.o $(BWTLIB)/MemManager.o $(BWTLIB)/MiscUtilities.o $(BWTLIB)/QSufSort.o $(BWTLIB)/r250.o $(BWTLIB)/TextConverter.o $(BWTLIB)/Timing.o $(BWTLIB)/Socket.o
@@ -59,9 +47,6 @@ CPULIB = 2bwt-flex
 CPUOBJLIB = $(CPULIB)/HOCC.o $(CPULIB)/LT.o $(CPULIB)/LTConstruct.o $(CPULIB)/HOCCConstruct.o $(CPULIB)/SRA2BWTCheckAndExtend.o $(CPULIB)/SRA2BWTMdl.o
 
 all:	SOAP3-DP SOAP3-Builder BGS-Build BGS-View BGS-View-PE Sample
-
-temp:
-	echo $(ARCH)
 
 other:	BGS-View BGS-View-PE Sample
 
@@ -118,7 +103,7 @@ BGS-Build: BGS-Build.cpp $(BWTOBJLIBS) Makefile
 
 cleanALL:
 	echo "Cleaning up all object codes, including 2BWT-LIB, SAM and all other library compiled."
-	rm -f .*.cpp *.o $(SAMOBJLIBS) $(BWTOBJLIBS) $(CPUOBJLIB) $(BWTLIB)/BWTConstruct.o
+	rm -f .*.cpp *.o $(SAMOBJLIBS) $(BWTOBJLIBS) $(CPUOBJLIB)
 
 clean:
 	echo "Cleaning up all SOAP3 object code includes CPU and CUDA compiled."
