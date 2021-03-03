@@ -33,7 +33,7 @@
 
 CC = g++
 NVCC = /usr/local/cuda/bin/nvcc
-CUDAFLAG = -cuda -arch=sm_80 --ptxas-options=-v
+CUDAFLAG = -cuda -arch=sm_52 -gencode=arch=compute_52,code=sm_52  -gencode=arch=compute_60,code=sm_60  -gencode=arch=compute_61,code=sm_61  -gencode=arch=compute_70,code=sm_70  -gencode=arch=compute_75,code=sm_75 -gencode=arch=compute_80,code=sm_80 -gencode=arch=compute_86,code=sm_86 -gencode=arch=compute_86,code=compute_86 --ptxas-options=-v
 LIBFLAG = -L/usr/local/cuda/lib64/ -lcuda -lcudart -lz
 CFLAGS = -O3 -funroll-loops -fomit-frame-pointer -Wno-unused-result -lm -mpopcnt -fopenmp
 

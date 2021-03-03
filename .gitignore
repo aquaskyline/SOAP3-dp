@@ -1,0 +1,7 @@
+*.o
+BGS-Build
+BGS-View
+BGS-View-PE
+sample
+soap3-dp
+soap3-dp-builder
